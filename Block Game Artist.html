@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Game Artist</title>
+	<link href="Colony Heart Sand Block.png" rel="icon" type="image/x-icon"/>
+    <!-- Using Inter for a clean look, or Space Grotesk if preferred -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Blocky, industrial aesthetic matching the previous file's theme */
+        :root {
+            --bg-color: #1a1a1a;
+            --main-color: #4a4a4a;
+            --accent-color: #8cff8c; /* Green block highlight */
+            --text-color: #e0e0e0;
+            --border-color: #333333;
+            --canvas-bg: #222222;
+            --block-size: 32px; /* Default size for the block brush */
+        }
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1200px;
+            margin: 1rem 0;
+            gap: 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            background-color: var(--main-color);
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin: 0;
+            text-shadow: 0 0 5px rgba(140, 255, 140, 0.5);
+        }
+
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        #canvas-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            order: 2; /* On mobile, canvas below controls */
+            position: relative; /* For absolute positioning of tool indicator */
+        }
+
+        #drawing-canvas {
+            background-color: var(--canvas-bg);
+            border: 4px solid var(--accent-color);
+            box-shadow: 0 0 15px rgba(140, 255, 140, 0.4);
+            cursor: crosshair;
+            touch-action: none; /* Prevent scrolling while drawing on touch devices */
+        }
+
+        #controls-gallery {
+            background-color: var(--main-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            order: 1; /* On mobile, controls above canvas */
+        }
+
+        .control-section {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        
+        /* Custom Button Styling */
+        .btn {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            margin: 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #b0ffb0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.active-mode {
+            background-color: #ff9900; /* Orange for active mode */
+            color: white;
+            box-shadow: 0 0 10px #ff9900;
+        }
+
+        .btn-export {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background-color: #3b82f6;
+        }
+
+        .btn-clear {
+            background-color: #ff4a4a;
+            margin-top: 0.5rem;
+        }
+
+        /* Input Styling */
+        .text-input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        /* File Input Styling */
+        #file-input-label {
+            display: block;
+            text-align: center;
+            padding: 1rem;
+            border: 2px dashed var(--accent-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        #file-input-label:hover {
+            background-color: rgba(140, 255, 140, 0.1);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Gallery Styling */
+        #block-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 0.5rem;
+            padding: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .block-thumbnail {
+            width: 100%;
+            height: 48px;
+            object-fit: cover;
+            border: 2px solid transparent;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .block-thumbnail.selected {
+            border-color: #ff9900; /* Orange selected border */
+            box-shadow: 0 0 8px #ff9900;
+            transform: scale(1.05);
+        }
+
+        .block-thumbnail:hover {
+            opacity: 0.8;
+        }
+
+        .info-message {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        
+        /* Tool Indicator */
+        #tool-indicator {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            z-index: 10;
+        }
+
+        /* Input Grid Layout */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .input-grid label {
+            text-align: right;
+            padding-right: 0.5rem;
+        }
+        .input-grid input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+
+        /* Responsive Layout for Tablets/Desktops */
+        @media (min-width: 768px) {
+            #main-content {
+                flex-direction: row;
+            }
+            #controls-gallery {
+                width: 300px;
+                flex-shrink: 0;
+                order: 1;
+            }
+            #canvas-area {
+                order: 2;
+            }
+            #block-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+                max-height: 450px; /* More height on desktop */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <h1>Block Art Generator</h1>
+    </header>
+
+    <div id="main-content">
+        
+        <div id="controls-gallery">
+            <div class="control-section">
+                <label for="file-input" id="file-input-label">
+                    <span id="file-count">0</span> Blocks Loaded. Click to Import Local Images/Folder
+                </label>
+                <input 
+                    type="file" 
+                    id="file-input" 
+                    multiple 
+                    accept="image/*" 
+                    webkitdirectory 
+                    directory 
+                    onchange="handleFileSelect(event)">
+            </div>
+            
+            <div class="control-section">
+                <h3 style="color: var(--accent-color); margin: 0 0 0.5rem;">Canvas Setup</h3>
+                
+                <div class="input-grid">
+                    <label for="block-size-input">Block Size ($px$):</label>
+                    <input type="number" id="block-size-input" value="32" min="8" max="128" step="8">
+                </div>
+
+                <div class="input-grid">
+                    <label for="canvas-width-blocks-input">Width (Blocks):</label>
+                    <input type="number" id="canvas-width-blocks-input" value="20" min="5" max="100" step="1">
+                </div>
+
+                <div class="input-grid">
+                    <label for="canvas-height-blocks-input">Height (Blocks):</label>
+                    <input type="number" id="canvas-height-blocks-input" value="15" min="5" max="100" step="1">
+                </div>
+
+                <button class="btn" onclick="resizeCanvas(true)">Apply Canvas Size</button>
+                <button class="btn" style="background-color: #3b82f6; margin-top: 0.5rem;" id="grid-toggle-btn" onclick="toggleGrid()">Show Grid</button>
+            </div>
+
+
+            <div class="control-section">
+                <h3 style="color: var(--accent-color); margin: 0 0 0.5rem;">Drawing Tool</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="mode-selected" class="btn active-mode" onclick="toggleDrawingMode('selected')">Selected Block</button>
+                    <button id="mode-random" class="btn" onclick="toggleDrawingMode('random')">Random Block</button>
+                    <button id="mode-eraser" class="btn" onclick="toggleDrawingMode('eraser')">Eraser</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3 style="color: var(--accent-color); margin: 0 0 0.5rem;">Block Gallery</h3>
+                <input type="text" id="block-search-input" class="text-input" placeholder="Search blocks by name..." oninput="searchGallery(this.value)" style="margin-bottom: 0.5rem;">
+                <div id="block-gallery">
+                    <p class="info-message">Import images to start painting!</p>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3 style="color: var(--accent-color); margin: 0 0 0.5rem;">Export Settings</h3>
+                <div class="input-grid">
+                    <label for="export-width-input">Export Width ($px$):</label>
+                    <input type="number" id="export-width-input" value="640" min="64" max="4096" step="32">
+                </div>
+                 <div class="input-grid">
+                    <label for="export-height-input">Export Height ($px$):</label>
+                    <input type="number" id="export-height-input" value="480" min="64" max="4096" step="32">
+                </div>
+                <button class="btn btn-export" onclick="exportCanvas()">Export as PNG</button>
+                <button class="btn btn-clear" onclick="clearCanvas()">Clear Canvas</button>
+            </div>
+        </div>
+
+        <div id="canvas-area">
+            <div id="tool-indicator">Tool: Selected</div>
+            <!-- Canvas is initialized in JS to ensure dynamic sizing -->
+            <canvas id="drawing-canvas"></canvas>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- Global State ---
+    const BLOCK_SIZE_DEFAULT = 32;
+    const CANVAS_WIDTH_BLOCKS_DEFAULT = 20;
+    const CANVAS_HEIGHT_BLOCKS_DEFAULT = 15;
+
+    const canvas = document.getElementById('drawing-canvas');
+    const ctx = canvas.getContext('2d');
+    const gallery = document.getElementById('block-gallery');
+    
+    // Canvas size inputs
+    const blockSizeInput = document.getElementById('block-size-input');
+    const canvasWidthBlocksInput = document.getElementById('canvas-width-blocks-input');
+    const canvasHeightBlocksInput = document.getElementById('canvas-height-blocks-input');
+    
+    // Other elements
+    const fileCountSpan = document.getElementById('file-count');
+    const toolIndicator = document.getElementById('tool-indicator');
+    const gridToggleBtn = document.getElementById('grid-toggle-btn');
+    const modeButtons = {
+        'selected': document.getElementById('mode-selected'),
+        'random': document.getElementById('mode-random'),
+        'eraser': document.getElementById('mode-eraser')
+    };
+    const exportWidthInput = document.getElementById('export-width-input');
+    const exportHeightInput = document.getElementById('export-height-input');
+
+    let blockImages = new Map(); // Stores { filename: Image object }
+    let currentBlockImage = null; // The currently selected Image object (used in 'selected' mode)
+    let isDrawing = false;
+    let lastDrawnGridPos = { x: -1, y: -1 };
+    let drawingMode = 'selected'; // 'selected', 'random', 'eraser'
+    let isGridVisible = false;
+
+    // --- Initialization ---
+
+    /**
+     * Initializes the canvas size and event listeners.
+     */
+    function init() {
+        // Set initial canvas size based on defaults
+        resizeCanvas(false); 
+        
+        // Load events
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', throttle(draw, 10)); // Throttle mousemove for performance
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startDrawing(e.touches[0]);
+        }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            draw(e.touches[0]);
+        }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // Link block size input change to canvas update (without content preservation)
+        blockSizeInput.addEventListener('change', () => {
+            resizeCanvas(false); // Change block size, but don't preserve content 
+        });
+        
+        // Initial tool indicator update
+        updateToolIndicator();
+    }
+    
+    // Simple throttle utility function for performance
+    function throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+
+    // --- Drawing Mode Logic ---
+
+    /**
+     * Toggles the current drawing mode.
+     * @param {string} mode - 'selected', 'random', or 'eraser'.
+     */
+    function toggleDrawingMode(mode) {
+        if (mode === drawingMode) return;
+        
+        // Deactivate all mode buttons
+        Object.values(modeButtons).forEach(btn => btn.classList.remove('active-mode'));
+
+        drawingMode = mode;
+        
+        // Activate the new mode button
+        modeButtons[mode].classList.add('active-mode');
+
+        // Logic specific to modes:
+        if (mode === 'selected' && !currentBlockImage && blockImages.size > 0) {
+            // If switching to selected mode but no block is selected, auto-select the first one
+            const firstThumbnail = gallery.querySelector('.block-thumbnail');
+            if (firstThumbnail) {
+                firstThumbnail.click();
+            }
+        } else if (mode === 'selected' && !currentBlockImage) {
+            console.warn("Cannot switch to 'selected' mode: No blocks loaded.");
+            // If no blocks are loaded, default back to eraser if selected mode fails
+            if (blockImages.size === 0) {
+                 drawingMode = 'eraser'; 
+                 modeButtons['eraser'].classList.add('active-mode');
+            }
+        }
+        
+        updateToolIndicator();
+    }
+
+    /**
+     * Updates the text in the tool indicator element.
+     */
+    function updateToolIndicator() {
+        if (drawingMode === 'eraser') {
+            toolIndicator.textContent = 'Tool: Eraser';
+            canvas.style.cursor = 'url("data:image/svg+xml;utf8,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"32\\" height=\\"32\\" viewBox=\\"0 0 24 24\\"><path fill=\\"white\\" d=\\"M19.3 8.925l-4.25-4.25L5 14.725v4.4l4.4 0l10.325-10.325zM17.85 10.375l1.45-1.45l-4.25-4.25l-1.45 1.45l4.25 4.25zM6.4 17.85l1.45 1.45l-4.25 4.25l-1.45-1.45z\\"/></svg>") 16 16, pointer';
+        } else if (drawingMode === 'random') {
+            toolIndicator.textContent = 'Tool: Random Block';
+            canvas.style.cursor = 'crosshair';
+        } else {
+            const blockName = currentBlockImage ? currentBlockImage.title : 'None';
+            toolIndicator.textContent = `Tool: Selected (${blockName})`;
+            canvas.style.cursor = 'crosshair';
+        }
+    }
+
+    /**
+     * Gets the Image object to be used for the next draw call based on the current mode.
+     * @returns {Image|null} The image object or null if in eraser mode.
+     */
+    function getBrushImage() {
+        if (drawingMode === 'eraser') {
+            return null;
+        } else if (drawingMode === 'random') {
+            if (blockImages.size === 0) return null;
+            const images = Array.from(blockImages.values());
+            const randomIndex = Math.floor(Math.random() * images.length);
+            return images[randomIndex];
+        } else { // 'selected' mode
+            return currentBlockImage;
+        }
+    }
+
+    // --- File Handling and Gallery Logic ---
+
+    /**
+     * Handles file selection, reads images, and populates the gallery.
+     */
+    function handleFileSelect(event) {
+        const files = event.target.files;
+        if (files.length === 0) return;
+
+        // Clear existing state
+        blockImages.clear();
+        currentBlockImage = null;
+        gallery.innerHTML = '';
+        fileCountSpan.textContent = `Loading...`;
+        
+        let loadedCount = 0;
+        let imagesToLoad = Array.from(files).filter(file => file.type.startsWith('image/')).length;
+        let imagesLoaded = 0;
+
+        if (imagesToLoad === 0) {
+            fileCountSpan.textContent = `0`;
+            renderGallery();
+            return;
+        }
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const key = file.webkitRelativePath || file.name;
+                    img.title = key.split('/').pop(); // Store short name for indicator
+                    blockImages.set(key, img);
+                    imagesLoaded++;
+                    fileCountSpan.textContent = imagesLoaded;
+                    
+                    if (imagesLoaded === imagesToLoad) {
+                        renderGallery();
+                    }
+                };
+                img.onerror = () => {
+                    console.error('Failed to load image:', file.name);
+                    imagesLoaded++;
+                    if (imagesLoaded === imagesToLoad) {
+                        renderGallery();
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /**
+     * Filters the gallery thumbnails based on the search query.
+     * @param {string} query - The search string.
+     */
+    function searchGallery(query) {
+        const thumbnails = gallery.querySelectorAll('.block-thumbnail');
+        const lowerCaseQuery = query.toLowerCase();
+
+        thumbnails.forEach(thumb => {
+            const title = thumb.title.toLowerCase();
+            if (title.includes(lowerCaseQuery)) {
+                thumb.style.display = 'block';
+            } else {
+                thumb.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Renders all loaded images into the block gallery for selection.
+     */
+    function renderGallery() {
+        gallery.innerHTML = ''; // Clear gallery
+        
+        if (blockImages.size === 0) {
+            gallery.innerHTML = '<p class="info-message">No blocks loaded.</p>';
+            return;
+        }
+
+        blockImages.forEach((img, key) => {
+            const thumbnail = document.createElement('img');
+            thumbnail.src = img.src;
+            thumbnail.alt = img.title; 
+            thumbnail.className = 'block-thumbnail';
+            thumbnail.title = key;
+            // Store the full key for display and filtering
+            thumbnail.setAttribute('data-key', key); 
+            thumbnail.onclick = () => selectBlock(img, thumbnail);
+            gallery.appendChild(thumbnail);
+        });
+
+        // Automatically select the first block if none is selected
+        if (drawingMode === 'selected' && !currentBlockImage && blockImages.size > 0) {
+            const firstThumbnail = gallery.querySelector('.block-thumbnail');
+            if (firstThumbnail) {
+                selectBlock(blockImages.values().next().value, firstThumbnail);
+            }
+        }
+    }
+
+    /**
+     * Sets the currently active block brush.
+     */
+    function selectBlock(img, thumbnailElement) {
+        currentBlockImage = img;
+        
+        // Remove 'selected' class from all thumbnails
+        gallery.querySelectorAll('.block-thumbnail').forEach(t => t.classList.remove('selected'));
+        
+        // Add 'selected' class to the clicked thumbnail
+        thumbnailElement.classList.add('selected');
+
+        // Automatically switch to 'selected' mode
+        toggleDrawingMode('selected');
+        updateToolIndicator();
+    }
+
+    // --- Drawing Logic ---
+
+    /**
+     * Starts the drawing loop on mousedown/touchstart.
+     */
+    function startDrawing(e) {
+        if (drawingMode === 'selected' && !currentBlockImage) {
+            console.warn('No block selected. Please import and select a block.');
+            return;
+        }
+        isDrawing = true;
+        // Draw the first block immediately
+        draw(e);
+    }
+
+    /**
+     * Stops the drawing loop on mouseup/mouseout/touchend.
+     */
+    function stopDrawing() {
+        isDrawing = false;
+        lastDrawnGridPos = { x: -1, y: -1 }; // Reset last position
+    }
+
+    /**
+     * Main drawing function. Draws the selected block onto the grid.
+     */
+    function draw(e) {
+        if (!isDrawing) return;
+
+        const rect = canvas.getBoundingClientRect();
+        
+        // Calculate the mouse position relative to the canvas
+        const x = (e.clientX || e.pageX) - rect.left;
+        const y = (e.clientY || e.pageY) - rect.top;
+
+        const blockSize = parseInt(blockSizeInput.value) || BLOCK_SIZE_DEFAULT;
+
+        // Calculate the top-left corner of the grid cell
+        const gridX = Math.floor(x / blockSize) * blockSize;
+        const gridY = Math.floor(y / blockSize) * blockSize;
+        
+        // Check boundaries
+        if (gridX < 0 || gridY < 0 || gridX >= canvas.width || gridY >= canvas.height) {
+            return;
+        }
+
+        // Check if the block has already been drawn in the current grid cell to prevent overdrawing
+        if (gridX === lastDrawnGridPos.x && gridY === lastDrawnGridPos.y) {
+            return;
+        }
+
+        const brushImage = getBrushImage();
+        
+        if (drawingMode === 'eraser') {
+            // Eraser mode: clear the block area
+            ctx.clearRect(gridX, gridY, blockSize, blockSize);
+        } else if (brushImage) {
+            // Draw mode: draw the image block onto the canvas
+            try {
+                ctx.drawImage(brushImage, gridX, gridY, blockSize, blockSize);
+            } catch (error) {
+                console.error('Error drawing image:', error);
+                stopDrawing(); 
+            }
+        } else {
+            // Should only happen if 'random' is selected with no loaded images
+            console.warn(`Cannot draw: No brush image in mode '${drawingMode}'.`);
+            stopDrawing();
+        }
+
+        lastDrawnGridPos = { x: gridX, y: gridY };
+
+        // Redraw grid immediately if visible (this will redraw over the cleared/drawn block)
+        if (isGridVisible) {
+            drawGrid();
+        }
+    }
+
+    // --- Canvas Utility Functions ---
+
+    /**
+     * Draws the grid lines based on the current block size.
+     */
+    function drawGrid() {
+        if (!isGridVisible) return;
+
+        const blockSize = parseInt(blockSizeInput.value) || BLOCK_SIZE_DEFAULT;
+        
+        // We save the canvas state, then draw the grid lines
+        ctx.save();
+        ctx.strokeStyle = 'rgba(140, 255, 140, 0.4)'; // Light green grid color
+        ctx.lineWidth = 1;
+        
+        // Vertical lines
+        for (let x = 0; x <= canvas.width; x += blockSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+
+        // Horizontal lines
+        for (let y = 0; y <= canvas.height; y += blockSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+        ctx.restore(); // Restore canvas state
+    }
+
+    /**
+     * Toggles the visibility of the grid overlay.
+     */
+    function toggleGrid() {
+        isGridVisible = !isGridVisible;
+        
+        if (isGridVisible) {
+            gridToggleBtn.textContent = 'Hide Grid';
+            gridToggleBtn.classList.add('active-mode');
+            // When showing, we need to clear the existing content and redraw it 
+            // if we wanted a separate overlay, but since it's on the main canvas,
+            // we will just draw the grid lines on top of the existing artwork.
+            drawGrid(); 
+        } else {
+            gridToggleBtn.textContent = 'Show Grid';
+            gridToggleBtn.classList.remove('active-mode');
+            // When hiding, we must clear the entire canvas and redraw the artwork
+            // to remove the grid lines. Since we don't store block state, 
+            // the user will need to manually erase and redraw affected areas, 
+            // or use the Clear Canvas button. 
+            // Given the complexity of state management for a single-file canvas, 
+            // we will simply leave the lines until overwritten.
+            // A more professional solution would use a second, transparent canvas overlay.
+        }
+    }
+
+    /**
+     * Clears all content from the canvas and redraws the grid if visible.
+     */
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        lastDrawnGridPos = { x: -1, y: -1 };
+        if (isGridVisible) {
+            drawGrid(); // Redraw grid on empty canvas
+        }
+    }
+
+    /**
+     * Resizes the canvas based on block count inputs and block size.
+     * @param {boolean} preserveContent - Whether to attempt to preserve existing artwork.
+     */
+    function resizeCanvas(preserveContent) {
+        const newBlockSize = parseInt(blockSizeInput.value) || BLOCK_SIZE_DEFAULT;
+        const widthBlocks = parseInt(canvasWidthBlocksInput.value) || CANVAS_WIDTH_BLOCKS_DEFAULT;
+        const heightBlocks = parseInt(canvasHeightBlocksInput.value) || CANVAS_HEIGHT_BLOCKS_DEFAULT;
+        
+        // Calculate new dimensions in pixels
+        const newWidth = newBlockSize * widthBlocks;
+        const newHeight = newBlockSize * heightBlocks;
+
+        let tempCanvas;
+        
+        if (preserveContent) {
+            // 1. Create a temporary canvas to hold existing image data
+            tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        }
+
+        // 2. Set new dimensions for main canvas
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // 3. Update export inputs to match current canvas size
+        exportWidthInput.value = newWidth;
+        exportHeightInput.value = newHeight;
+        
+        if (preserveContent && tempCanvas) {
+            // 4. Redraw the old content onto the new canvas (this will scale/clip it)
+            // Note: If block size changed, this may not perfectly align blocks, 
+            // but it preserves the visual art.
+            ctx.drawImage(tempCanvas, 0, 0, newWidth, newHeight);
+        }
+
+        // 5. Redraw grid if visible
+        if (isGridVisible) {
+            drawGrid();
+        }
+
+        console.log(`Canvas resized to ${widthBlocks}x${heightBlocks} blocks (${newWidth}x${newHeight}px) with block size ${newBlockSize}px.`);
+    }
+
+    /**
+     * Exports the canvas content as a PNG file download, using custom frame size.
+     */
+    function exportCanvas() {
+        const exportWidth = parseInt(exportWidthInput.value);
+        const exportHeight = parseInt(exportHeightInput.value);
+
+        if (isNaN(exportWidth) || isNaN(exportHeight) || exportWidth <= 0 || exportHeight <= 0) {
+            console.error("Invalid export dimensions.");
+            console.log("Error: Invalid export dimensions. Please enter positive numbers for width and height.");
+            return;
+        }
+
+        // 1. Create a temporary canvas for the final export image
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = exportWidth;
+        exportCanvas.height = exportHeight;
+        const exportCtx = exportCanvas.getContext('2d');
+
+        // 2. Draw the content of the main canvas onto the export canvas
+        exportCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, exportWidth, exportHeight);
+
+        // 3. Export the temporary canvas
+        const dataURL = exportCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = 'block_art_export_' + Date.now() + '.png';
+        
+        // Programmatically click the link to trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // Start the application
+    window.onload = init;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Block Game Asset Showcase</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg-color: #ffffff;
+            --text-color: #333;
+            --subtle-text-color: #555;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.06);
+            --accent-color: #007bff;
+            --accent-hover-color: #0056b3;
+            --prop-key-color: #0056b3;
+            --prop-value-color: #333;
+            --highlight-color: rgba(0, 123, 255, 0.2);
+            --compare-color: #28a745;
+            --modal-backdrop: rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-theme {
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --subtle-text-color: #aaa;
+            --border-color: #333;
+            --shadow-color: rgba(0,0,0,0.2);
+            --accent-color: #008cff;
+            --accent-hover-color: #00aaff;
+            --prop-key-color: #00aaff;
+            --prop-value-color: #e0e0e0;
+            --highlight-color: rgba(0, 140, 255, 0.3);
+            --compare-color: #20c997;
+            --modal-backdrop: rgba(0, 0, 0, 0.7);
+        }
+
+        /*body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }*/
+        
+        .header-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1rem;
+        }
+
+        h1, h2 { text-align: center; color: var(--text-color); margin: 0; }
+        h2 { margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+
+        .header-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: background-color 0.2s;
+        }
+        .header-btn:hover { background-color: var(--shadow-color); }
+        .header-btn svg { width: 20px; height: 20px; fill: var(--text-color); }
+        .dark-theme #sun-icon { display: block; } .dark-theme #moon-icon { display: none; }
+        #sun-icon { display: none; } #moon-icon { display: block; }
+
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin: 0 auto 25px auto; max-width: 1200px; padding: 15px; background-color: var(--card-bg-color); border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color); }
+        .controls input[type="text"], .controls select, .controls button { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; background-color: var(--card-bg-color); color: var(--text-color); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .controls input[type="text"]:focus, .controls select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--highlight-color); }
+        .controls input[type="text"] { flex-grow: 1; min-width: 150px; }
+        .view-controls button, .action-btn { background-color: var(--bg-color); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .view-controls button.active { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+        .action-btn svg { width: 16px; height: 16px; fill: var(--text-color); }
+
+        .container { display: grid; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .container.view-simple { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+        .container.view-detailed { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+        .container.view-list { grid-template-columns: 1fr; gap: 8px; }
+
+        .item { background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 2px 4px var(--shadow-color); overflow: hidden; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.3s; display: flex; flex-direction: column; position: relative; }
+        .item.highlight { transform: scale(1.02); box-shadow: 0 0 0 3px var(--accent-color); }
+        .item.comparing { border-color: var(--compare-color); box-shadow: 0 0 0 3px var(--compare-color); }
+        .item:hover { transform: translateY(-5px); box-shadow: 0 5px 15px var(--shadow-color); }
+        
+        .container.view-simple .item { padding: 10px; text-align: center; align-items: center; }
+        .container.view-simple .item-img { margin-bottom: 10px; }
+        .container.view-simple .item-name { font-size: 14px; }
+
+        .container.view-detailed .item { padding: 15px; }
+        .container.view-detailed .item-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .container.view-detailed .item-name { font-size: 1.1em; font-weight: 600; }
+        .item-details { font-size: 14px; text-align: left; display: grid; gap: 8px; }
+        .prop { display: flex; }
+        .prop-key { font-weight: 600; color: var(--prop-key-color); margin-right: 8px; flex-shrink: 0; }
+        .prop-value { color: var(--prop-value-color); word-break: break-word; }
+
+        .container.view-list .item { flex-direction: row; align-items: center; padding: 10px 15px; gap: 15px; }
+        .container.view-list .item-name { font-weight: 600; }
+        .container.view-list .item-info { display: flex; flex-wrap: wrap; gap: 5px 15px; font-size: 13px; color: var(--subtle-text-color); }
+        .container.view-list .item-info span { display: inline-flex; align-items: center; gap: 4px; }
+        .container.view-list .compare-btn-container { margin-left: auto; }
+
+        .item-img { width: 64px; height: 64px; image-rendering: pixelated; flex-shrink: 0; background-color: rgba(128,128,128,0.1); border-radius: 4px; }
+        .item-name { color: var(--text-color); word-wrap: break-word; margin: 0; }
+        .compare-btn { position: absolute; top: 8px; right: 8px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+        .item:hover .compare-btn { opacity: 1; }
+        .item.comparing .compare-btn { opacity: 1; background-color: var(--compare-color); }
+        .compare-btn svg { width: 16px; height: 16px; fill: var(--text-color); }
+        .item.comparing .compare-btn svg { fill: white; }
+
+        .mineable-section { margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+        .mineable-list { font-size: 13px; color: var(--subtle-text-color); column-count: 2; }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-backdrop); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--card-bg-color); padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 90%; width: 700px; position: relative; transform: scale(0.9); transition: transform 0.3s; }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--subtle-text-color); }
+        .modal-content h3 { text-align: center; margin-top: 0; margin-bottom: 20px; }
+        
+        /* Stats Modal */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .stat-card { background-color: var(--bg-color); padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-card h4 { margin: 0 0 5px 0; color: var(--prop-key-color); }
+        .stat-card p { margin: 0; font-size: 1.5em; font-weight: bold; }
+        
+        /* Compare Modal */
+        #compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .compare-item { text-align: center; }
+        .compare-item img { margin-bottom: 10px; }
+        .compare-props { text-align: left; margin-top: 15px; }
+        .compare-prop { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--border-color); }
+        .compare-prop .prop-key { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h1>Advanced Block Game Asset Showcase</h1>
+        <button id="stats-toggle" class="header-btn" title="Show Statistics">
+            <svg viewBox="0 0 24 24"><path d="M16 6h3v12h-3V6zm-5 4h3v8h-3v-8zm-5 4h3v4H6v-4z"></path></svg>
+        </button>
+        <button id="theme-toggle" class="header-btn" title="Toggle Theme">
+            <svg id="moon-icon" viewBox="0 0 24 24"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+            <svg id="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.761 0-5 2.239-5 5s2.239 5 5 5 5-2.239 5-5-2.239-5-5-5zM12 9c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zM12 2v2M12 20v2M4.929 4.929l1.414 1.414M17.657 17.657l1.414 1.414M2 12h2M20 12h2M4.929 19.071l1.414-1.414M17.657 6.343l1.414-1.414"></path></svg>
+        </button>
+    </div>
+
+    <!-- Modals -->
+    <div id="stats-overlay" class="modal-overlay"><div class="modal-content"><button class="modal-close">&times;</button><h3>Asset Statistics</h3><div id="stats-grid" class="stats-grid"></div></div></div>
+    <div id="compare-overlay" class="modal-overlay"><div class="modal-content"><button class="modal-close">&times;</button><h3>Comparison</h3><div id="compare-grid"></div></div></div>
+
+    <!-- Block Types Section -->
+    <h2>Block Types</h2>
+    <div class="controls">
+        <input type="text" id="block-search" placeholder="Search blocks...">
+        <select id="block-filter"><option value="all">Filter: All</option><option value="solid">Solid</option><option value="not-solid">Not Solid</option><option value="has-drops">Has Drops</option><option value="shovel">Shovel Tool</option></select>
+        <select id="block-sort"><option value="name-asc">Sort: Name (A-Z)</option><option value="name-desc">Sort: Name (Z-A)</option><option value="hardness-asc">Hardness (Low-High)</option><option value="hardness-desc">Hardness (High-Low)</option></select>
+        <div class="view-controls" id="block-view-controls"><button data-view="simple" class="active">Grid</button><button data-view="detailed">Detailed</button><button data-view="list">List</button></div>
+        <button id="block-random" class="action-btn" title="Find Random Block"><svg viewBox="0 0 24 24"><path d="M10.5 16.5c0 1.28.93 2.5 2.5 2.5s2.5-1.22 2.5-2.5-1.5-3.5-2.5-3.5-2.5 2.22-2.5 3.5zm4.33 4.33C16.21 21.57 17 22.84 17 24h-2c0-1.16-.79-2.43-2.17-3.17l-1-1.74C13.21 20.43 14 21.7 14 23h-2c0-1.3-.79-2.57-2.17-3.32l-1.03-1.79C10.21 19.21 11 20.48 11 22H9c0-1.52.79-2.79 2.17-3.54l1-1.73C13.59 18.07 15.5 20 15.5 20s1.91-1.93 3.33-3.21l1 1.73zM20.5 4c-2.61.7-5.67 1-8.5 1s-5.89-.3-8.5-1L3 6c2.61.7 5.67 1 8.5 1s5.89-.3 8.5-1l.5-2z"></path></svg>Find Random</button>
+        <button id="block-export" class="action-btn" title="Export to CSV"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>Export</button>
+    </div>
+    <div class="container view-simple" id="block-container"></div>
+
+    <!-- Item Types Section -->
+    <h2>Item Types</h2>
+    <div class="controls">
+        <input type="text" id="item-search" placeholder="Search items...">
+        <select id="item-filter"><option value="all">Filter: All</option><option value="tool">Tool</option><option value="food">Food</option><option value="has-effect">Has Effect</option></select>
+        <select id="item-sort"><option value="name-asc">Sort: Name (A-Z)</option><option value="name-desc">Sort: Name (Z-A)</option><option value="power-asc">Mining Power (Low-High)</option><option value="power-desc">Mining Power (High-Low)</option><option value="dura-asc">Durability (Low-High)</option><option value="dura-desc">Durability (High-Low)</option></select>
+        <div class="view-controls" id="item-view-controls"><button data-view="simple" class="active">Grid</button><button data-view="detailed">Detailed</button><button data-view="list">List</button></div>
+        <button id="item-random" class="action-btn" title="Find Random Item"><svg viewBox="0 0 24 24"><path d="M10.5 16.5c0 1.28.93 2.5 2.5 2.5s2.5-1.22 2.5-2.5-1.5-3.5-2.5-3.5-2.5 2.22-2.5 3.5zm4.33 4.33C16.21 21.57 17 22.84 17 24h-2c0-1.16-.79-2.43-2.17-3.17l-1-1.74C13.21 20.43 14 21.7 14 23h-2c0-1.3-.79-2.57-2.17-3.32l-1.03-1.79C10.21 19.21 11 20.48 11 22H9c0-1.52.79-2.79 2.17-3.54l1-1.73C13.59 18.07 15.5 20 15.5 20s1.91-1.93 3.33-3.21l1 1.73zM20.5 4c-2.61.7-5.67 1-8.5 1s-5.89-.3-8.5-1L3 6c2.61.7 5.67 1 8.5 1s5.89-.3 8.5-1l.5-2z"></path></svg>Find Random</button>
+        <button id="item-export" class="action-btn" title="Export to CSV"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>Export</button>
+    </div>
+    <div class="container view-simple" id="item-container"></div>
+
+    <script>
+        // --- DATA ---
+        let blockTypes = {
+            // Grass Tops Add 10 Durability, Overgrown Grass Adds 20
+            'sky': { imgSrc: null, solid: false, miningHardness: 0, drops: [], color: '#87ceeb' },
+			'': { imgSrc: null, solid: false, miningHardness: 0, drops: [], color: '#87ceeb' }, // New replacement for sky, even faster loading!
+            'cobweb': { imgSrc: 'Cobweb.png', solid: false, miningHardness: 50, drops: [], color: '#EEEEEE' },
+            'bed': { imgSrc: 'Bed.png', solid: true, miningHardness: 100, drops: [{item: 'bed', chance: 1, min: 1, max: 1}], color: '#FF0000' },
+            'chest': { imgSrc: 'Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'magical_chest': { imgSrc: 'Magical Chest.png', solid: true, miningHardness: 150, drops: [{item: 'magical_chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+            'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'refrigerator': { imgSrc: 'Refrigerator.png', solid: true, miningHardness: 150, drops: [{item: 'refrigerator', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'oven': { imgSrc: 'Oven.png', solid: true, miningHardness: 750, drops: [{item: 'oven', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'magma_furnace': { imgSrc: 'Magma Furnace.png', solid: true, miningHardness: 750, drops: [{item: 'magma_furnace', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'item_frame': { imgSrc: 'Item Frame.png', solid: true, miningHardness: 50, drops: [{item: 'item_frame', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'world_mover': { imgSrc: 'World Mover.png', solid: true, miningHardness: 250, drops: [{item: 'world_mover', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'stone_stairs_right': { imgSrc: 'Stone Stairs Right.png', solid: true, miningHardness: 500, drops: [{item: 'stone_stairs_right', chance: 1, min: 1, max: 1}], color: '#C2B280' },
+			'stone_stairs_left': { imgSrc: 'Stone Stairs Left.png', solid: true, miningHardness: 500, drops: [{item: 'stone_stairs_left', chance: 1, min: 1, max: 1}], color: '#C2B280' },
+			'dead_body_chest': { imgSrc: 'Dead Body Chest.png', solid: true, miningHardness: 150, drops: [{item: 'dead_body_block', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'dead_body_block': { imgSrc: 'Dead Body Chest.png', solid: true, miningHardness: 150, drops: [{item: 'dead_body_block', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+            'seed_dirt_block': { imgSrc: 'Seed Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 3}], color: '#A0522D', shovelBlock: true },
+			'grass_dirt': { imgSrc: 'Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'overgrown_grass_dirt': { imgSrc: 'Overgrown Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'dark_grass_dirt': { imgSrc: 'Dark Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'overgrown_dark_grass_dirt': { imgSrc: 'Overgrown Dark Grass Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'dark_grass_soil': { imgSrc: 'Dark Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'overgrown_dark_grass_soil': { imgSrc: 'Overgrown Dark Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+            'dirt': { imgSrc: 'Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+			'grass_soil': { imgSrc: 'Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#90EE90', shovelBlock: true },
+			'overgrown_grass_soil': { imgSrc: 'Overgrown Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#90EE90', shovelBlock: true },
+            'soil': { imgSrc: 'Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+			'plantation_soil': { imgSrc: 'Plantation Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'plantation_soil', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'fertilizer': { imgSrc: 'Fertilizer Block.png', solid: true, miningHardness: 70, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+            'stone': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'outer_mantle_molten_stone': { imgSrc: 'Outer Mantle Molten Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'iron_nugget', chance: 0.1, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.075, min: 1, max: 3}], color: '#808080' },
+			'inner_mantle_molten_stone': { imgSrc: 'Inner Mantle Molten Stone Block.png', solid: true, miningHardness: 150000, drops: [{item: 'iron_nugget', chance: 0.2, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.15, min: 1, max: 3}], color: '#808080' },
+			'core_molten_stone': { imgSrc: 'Core Molten Stone Block.png', solid: true, miningHardness: 250000, drops: [{item: 'iron_nugget', chance: 0.4, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.3, min: 1, max: 3}], color: '#808080' },
+			'stump_stone': { imgSrc: 'Stump Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stump_stone', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'taiga_dirt': { imgSrc: 'Taiga Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+			'taiga_grass_dirt_block_1': { imgSrc: 'Taiga Grass Dirt Block 1.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'taiga_grass_dirt_block_2': { imgSrc: 'Taiga Grass Dirt Block 2.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'watchtower_stone_block': { imgSrc: 'Watchtower Stone Block.png', solid: true, miningHardness: 800, drops: [{item: 'watchtower_stone_block', chance: 1, min: 1, max: 1}], color: '#686868' },
+			'powertower_stone_block': { imgSrc: 'Powertower Stone Block.png', solid: true, miningHardness: 800, drops: [{item: 'powertower_stone_block', chance: 1, min: 1, max: 1}], color: '#686868' },
+            'rock_block': { imgSrc: 'Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'rock_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9' },
+			'salt_rock_block': { imgSrc: 'Salt Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'salt_rock_block', chance: 0.8, min: 1, max: 1}, {item: 'rock_salt', chance: 0.08, min: 1, max: 2}], color: '#A9A9A9' },
+			'limestone': { imgSrc: 'Limestone Block.png', solid: true, miningHardness: 300, drops: [{item: 'limestone', chance: 1, min: 1, max: 1}], color: '#A9A9A9' },
+            'sand_block': { imgSrc: 'Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'sand_block', chance: 1, min: 1, max: 1}], color: '#F4A460', shovelBlock: true },
+			'red_sand_block': { imgSrc: 'Red Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'red_sand_block', chance: 1, min: 1, max: 1}], color: '#F4A460', shovelBlock: true },
+            'sandstone_block': { imgSrc: 'Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'sandstone_block', chance: 1, min: 1, max: 1}], color: '#E3B48E' },
+			'red_sandstone_block': { imgSrc: 'Red Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'red_sandstone_block', chance: 1, min: 1, max: 1}], color: '#E3B48E' },
+            'compacting_stone': { imgSrc: 'Compacting Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#696969' },
+            'glass_block': { imgSrc: 'Glass Block.png', solid: true, miningHardness: 40, drops: [{item: 'glass_block', chance: 1, min: 1, max: 1}], color: '#F4A460' },
+			'compacted_stone': { imgSrc: 'Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'void_stone': { imgSrc: 'Void Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_stone', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'void_dust_block': { imgSrc: 'Void Dust Block.png', solid: true, miningHardness: 100, drops: [{item: 'void_dust', chance: 1, min: 1, max: 16}], color: '#708090' },
+			'void_crystal': { imgSrc: 'Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_crystal', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'red_void_crystal': { imgSrc: 'Red Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'red_void_crystal', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#708090', requiredMiningPower: 2.5 },
+			'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'hellrock': { imgSrc: 'Hellrock Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellrock', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'magma_stone_block': { imgSrc: 'Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'chasm_magma_stone_block': { imgSrc: 'Chasm Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'chasm_magma_stone_block', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'meteorite': { imgSrc: 'Meteorite.png', solid: true, miningHardness: 500, drops: [{item: 'gold_nugget', chance: 0.3, min: 1, max: 3}, {item: 'palladium_nugget', chance: 0.2, min: 1, max: 3}, {item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.6, min: 1, max: 3}], color: '#808080' },
+			'hellsteel_hellstone': { imgSrc: 'Hellsteel Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'hellsteel_nugget', chance: 1, min: 1, max: 3}], color: '#808080' },
+			'coal_block': { imgSrc: 'Coal Block.png', solid: true, miningHardness: 500, drops: [{item: 'coal', chance: 1, min: 1, max: 9}], color: '#A0522D' },
+			'stone_brick_block': { imgSrc: 'Stone Brick Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone_brick_block', chance: 1, min: 1, max: 1}], color: '#A0522D' },
+			'clay_brick_block': { imgSrc: 'Clay Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'clay_brick_block', chance: 1, min: 1, max: 1}], color: '#A0522D' },
+            'steel_brick_block': { imgSrc: 'Steel Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'steel_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'bronze_brick_block': { imgSrc: 'Bronze Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'bronze_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'brass_brick_block': { imgSrc: 'Brass Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'brass_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'gold_brick_block': { imgSrc: 'Gold Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'gold_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'gold_power_brick_block': { imgSrc: 'Gold Power Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'gold_power_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'iron_brick_block': { imgSrc: 'Iron Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'iron_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'tungsten_brick_block': { imgSrc: 'Tungsten Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'tungsten_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'tin_brick_block': { imgSrc: 'Tin Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'tin_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'zinc_brick_block': { imgSrc: 'Zinc Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'zinc_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'lead_brick_block': { imgSrc: 'Lead Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'lead_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'nickel_brick_block': { imgSrc: 'Nickel Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'nickel_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'copper_brick_block': { imgSrc: 'Copper Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'copper_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'slightly_oxidizing_copper_brick_block': { imgSrc: 'Slightly Oxidizing Copper Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'slightly_oxidizing_copper_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'oxidizing_copper_brick_block': { imgSrc: 'Oxidizing Copper Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'oxidizing_copper_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'highly_oxidizing_copper_brick_block': { imgSrc: 'Highly Oxidizing Copper Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'highly_oxidizing_copper_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'oxidized_copper_brick_block': { imgSrc: 'Oxidized Copper Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'oxidized_copper_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'aluminum_brick_block': { imgSrc: 'Aluminum Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'aluminum_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+			'palladium_brick_block': { imgSrc: 'Palladium Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'palladium_brick_block', chance: 1, min: 1, max: 1}], color: '#FCC201' },
+            'heaven_brick_block': { imgSrc: 'Heaven Brick Block.png', solid: true, miningHardness: 1200, drops: [{item: 'heaven_brick_block', chance: 1, min: 1, max: 1}], color: '#F0EAD6' },
+            // Ores And Minerals
+			'coal_stone': { imgSrc: 'Coal Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F' },
+			'coal_compacted_stone': { imgSrc: 'Coal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F' },
+            'coal_compressed_stone': { imgSrc: 'Coal Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'copper_compacted_stone': { imgSrc: 'Copper Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'copper_nugget', chance: 1, min: 1, max: 1}], color: '#B87333' },
+            'tin_compacted_stone': { imgSrc: 'Tin Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tin_nugget', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+			'zinc_compacted_stone': { imgSrc: 'Zinc Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'zinc_nugget', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+			'iron_stone': { imgSrc: 'Iron Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
+            'iron_compacted_stone': { imgSrc: 'Iron Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
+			'iron_granite': { imgSrc: 'Iron Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'tungsten_compacted_stone': { imgSrc: 'Tungsten Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tungsten_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
+            'gold_compacted_stone': { imgSrc: 'Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'gold_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700' },
+            'ruby_compacted_stone': { imgSrc: 'Ruby Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ruby_nugget', chance: 1, min: 1, max: 1}], color: '#E0115F' },
+            'diamond_compacted_stone': { imgSrc: 'Diamond Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'diamond_nugget', chance: 1, min: 1, max: 1}], color: '#B9F2FF' },
+			'topaz_compacted_stone': { imgSrc: 'Topaz Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'topaz_nugget', chance: 1, min: 1, max: 1}], color: '#FFC87C' },
+            'sapphire_compacted_stone': { imgSrc: 'Sapphire Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'sapphire_nugget', chance: 1, min: 1, max: 1}], color: '#0F52BA' },
+            'emerald_compacted_stone': { imgSrc: 'Emerald Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'emerald_nugget', chance: 1, min: 1, max: 1}], color: '#50C878' },
+            'amethyst_compacted_stone': { imgSrc: 'Amethyst Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'amethyst_nugget', chance: 1, min: 1, max: 1}], color: '#9966CC' },
+            'opal_compacted_stone': { imgSrc: 'Opal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'opal_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7' },
+			'jade_compacted_stone': { imgSrc: 'Jade Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'jade_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7' },
+            'aluminum_granite': { imgSrc: 'Aluminum Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'aluminum_compressed_stone': { imgSrc: 'Aluminum Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'palladium_compressed_stone': { imgSrc: 'Palladium Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'palladium_nugget', chance: 1, min: 1, max: 1}], color: '#708090' },
+			'any_plank': { imgSrc: 'Any Plank.png', solid: false, miningHardness: 0, drops: [], color: '#654321' },
+			'any_gilded': { imgSrc: 'Any Gilded.png', solid: false, miningHardness: 0, drops: [], color: '#654321' },
+			'raw_oak': { imgSrc: 'Raw Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
+            'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22' },
+            'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'raw_apple': { imgSrc: 'Raw Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_apple', chance: 1, min: 1, max: 1}], color: '#654321' },
+            'apple_bush': { imgSrc: 'Apple Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22' },
+			'apple_bush_fruit': { imgSrc: 'Apple Bush Block Fruit.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}, {item: 'apple', chance: 1, min: 1, max: 3}], color: '#228B22' },
+            'planked_apple': { imgSrc: 'Planked Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_apple', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+            'raw_birch': { imgSrc: 'Raw Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_birch', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+            'birch_bush': { imgSrc: 'Birch Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'birch_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
+            'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+            'raw_spruce': { imgSrc: 'Raw Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_spruce', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
+            'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'spruce_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.2, min: 1, max: 1}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A' },
+			'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'raw_redwood': { imgSrc: 'Raw Redwood Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_redwood', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
+            'redwood_bush': { imgSrc: 'Redwood Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'redwood_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.2, min: 1, max: 1}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A' },
+			'planked_redwood': { imgSrc: 'Planked Redwood Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_redwood', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'raw_rubber': { imgSrc: 'Raw Rubber Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_rubber', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+            'rubber_bush': { imgSrc: 'Rubber Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'rubber_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
+            'planked_rubber': { imgSrc: 'Planked Rubber Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_rubber', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+			'raw_mahogany': { imgSrc: 'Raw Mahogany Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_mahogany', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+            'mahogany_bush': { imgSrc: 'Mahogany Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'mahogany_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
+            'planked_mahogany': { imgSrc: 'Planked Mahogany Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_mahogany', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+			'raw_cinnamon': { imgSrc: 'Raw Cinnamon Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_cinnamon', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+            'cinnamon_bush': { imgSrc: 'Cinnamon Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'cinnamon_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
+            'planked_cinnamon': { imgSrc: 'Planked Cinnamon Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_cinnamon', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+			'raw_blueglow_wood': { imgSrc: 'Raw Blueglow Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_blueglow_wood', chance: 1, min: 1, max: 1}], color: '#C0C0C0' },
+            'blueglow_bush': { imgSrc: 'Blueglow Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'blueglow_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
+            'planked_blueglow_wood': { imgSrc: 'Planked Blueglow Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_blueglow_wood', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+			'meat_wood': { imgSrc: 'Meat Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'meat_wood', chance: 0.1, min: 1, max: 1}, {item: 'beef', chance: 0.3, min: 1, max: 3}, {item: 'pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#4A3B2F' },
+			'spoiled_meat_wood': { imgSrc: 'Spoiled Meat Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'spoiled_meat_wood', chance: 0.1, min: 1, max: 1}, {item: 'spoiled_beef', chance: 0.3, min: 1, max: 3}, {item: 'spoiled_pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#4A3B2F' },
+			'raw_hell_wood': { imgSrc: 'Raw Hell Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_hell_wood', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
+            'hell_wood_bush': { imgSrc: 'Hell Wood Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'hell_wood_bush', chance: 0.05, min: 1, max: 1}], color: '#0A4A2A' },
+			'planked_hell_wood': { imgSrc: 'Planked Hell Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_hell_wood', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'leaf_plant': { imgSrc: 'Leaf Plant.png', solid: false, miningHardness: 15, drops: [], color: '#7CFC00' },
+			'grass_sprouts': { imgSrc: 'Grass Sprouts.png', solid: false, miningHardness: 5, drops: [{item: 'grass_seeds', chance: 0.3, min: 1, max: 2}, {item: 'pumpkin_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
+            'grass': { imgSrc: 'Grass.png', solid: false, miningHardness: 10, drops: [{item: 'grass_seeds', chance: 0.4, min: 1, max: 3}, {item: 'wheat_seeds', chance: 0.2, min: 1, max: 2}, {item: 'barley_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
+			'tall_grass': { imgSrc: 'Tall Grass.png', solid: false, miningHardness: 20, drops: [{item: 'grass_seeds', chance: 0.5, min: 1, max: 5}, {item: 'wheat_seeds', chance: 0.3, min: 1, max: 3}, {item: 'cotton_seeds', chance: 0.1, min: 1, max: 2}], color: '#6B8E23' },
+			'yellow_flower': { imgSrc: 'Yellow Flower.png', solid: false, miningHardness: 10, drops: [{item: 'yellow_flower', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
+			'red_flower': { imgSrc: 'Red Flower.png', solid: false, miningHardness: 10, drops: [{item: 'red_flower', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
+			'blue_flower': { imgSrc: 'Blue Flower.png', solid: false, miningHardness: 10, drops: [{item: 'blue_flower', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
+			'pinecone_pile': { imgSrc: 'Pinecone Pile.png', solid: false, miningHardness: 10, drops: [{item: 'pinecone', chance: 1, min: 1, max: 3}], color: '#7CFC00' },
+			'pine_needle_pile': { imgSrc: 'Pine Needle Pile.png', solid: false, miningHardness: 10, drops: [{item: 'pine_needle_living', chance: 0.5, min: 1, max: 2}, {item: 'pine_needle_dying', chance: 0.5, min: 1, max: 2}, {item: 'pine_needle_dead', chance: 0.5, min: 1, max: 2}], color: '#7CFC00' },
+            'mossy_root': { imgSrc: 'Mossy Root.png', solid: false, miningHardness: 10, drops: [{item: 'mossy_root', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
+			'leaf_pile': { imgSrc: 'Leaf Pile.png', solid: false, miningHardness: 10, drops: [], color: '#7CFC00' },
+			'fern': { imgSrc: 'Fern.png', solid: false, miningHardness: 10, drops: [], color: '#7CFC00' },
+			'fern_stalk': { imgSrc: 'Fern Stalk.png', solid: false, miningHardness: 10, drops: [], color: '#7CFC00' },
+			'sugarcane': { imgSrc: 'Sugar Cane.png', solid: false, miningHardness: 10, drops: [{item: 'sugarcane', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
+			'snow': { imgSrc: 'Snow Pile.png', solid: false, miningHardness: 5, drops: [{item: 'snow_ball', chance: 1, min: 1, max: 1}], color: '#FFFAFA' },
+            'large_snow_pile': { imgSrc: 'Large Snow Pile.png', solid: false, miningHardness: 10, drops: [{item: 'snow_ball', chance: 1, min: 2, max: 2}], color: '#F0FFFF' },
+            'snow_block': { imgSrc: 'Snow Block.png', solid: true, miningHardness: 25, drops: [{item: 'snow_block', chance: 1, min: 1, max: 1}], color: '#F0FFFF' },
+            'desert_brush': { imgSrc: 'Desert Brush.png', solid: false, miningHardness: 5, drops: [{item: 'tomato_seeds', chance: 0.2, min: 1, max: 2}], color: '#D2B48C' },
+			'desert_grass': { imgSrc: 'Desert Grass.png', solid: false, miningHardness: 5, drops: [{item: 'coffee_seeds', chance: 0.2, min: 1, max: 2}], color: '#D2B48C' },
+            'prickly_pear_cactus': { imgSrc: 'Prickly Pear Cactus.png', solid: false, miningHardness: 5, drops: [{item: 'prickly_pear_fruit', chance: 0.6, min: 1, max: 1}], color: '#93C572' },
+            'cactus_block': { imgSrc: 'Cactus Block.png', solid: true, miningHardness: 80, drops: [{item: 'cactus_block', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+            'anthill_sand_block': { imgSrc: 'Anthill Sand Block.png', solid: true, miningHardness: 45, drops: [{item: 'anthill_sand_block', chance: 1, min: 1, max: 1}], color: '#C19A6B' },
+            'colony_heart_sand_block': { imgSrc: 'Colony Heart Sand Block.png', solid: true, miningHardness: 500, drops: [{item: 'colony_heart', chance: 1, min: 1, max: 1}], color: '#FF4444' },
+            'anthill_sand_mound': { imgSrc: 'Anthill Sand Mound.png', solid: false, miningHardness: 10, drops: [], color: '#D2B48C' },
+            'slate_block': { imgSrc: 'Slate Block.png', solid: true, miningHardness: 600, drops: [{item: 'slate_block', chance: 1, min: 1, max: 1}], color: '#708090' },
+            'schist_block': { imgSrc: 'Schist Block.png', solid: true, miningHardness: 600, drops: [{item: 'schist_block', chance: 1, min: 1, max: 1}], color: '#848482' },
+            'granite': { imgSrc: 'Granite Block.png', solid: true, miningHardness: 700, drops: [{item: 'granite', chance: 1, min: 1, max: 1}], color: '#F8C8DC' },
+			'asphalt_block': { imgSrc: 'Asphalt Block.png', solid: true, miningHardness: 600, drops: [{item: 'asphalt_fragment', chance: 1, min: 1, max: 4}], color: '#F8C8DC' },
+			'vulcanized_rubber': { imgSrc: 'Vulcanized Rubber Block.png', solid: true, miningHardness: 200, drops: [{item: 'vulcanized_rubber', chance: 1, min: 1, max: 1}], color: '#F8C8DC' },
+            'vine_stone_block': { imgSrc: 'Vine Stone Block.png', solid: true, miningHardness: 550, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#556B2F' },
+            'packed_ice_block': { imgSrc: 'Packed Ice Block.png', solid: true, miningHardness: 80, drops: [{item: 'packed_ice_block', chance: 1, min: 1, max: 1}], color: '#ADD8E6' },
+			'ice_block': { imgSrc: 'Ice Block.png', solid: true, miningHardness: 50, drops: [{item: 'ice_block', chance: 1, min: 1, max: 1}], color: '#ADD8E6' },
+            'gravel_block': { imgSrc: 'Gravel Block.png', solid: true, miningHardness: 60, drops: [{item: 'gravel_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
+            // Overgrown Forest Blocks
+            'moss_dirt': { imgSrc: 'Moss Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'dark_moss_dirt': { imgSrc: 'Dark Moss Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
+			'moss_soil': { imgSrc: 'Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'dark_moss_soil': { imgSrc: 'Dark Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
+            'moss_stone_brick_block': { imgSrc: 'Moss Stone Brick Block.png', solid: true, miningHardness: 510, drops: [{item: 'stone_brick_block', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'dark_moss_stone_brick_block': { imgSrc: 'Dark Moss Stone Brick Block.png', solid: true, miningHardness: 510, drops: [{item: 'stone_brick_block', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
+			'weed_dirt': { imgSrc: 'Weed Dirt Block.png', solid: true, miningHardness: 65, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#5A5030', shovelBlock: true },
+            'mud': { imgSrc: 'Mud Block.png', solid: true, miningHardness: 100, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'surface_mud': { imgSrc: 'Surface Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'grass_mud': { imgSrc: 'Grass Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'overgrown_grass_mud': { imgSrc: 'Overgrown Grass Mud Block.png', solid: true, miningHardness: 120, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+            'pest_dirt': { imgSrc: 'Pest Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
+            'raw_darkwood': { imgSrc: 'Raw Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'raw_darkwood', chance: 1, min: 1, max: 1}], color: '#2F271B' },
+            'darkwood_bush': { imgSrc: 'Darkwood Bush Block.png', solid: true, miningHardness: 25, drops: [{item: 'darkwood_bush', chance: 0.05, min: 1, max: 1}], color: '#3A3125' },
+            'planked_darkwood': { imgSrc: 'Planked Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'planked_darkwood', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
+            'pest_stone_block_weak': { imgSrc: 'Pest Stone Block (Weak).png', solid: true, miningHardness: 400, drops: [{item: 'stone', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 1}], color: '#6A675A' },
+            'pest_stone_block_strong': { imgSrc: 'Pest Stone Block (Strong).png', solid: true, miningHardness: 600, drops: [{item: 'stone', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 5}], color: '#5A574A' },
+            'moss': { imgSrc: 'Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#4A5D23' },
+            'dark_moss': { imgSrc: 'Dark Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#3B4A1C' },
+            'weed': { imgSrc: 'Weed.png', solid: false, miningHardness: 5, drops: [], color: '#6B8E23' },
+            'shroom': { imgSrc: 'Shroom.png', solid: false, miningHardness: 10, drops: [{item: 'shroom', chance: 1, min: 1, max: 1}], color: '#8B0000' },
+			'big_shroom': { imgSrc: 'Big Shroom.png', solid: true, miningHardness: 50, drops: [{item: 'big_shroom', chance: 1, min: 1, max: 1}], color: '#8B0000' },
+			'devil_shroom': { imgSrc: 'Devil Shroom.png', solid: true, miningHardness: 2500, drops: [{item: 'devil_shroom', chance: 1, min: 1, max: 1}], color: '#8B0000' },
+            // ---FARMING SECTION---
+            'hay_bale': { imgSrc: 'Hay Bale Block.png', solid: true, miningHardness: 100, drops: [{item: 'hat_bale', chance: 1, min: 1, max: 2}], color: '#F0F0F0' },
+		    'cotton': { imgSrc: 'Cotton.png', solid: false, miningHardness: 10, drops: [{item: 'cotton_item', chance: 1, min: 1, max: 2}, {item: 'cotton_seeds', chance: 0.2, min: 0, max: 2}], color: '#F0F0F0' },
+			'cotton_dirt': { imgSrc: 'Cotton Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'cotton_soil': { imgSrc: 'Cotton Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+			'cotton_fertilizer': { imgSrc: 'Cotton Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_cotton_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'rice': { imgSrc: 'Rice.png', solid: false, miningHardness: 10, drops: [{item: 'rice_item', chance: 1, min: 1, max: 2}, {item: 'rice_seeds', chance: 0.2, min: 0, max: 2}], color: '#FFFFFF' },
+            'rice_dirt': { imgSrc: 'Rice Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'rice_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'rice_soil': { imgSrc: 'Rice Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'rice_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'rice_fertilizer': { imgSrc: 'Rice Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'rice_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+            'planted_rice_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+            'wheat': { imgSrc: 'Wheat.png', solid: false, miningHardness: 10, drops: [{item: 'wheat_item', chance: 1, min: 1, max: 2}, {item: 'wheat_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'wheat_dirt': { imgSrc: 'Wheat Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'wheat_soil': { imgSrc: 'Wheat Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'wheat_fertilizer': { imgSrc: 'Wheat Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_wheat_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'barley': { imgSrc: 'Barley.png', solid: false, miningHardness: 10, drops: [{item: 'barley_item', chance: 1, min: 1, max: 2}, {item: 'wheat_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'barley_dirt': { imgSrc: 'Barley Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'barley_soil': { imgSrc: 'Barley Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'barley_fertilizer': { imgSrc: 'Barley Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_barley_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'pumpkin': { imgSrc: 'Pumpkin.png', solid: false, miningHardness: 10, drops: [{item: 'pumpkin', chance: 1, min: 1, max: 3}, {item: 'pumpkin_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347', spoilable: { into: 'plant_mush', time: 300000 } },
+            'pumpkin_dirt': { imgSrc: 'Pumpkin Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'pumpkin_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'pumpkin_soil': { imgSrc: 'Pumpkin Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'pumpkin_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'pumpkin_fertilizer': { imgSrc: 'Pumpkin Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'pumpkin_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_pumpkin_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'tomato_bush': { imgSrc: 'Tomato Bush.png', solid: false, miningHardness: 10, drops: [{item: 'tomato', chance: 1, min: 1, max: 3}, {item: 'tomato_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'tomato_dirt': { imgSrc: 'Tomato Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'tomato_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'tomato_soil': { imgSrc: 'Tomato Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'tomato_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'tomato_fertilizer': { imgSrc: 'Tomato Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'tomato_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_tomato_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'hop': { imgSrc: 'Hop Plant.png', solid: false, miningHardness: 10, drops: [{item: 'hop_item', chance: 1, min: 1, max: 4}, {item: 'hop_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'hop_dirt': { imgSrc: 'Hop Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'hop_soil': { imgSrc: 'Hop Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'hop_fertilizer': { imgSrc: 'Hop Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_hop_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'coffee': { imgSrc: 'Coffee.png', solid: false, miningHardness: 10, drops: [{item: 'coffee', chance: 1, min: 1, max: 1}, {item: 'coffee_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'coffee_dirt': { imgSrc: 'Coffee Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'coffee_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'coffee_soil': { imgSrc: 'Coffee Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'coffee_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'coffee_fertilizer': { imgSrc: 'Coffee Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'coffee_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_coffee_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'oat': { imgSrc: 'Oat.png', solid: false, miningHardness: 10, drops: [{item: 'oat_item', chance: 1, min: 1, max: 2}, {item: 'oat_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'oat_dirt': { imgSrc: 'Oat Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'oat_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'oat_soil': { imgSrc: 'Oat Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'oat_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'oat_fertilizer': { imgSrc: 'Oat Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'oat_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_oat_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'corn': { imgSrc: 'Corn.png', solid: false, miningHardness: 10, drops: [{item: 'corn_item', chance: 1, min: 1, max: 2}, {item: 'corn_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'corn_dirt': { imgSrc: 'Corn Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'corn_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'corn_soil': { imgSrc: 'Corn Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'corn_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'corn_fertilizer': { imgSrc: 'Corn Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'corn_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_corn_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'onion': { imgSrc: 'Onion Plant.png', solid: false, miningHardness: 10, drops: [{item: 'onion_item', chance: 1, min: 1, max: 2}, {item: 'onion_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'onion_dirt': { imgSrc: 'Onion Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'onion_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'onion_soil': { imgSrc: 'Onion Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'onion_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'onion_fertilizer': { imgSrc: 'Onion Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'onion_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_onion_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'garlic': { imgSrc: 'Garlic Plant.png', solid: false, miningHardness: 10, drops: [{item: 'garlic_item', chance: 1, min: 1, max: 3}, {item: 'garlic_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'garlic_dirt': { imgSrc: 'Garlic Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'garlic_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'garlic_soil': { imgSrc: 'Garlic Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'garlic_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'garlic_fertilizer': { imgSrc: 'Garlic Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'garlic_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_garlic_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'chili_pepper_bush': { imgSrc: 'Chili Pepper Bush.png', solid: false, miningHardness: 10, drops: [{item: 'chili_pepper', chance: 1, min: 1, max: 4}, {item: 'chili_pepper_seeds', chance: 0.2, min: 0, max: 3}], color: '#FF6347' },
+            'chili_pepper_dirt': { imgSrc: 'Chili Pepper Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'chili_pepper_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'chili_pepper_soil': { imgSrc: 'Chili Pepper Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'chili_pepper_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'chili_pepper_fertilizer': { imgSrc: 'Chili Pepper Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'chili_pepper_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_chili_pepper_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+            // Golden City/Gilded Forest & Sky Island Blocks
+            'gilded_grass_dirt_block': { imgSrc: 'Gilded Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'gilded_dirt_block', chance: 1, min: 1, max: 1}], color: '#F0E68C', shovelBlock: true },
+            'gilded_dirt_block': { imgSrc: 'Gilded Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'gilded_dirt_block', chance: 1, min: 1, max: 1}], color: '#DAA520', shovelBlock: true },
+            'raw_gilded_wood': { imgSrc: 'Raw Gilded Wood Block.png', solid: true, miningHardness: 180, drops: [{item: 'raw_gilded_wood', chance: 1, min: 1, max: 1}], color: '#BDB76B' },
+            'planked_gilded_wood': { imgSrc: 'Planked Gilded Wood Block.png', solid: true, miningHardness: 180, drops: [{item: 'planked_gilded_wood', chance: 1, min: 1, max: 1}], color: '#CFB53B' },
+            'gilded_tree_bush': { imgSrc: 'Gilded Tree Bush Block.png', solid: true, miningHardness: 30, drops: [{item: 'gilded_tree_bush', chance: 0.05, min: 1, max: 1}], color: '#FFD700' },
+            'cloud_block': { imgSrc: 'Cloud Block.png', solid: true, miningHardness: 10, drops: [], color: '#F0F8FF', shovelBlock: true },
+			'cloud_rock_block': { imgSrc: 'Cloud Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'cloud_rock_block', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'diviniron_cloud_block': { imgSrc: 'Diviniron Cloud Block.png', solid: true, miningHardness: 15, drops: [{item: 'diviniron_nugget', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'heavensteel_cloud_block': { imgSrc: 'Heavensteel Cloud Block.png', solid: true, miningHardness: 15, drops: [{item: 'heavensteel_nugget', chance: 1, min: 1, max: 3}], color: '#F0F8FF' },
+			'corroded_heaven_debris_block': { imgSrc: 'Corroded Heaven Debris Block.png', solid: true, miningHardness: 500, drops: [{item: 'corroded_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'ancient_heaven_debris_block': { imgSrc: 'Ancient Heaven Debris Block.png', solid: true, miningHardness: 2000, drops: [{item: 'ancient_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'strong_heaven_debris_block': { imgSrc: 'Strong Heaven Debris Block.png', solid: true, miningHardness: 8000, drops: [{item: 'strong_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'pure_heaven_debris_block': { imgSrc: 'Pure Heaven Debris Block.png', solid: true, miningHardness: 25000, drops: [{item: 'pure_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'heaven_gate_brick_block': { imgSrc: 'Heaven Gate Brick Block.png', solid: true, miningHardness: 75000, drops: [{item: 'heaven_gate_brick_block', chance: 1, min: 1, max: 1}], color: '#F0F8FF' },
+			'heaven_portal': { imgSrc: 'Heaven Portal.png', solid: false, miningHardness: 75000, drops: [], color: '#F0F8FF' },
+			'meat_block': { imgSrc: 'Meat Block.png', solid: true, miningHardness: 200, drops: [{item: 'meat_block', chance: 0.1, min: 1, max: 1}, {item: 'beef', chance: 0.3, min: 1, max: 3}, {item: 'pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#E0DBCB', shovelBlock: true },
+			'spoiled_meat_block': { imgSrc: 'Spoiled Meat Block.png', solid: true, miningHardness: 200, drops: [{item: 'spoiled_meat_block', chance: 0.1, min: 1, max: 1}, {item: 'spoiled_beef', chance: 0.3, min: 1, max: 3}, {item: 'spoiled_pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#E0DBCB', shovelBlock: true },
+			'flesh_block': { imgSrc: 'Flesh Block.png', solid: true, miningHardness: 300, drops: [{item: 'flesh_block', chance: 1, min: 1, max: 1}], color: '#E0DBCB', shovelBlock: true },
+			// IMPLEMENTED
+			'bone_block': { imgSrc: 'Bone Block.png', solid: true, miningHardness: 500, drops: [{item: 'bone_block', chance: 1, min: 1, max: 1}], color: '#E0DBCB' },
+			'obsidian_block': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian_block', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
+			'ash_block': { imgSrc: 'Ash Block.png', solid: true, miningHardness: 40, drops: [{item: 'ash_block', chance: 1, min: 1, max: 1}], color: '#3C2A4D', shovelBlock: true },
+			'ant_larva_block': { imgSrc: 'Ant Larva Block.png', solid: true, miningHardness: 30, drops: [], color: '#F5F5DC', shovelBlock: true },
+			'blueglow_grass_dirt_block': { imgSrc: 'Blueglow Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#F0E68C', shovelBlock: true },
+            'blueglow_dirt_block': { imgSrc: 'Blueglow Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#DAA520', shovelBlock: true },
+			'blueglow_grass_soil_block': { imgSrc: 'Blueglow Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'blueglow_soil_block', chance: 1, min: 1, max: 1}], color: '#F0E68C', shovelBlock: true },
+            'blueglow_soil_block': { imgSrc: 'Blueglow Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_soil_block', chance: 1, min: 1, max: 1}], color: '#DAA520', shovelBlock: true },
+			// To Be Implemented Into Future Biomes
+			// Experimental And In Waiting
+			'flesh_grass_dirt_block': { imgSrc: 'Flesh Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'flesh_grass_soil_block': { imgSrc: 'Flesh Grass Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'flesh_hellstone': { imgSrc: 'Flesh Hellstone Block.png', solid: true, miningHardness: 510, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'doom_grass_dirt_block': { imgSrc: 'Doom Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'doom_grass_soil_block': { imgSrc: 'Doom Grass Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'doom_hellstone': { imgSrc: 'Doom Hellstone Block.png', solid: true, miningHardness: 510, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#808080' },
+			// World Creator Blocks
+			'invisible_barrier': { imgSrc: 'Barrier Invisible.png', solid: true, miningHardness: 50, drops: [], color: '#8B4513', requiredTool: 'test_axe' },
+			'visible_barrier': { imgSrc: 'Barrier Visible.png', solid: true, miningHardness: 50, drops: [], color: '#8B4513', requiredTool: 'test_axe' },
+			'master_block': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 1000000000, drops: [{item: 'stone', chance: 1, min: 240, max: 240}], color: '#8B4513' },
+			'test_block_mine_power': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#8B4513', requiredMiningPower: 0.5 },
+			'test_block_test_axe': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#8B4513', requiredTool: 'test_axe' },
+            'test_block_shovel': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+            'raw_test_block_axe': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			
+        };
+
+        // Item types and their properties (imgSrc, isTool, miningPower, maxDurability, color - for fallback)
+        let itemTypes = {
+			 'cooked_beef': { imgSrc: 'Cooked Beef.png', color: '#802600', isFood: true, healAmount: 10 },
+			 'cooked_pork': { imgSrc: 'Cooked Pork.png', color: '#802600', isFood: true, healAmount: 8 },
+			 'wooden_bowl': { imgSrc: 'Wooden Bowl.png', color: '#8B4513' },
+			 'glass_cup': { imgSrc: 'Glass Cup.png', color: '#8B4513' },
+             'asphalt_fragment': { imgSrc: 'Asphalt Fragment.png', color: '#36454F' },
+			 'void_dust': { imgSrc: 'Void Dust.png', color: '#36454F' },
+             'snow_ball': { imgSrc: 'Snow Ball.png', color: '#FFFAFA' },
+             'prickly_pear_fruit': { imgSrc: 'Prickly Pear Fruit.png', color: '#8B008B', isFood: true, healAmount: 2 },
+             'wooden_stick': { imgSrc: 'Wooden Stick.png', color: '#8B4513' },
+			 'wield_wooden_stick': { imgSrc: 'Wield Wooden Stick.png', color: '#8B4513' },
+             'colony_heart': { imgSrc: 'Colony Heart.png', color: '#FF0000' },
+			 'paper': { imgSrc: 'Paper.png', color: '#36454F' },
+			 'soggy_paper': { imgSrc: 'Paper.png', color: '#36454F' },
+			 'cinnamon': { imgSrc: 'Cinnamon.png', color: '#36454F' },
+			 // ---NUGGETS---
+             'coal': { imgSrc: 'Coal Nugget.png', color: '#36454F' },
+			 'pure_fuel': { imgSrc: 'Pure Fuel.png', color: '#36454F' },
+			 // Metals
+			 'copper_nugget': { imgSrc: 'Copper Nugget.png', color: '#B87333' },
+			 'tin_nugget': { imgSrc: 'Tin Nugget.png', color: '#C0C0C0' },
+			 'zinc_nugget': { imgSrc: 'Zinc Nugget.png', color: '#C0C0C0' },
+             'bronze_nugget': { imgSrc: 'Bronze Nugget.png', color: '#CD7F32' },
+			 'brass_nugget': { imgSrc: 'Brass Nugget.png', color: '#CD7F32' },
+             'iron_nugget': { imgSrc: 'Iron Nugget.png', color: '#A19D94' },
+			 'tungsten_nugget': { imgSrc: 'Tungsten Nugget.png', color: '#A19D94' },
+			 'steel_nugget': { imgSrc: 'Steel Nugget.png', color: '#43464B' },
+             'gold_nugget': { imgSrc: 'Gold Nugget.png', color: '#FFD700' },
+			 'hellsteel_nugget': { imgSrc: 'Hellsteel Nugget.png', color: '#CD7F32' },
+			 'diviniron_nugget': { imgSrc: 'Diviniron Nugget.png', color: '#CD7F32' },
+			 'heavensteel_nugget': { imgSrc: 'Heavensteel Nugget.png', color: '#CD7F32' },
+			 'impure_infinitungsten_nugget': { imgSrc: 'Impure Infinitungsten Nugget.png', color: '#CD7F32' },
+			 'infinitungsten_nugget': { imgSrc: 'Infinitungsten Nugget.png', color: '#CD7F32' },
+			 'power_orb': { imgSrc: 'Power Orb.png', color: '#CD7F32' },
+			 // COMING SOON
+			 'nickel_nugget': { imgSrc: 'Nickel Nugget.png', color: '#FFD700' },
+			 'lead_nugget': { imgSrc: 'Lead Nugget.png', color: '#FFD700' },
+			 'aluminum_nugget': { imgSrc: 'Aluminum Nugget.png', color: '#FFD700' },
+			 'palladium_nugget': { imgSrc: 'Palladium Nugget.png', color: '#FFD700' },
+			 'tungsten_nugget': { imgSrc: 'Tungsten Nugget.png', color: '#FFD700' }, // High Durability and Strength
+			 'titanium_nugget': { imgSrc: 'Titanium Nugget.png', color: '#FFD700' }, // High Durability and Iron-Level Strength
+			 // Gemstones
+             'diamond_nugget': { imgSrc: 'Diamond Nugget.png', color: '#B9F2FF' },
+			 'ruby_nugget': { imgSrc: 'Ruby Nugget.png', color: '#E0115F' },
+			 'topaz_nugget': { imgSrc: 'Topaz Nugget.png', color: '#FFC87C' },
+             'sapphire_nugget': { imgSrc: 'Sapphire Nugget.png', color: '#0F52BA' },
+             'emerald_nugget': { imgSrc: 'Emerald Nugget.png', color: '#50C878' },
+             'amethyst_nugget': { imgSrc: 'Amethyst Nugget.png', color: '#9966CC' },
+             'opal_nugget': { imgSrc: 'Opal Nugget.png', color: '#E0E9E7' },
+			 'jade_nugget': { imgSrc: 'Jade Nugget.png', color: '#E0E9E7' },
+			 // ---FARMING SECTION---
+			 'plant_mush': { imgSrc: 'Plant Mush.png', color: '#FF0000', isFood: true, healAmount: 1 },
+			 'grass_seeds': { imgSrc: 'Grass Seeds.png', color: '#32CD32' },
+			 'moss_seeds': { imgSrc: 'Moss Seeds.png', color: '#32CD32' },
+			 'tomato_seeds': { imgSrc: 'Tomato Seeds.png', color: '#FF6347' },
+             'tomato': { imgSrc: 'Tomato.png', color: '#FF0000', isFood: true, healAmount: 2, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'wheat_seeds': { imgSrc: 'Wheat Seeds.png', color: '#F5DEB3' },
+			 'wheat_item': { imgSrc: 'Wheat.png', color: '#F5DEB3', spoilable: { into: 'plant_mush', time: 300000 } },
+			 'pumpkin_seeds': { imgSrc: 'Pumpkin Seeds.png', color: '#F5DEB3' },
+			 'barley_seeds': { imgSrc: 'Barley Seeds.png', color: '#F5DEB3' },
+			 'barley_item': { imgSrc: 'Barley.png', color: '#F5DEB3', spoilable: { into: 'plant_mush', time: 300000 } },
+			 'cotton_seeds': { imgSrc: 'Cotton Seeds.png', color: '#D3D3D3' },
+             'cotton_item': { imgSrc: 'Cotton.png', color: '#F5F5F5', spoilable: { into: 'plant_mush', time: 300000 } },
+             'rice_seeds': { imgSrc: 'Rice Seeds.png', color: '#F5F5DC' },
+             'rice_item': { imgSrc: 'Rice.png', color: '#FFFFFF', spoilable: { into: 'plant_mush', time: 300000 } },
+			 'hop_seeds': { imgSrc: 'Hop Seeds.png', color: '#F5F5DC' },
+             'hop_item': { imgSrc: 'Hop.png', color: '#FFFFFF', spoilable: { into: 'plant_mush', time: 300000 } },
+			 'coffee_seeds': { imgSrc: 'Coffee Seeds.png', color: '#F5F5DC' },
+			 'oat_seeds': { imgSrc: 'Oat Seeds.png', color: '#F5F5DC' },
+             'oat_item': { imgSrc: 'Oat.png', color: '#FFFFFF', spoilable: { into: 'plant_mush', time: 300000 } },
+			 'corn_seeds': { imgSrc: 'Corn Seeds.png', color: '#F5F5DC' },
+             'corn_item': { imgSrc: 'Corn.png', color: '#FFFFFF', isFood: true, healAmount: 2, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'garlic_seeds': { imgSrc: 'Garlic Seeds.png', color: '#F5F5DC' },
+			 'garlic_item': { imgSrc: 'Garlic.png', color: '#FFFFFF', isFood: true, healAmount: 1, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'onion_seeds': { imgSrc: 'Onion Seeds.png', color: '#F5F5DC' },
+			 'onion_item': { imgSrc: 'Onion.png', color: '#FFFFFF', isFood: true, healAmount: 1, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'chili_pepper_seeds': { imgSrc: 'Chili Pepper Seeds.png', color: '#F5F5DC' },
+			 'chili_pepper': { imgSrc: 'Chili Pepper.png', color: '#FFFFFF', isFood: true, healAmount: 1, spoilable: { into: 'plant_mush', time: 300000 } },
+			 // ---(CRAFTED) FOOD/DRINK SECTION---
+			 'taco_salad': { imgSrc: 'Taco Salad.png', color: '#FFFFFF', isFood: true, healAmount: 12 },
+			 'mushroom_soup': { imgSrc: 'Mushroom Soup.png', color: '#FFFFFF', isFood: true, healAmount: 4 },
+			 'tomato_soup': { imgSrc: 'Tomato Soup.png', color: '#FFFFFF', isFood: true, healAmount: 7 },
+			 'power_soup': { imgSrc: 'Power Soup.png', color: '#FFFFFF', isFood: true, healAmount: 100, addsMaxHealth: 10, fullHeal: true },
+			 'tomato_sandwich': { imgSrc: 'Tomato Sandwich.png', color: '#D24F33', isFood: true, healAmount: 20 },
+			 'coffee_bean': { imgSrc: 'Coffee Bean.png', color: '#FF0000' },
+			 'apple': { imgSrc: 'Apple.png', color: '#FF0000', isFood: true, healAmount: 2, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'beef': { imgSrc: 'Beef.png', color: '#C04040', isFood: true, healAmount: 4, spoilable: { into: 'spoiled_beef', time: 300000 } },
+			 'spoiled_beef': { imgSrc: 'Spoiled Beef.png', color: '#D24F33', isFood: true, healAmount: -5 },
+			 'pork': { imgSrc: 'Pork.png', color: '#C04040', isFood: true, healAmount: 3, spoilable: { into: 'spoiled_pork', time: 300000 } },
+			 'spoiled_pork': { imgSrc: 'Spoiled Pork.png', color: '#D24F33', isFood: true, healAmount: -5 },
+			 'human_flesh': { imgSrc: 'Human Flesh.png', color: '#D24F33', isFood: true, healAmount: 1 },
+			 'cup_of_water': { imgSrc: 'Cup Of Water.png', color: '#D24F33', isFood: true, healAmount: 0 },
+			 'cup_of_coffee': { imgSrc: 'Cup Of Coffee.png', color: '#D24F33', isFood: true, healAmount: 2 },
+             'cup_of_pine_needle_tea': { imgSrc: 'Cup Of Pine Needle Tea.png', color: '#D24F33', isFood: true, healAmount: 1 },
+			 'cup_of_beer': { imgSrc: 'Cup Of Beer.png', color: '#D24F33', isFood: true, healAmount: 7 },
+			 'cup_of_urine': { imgSrc: 'Cup Of Urine.png', color: '#D24F33', isFood: true, healAmount: 0 },
+			 'pinecone': { imgSrc: 'Pinecone.png', color: '#FF0000' },
+			 'pine_needle_living': { imgSrc: 'Pine Needle Living.png', color: '#FF0000', spoilable: { into: 'pine_needle_dying', time: 50000 } },
+			 'pine_needle_dying': { imgSrc: 'Pine Needle Dying.png', color: '#FF0000', spoilable: { into: 'pine_needle_dead', time: 50000 } },
+			 'pine_needle_dead': { imgSrc: 'Pine Needle Dead.png', color: '#FF0000' },
+			 'wheat_bread': { imgSrc: 'Wheat Bread.png', color: '#E6BF83', isFood: true, healAmount: 4 },
+			 'barley_bread': { imgSrc: 'Barley Bread.png', color: '#E6BF83', isFood: true, healAmount: 4 },
+			 'noodles': { imgSrc: 'Noodles.png', color: '#E6BF83', isFood: true, healAmount: 1 },
+			 'cake': { imgSrc: 'Cake.png', color: '#E6BF83', isFood: true, healAmount: 33 },
+			 'pumpkin_pie': { imgSrc: 'Pumpkin Pie.png', color: '#E6BF83', isFood: true, healAmount: 33 },
+			 'ramen_noodles': { imgSrc: 'Ramen Noodles.png', color: '#E6BF83', isFood: true, healAmount: 28 },
+			 'spaghetti': { imgSrc: 'Spaghetti.png', color: '#E6BF83', isFood: true, healAmount: 22 },
+			 // Excellent For Cooking!
+			 'raw_sugar': { imgSrc: 'Raw Sugar.png', color: '#FF0000' },
+			 'refined_sugar': { imgSrc: 'Refined Sugar.png', color: '#FF0000' },
+			 'molasses': { imgSrc: 'Molasses.png', color: '#FF0000' },
+			 'egg': { imgSrc: 'Egg.png', color: '#FF0000' },
+			 'flour': { imgSrc: 'Flour.png', color: '#FF0000' },
+			 'rock_salt': { imgSrc: 'Rock Salt.png', color: '#FF0000' },
+			 'iodized_salt': { imgSrc: 'Iodized Salt.png', color: '#FF0000' },
+			 'butter': { imgSrc: 'Butter.png', color: '#FF0000' },
+			 'cup_of_milk': { imgSrc: 'Cup Of Milk.png', color: '#FF0000', isFood: true, healAmount: 2 },
+			 // ---RUSTED TOOLS---
+			 'rusted_iron_pickaxe': { imgSrc: 'Rusted Iron Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 0.1, maxDurability: 5000 },
+			 'rusted_steel_pickaxe': { imgSrc: 'Rusted Iron Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 0.15, maxDurability: 15000 },
+			 'rusted_ruby_plated_steel_pickaxe': { imgSrc: 'Rusted Ruby Plated Steel Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 0.18, maxDurability: 19000 },
+			 'rusted_diamond_plated_steel_pickaxe': { imgSrc: 'Rusted Diamond Plated Steel Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 0.21, maxDurability: 19000 },
+			 'rusted_diviniron_pickaxe': { imgSrc: 'Rusted Diviniron Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 0.5, maxDurability: 2000 },
+			 // ---PICKAXE SECTION---
+			 // Anthill Enchantment Increases Power By x2, But Drops Durability By 20%
+			 // Void Enchantment Increases Durability By 50%, But Drops Power By 20%
+			 'wooden_pickaxe': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.2, maxDurability: 7500 },
+			 'powered_wooden_pickaxe': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.2, maxDurability: 9999999999999 }, // Powered, Durability is 9,999,999,999,999
+             'rock_pickaxe': { imgSrc: 'Rock Pickaxe.png', color: '#888888', isTool: true, miningPower: 0.3, maxDurability: 12000 },//
+			 'reinforced_rock_pickaxe': { imgSrc: 'Reinforced Rock Pickaxe.png', color: '#888888', isTool: true, miningPower: 0.3, maxDurability: 36000 },
+             'copper_pickaxe': { imgSrc: 'Copper Pickaxe.png', color: '#B87333', isTool: true, miningPower: 0.6, maxDurability: 20000 },
+             'tin_pickaxe': { imgSrc: 'Tin Pickaxe.png', color: '#C0C0C0', isTool: true, miningPower: 0.5, maxDurability: 8000 },
+             'bronze_pickaxe': { imgSrc: 'Bronze Pickaxe.png', color: '#CD7F32', isTool: true, miningPower: 0.8, maxDurability: 35000 },
+             'iron_pickaxe': { imgSrc: 'Iron Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 1.0, maxDurability: 38000 },
+			 'tungsten_pickaxe': { imgSrc: 'Tungsten Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 1.5, maxDurability: 32000 },
+             'steel_pickaxe': { imgSrc: 'Steel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 1.5, maxDurability: 100000 },//
+			 'ruby_plated_steel_pickaxe': { imgSrc: 'Ruby Plated Steel Pickaxe.png', color: '#E0115F', isTool: true, miningPower: 1.8, maxDurability: 120000 },
+             'diamond_plated_steel_pickaxe': { imgSrc: 'Diamond Plated Steel Pickaxe.png', color: '#B9F2FF', isTool: true, miningPower: 2.1, maxDurability: 120000 },
+			 'diviniron_pickaxe': { imgSrc: 'Diviniron Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 5.0, maxDurability: 20000 },
+			 'hellrock_pickaxe': { imgSrc: 'Hellrock Pickaxe.png', color: '#43464B', isTool: true, miningPower: 0.5, maxDurability: 16000 }, // +33% Durability, +66% Mining Power
+			 'hellsteel_pickaxe': { imgSrc: 'Hellsteel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 2.5, maxDurability: 133333 }, // +33% Durability, +66% Mining Power
+			 'anthill_hellsteel_pickaxe': { imgSrc: 'Anthill Hellsteel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 5, maxDurability: 106666 },
+			 'void_hellsteel_pickaxe': { imgSrc: 'Void Hellsteel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 2, maxDurability: 199999 },
+			 'heavenrock_pickaxe': { imgSrc: 'Heavenrock Pickaxe.png', color: '#43464B', isTool: true, miningPower: 0.6, maxDurability: 12000 }, // Same Durability, +100% Mining Power
+			 'heavensteel_pickaxe': { imgSrc: 'Heavensteel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 3, maxDurability: 100000 }, // Same Durability, +100% Mining Power
+			 'anthill_heavensteel_pickaxe': { imgSrc: 'Anthill Heavensteel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 6, maxDurability: 80000 },
+			 'void_heavensteel_pickaxe': { imgSrc: 'Void Heavensteel Pickaxe.png', color: '#43464B', isTool: true, miningPower: 2.4, maxDurability: 150000 },
+			 'infinitungsten_pickaxe': { imgSrc: 'Infinitungsten Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 10.0, maxDurability: 400000 },
+             'anthill_infinitungsten_pickaxe': { imgSrc: 'Anthill Infinitungsten Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 20.0, maxDurability: 320000 },
+             'void_infinitungsten_pickaxe': { imgSrc: 'Void Infinitungsten Pickaxe.png', color: '#A19D94', isTool: true, miningPower: 8.0, maxDurability: 600000 },
+			 'pest': { imgSrc: 'Pest.png', color: '#36454F' },
+			 // ---SHOVEL SECTION---
+			 'wooden_shovel': { imgSrc: 'Wooden Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.2, maxDurability: 7500 },
+			 'rock_shovel': { imgSrc: 'Rock Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.3, maxDurability: 12000 },
+			 'copper_shovel': { imgSrc: 'Copper Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.6, maxDurability: 20000 },
+			 'tin_shovel': { imgSrc: 'Tin Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.5, maxDurability: 8000 },
+             'iron_shovel': { imgSrc: 'Iron Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.8, maxDurability: 38000 },
+			 'tungsten_shovel': { imgSrc: 'Tungsten Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 1.5, maxDurability: 32000 },
+			 'bronze_shovel': { imgSrc: 'Bronze Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.8, maxDurability: 35000 },
+			 'steel_shovel': { imgSrc: 'Steel Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 1.5, maxDurability: 100000 },
+			 // ---AXE SECTION---
+			 'wooden_axe': { imgSrc: 'Wooden Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.2, maxDurability: 7500 },
+             'rock_axe': { imgSrc: 'Rock Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.3, maxDurability: 12000 },
+			 'copper_axe': { imgSrc: 'Copper Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.6, maxDurability: 20000 },
+			 'tin_axe': { imgSrc: 'Tin Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.5, maxDurability: 8000 },
+             'iron_axe': { imgSrc: 'Iron Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.8, maxDurability: 38000 },
+			 'tungsten_axe': { imgSrc: 'Tungsten Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 32000 },
+			 'bronze_axe': { imgSrc: 'Bronze Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.8, maxDurability: 35000 },
+			 'steel_axe': { imgSrc: 'Steel Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 100000 },
+			 // Currently Useless Item
+			 'bucket': { imgSrc: 'Bucket.png', color: '#A9A9A9' },
+			 'test_axe': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.5, maxDurability: 10000 },
+			 'hammer_of_infinity': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.01, maxDurability: 9999999999999 },
+			 'hammer_of_eternity': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.003, maxDurability: 9999999999999 },
+			 // Especial
+			 'gravity_sandwich': { color: '#D24F33', isFood: true, healAmount: 20, effectLength: 10, effect: {duration: 10, changes: [ { prop: 'gravity', type: 'set', value: -0.05 } ] } },
+			 'speed_snack': { color: '#D24F33', isFood: true, healAmount: 20, effectLength: 10, effect: {duration: 10, changes: [ { prop: 'speed', type: 'add', value: 1 } ] } },
+			 'jump_juice': { color: '#D24F33', isFood: true, healAmount: 20, effectLength: 10, effect: {duration: 10, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
+        };
+
+        // --- STATE ---
+        let blockState = { view: 'simple', search: '', sort: 'name-asc', filter: 'all' };
+        let itemState = { view: 'simple', search: '', sort: 'name-asc', filter: 'all' };
+        let comparisonSlots = [];
+
+        // --- UTILITIES ---
+        const formatName = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const getFilteredAndSorted = (data, state) => {
+            const searchLower = state.search.toLowerCase();
+            const filtered = Object.entries(data).filter(([key, value]) => {
+                if (!value.imgSrc || !key.toLowerCase().includes(searchLower)) return false;
+                switch(state.filter) {
+                    case 'solid': return value.solid === true;
+                    case 'not-solid': return value.solid === false;
+                    case 'has-drops': return value.drops && value.drops.length > 0;
+                    case 'shovel': return value.shovelBlock === true;
+                    case 'tool': return value.isTool === true;
+                    case 'food': return value.isFood === true;
+                    case 'has-effect': return !!value.effect;
+                    default: return true;
+                }
+            }).map(([key, data]) => ({ key, data }));
+
+            const [sortKey, sortDir] = state.sort.split('-');
+            filtered.sort((a, b) => {
+                let valA, valB;
+                switch(sortKey) {
+                    case 'hardness': valA = a.data.miningHardness || 0; valB = b.data.miningHardness || 0; break;
+                    case 'power': valA = a.data.miningPower || 0; valB = b.data.miningPower || 0; break;
+                    case 'dura': valA = a.data.maxDurability || 0; valB = b.data.maxDurability || 0; break;
+                    default: valA = a.key; valB = b.key;
+                }
+                if (typeof valA === 'string') return sortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                return sortDir === 'asc' ? valA - valB : valB - valA;
+            });
+            return filtered;
+        };
+
+        // --- HTML TEMPLATES ---
+        const createItemHTML = (key, data, view) => {
+            const name = formatName(key);
+            const commonImgHTML = `<img class="item-img" src="${data.imgSrc}" alt="${name}" onerror="this.parentElement.style.display='none';">`;
+            let itemHTML = '', compareHTML = `<button class="compare-btn" data-key="${key}" data-type="${data.isTool || data.isFood ? 'item' : 'block'}" title="Compare"><svg viewBox="0 0 24 24"><path d="M6 14H4v5h5v-2H6v-3zm-2-4h2V6h3V4H4v6zm14 8h-3v2h5v-5h-2v3zM18 4v2h3v3h2V4h-5z"></path></svg></button>`;
+
+            if (view === 'simple') {
+                itemHTML = `${commonImgHTML}<p class="item-name">${name}</p>`;
+            } else if (view === 'detailed') {
+                let details = '';
+                // Common props
+                const props = { "Hardness": data.miningHardness, "Solid": data.solid, "Tool": data.shovelBlock ? 'Shovel' : undefined, "Drops": data.drops ? (data.drops.length > 0 ? data.drops.map(d=>d.item).join(', ') : 'None') : undefined, "Type": data.isTool ? "Tool" : (data.isFood ? "Food" : undefined), "Mining Power": data.miningPower, "Durability": data.maxDurability, "Heals": data.healAmount, "Effect": data.effect };
+                for(const prop in props) { if(props[prop] !== undefined) details += `<div class="prop"><span class="prop-key">${prop}:</span> <span class="prop-value">${props[prop]}</span></div>`; }
+                
+                let mineableHTML = '';
+                if(data.isTool && data.miningPower > 0) {
+                    const mineable = Object.keys(blockTypes).filter(bKey => (blockTypes[bKey].requiredMiningPower || 0) <= data.miningPower);
+                    mineableHTML = `<div class="mineable-section"><div class="prop-key">Can Mine:</div><div class="mineable-list">${mineable.map(formatName).join(', ')}</div></div>`;
+                }
+
+                itemHTML = `<div class="item-header">${commonImgHTML}<h3 class="item-name">${name}</h3></div><div class="item-details">${details || 'No extra details.'}${mineableHTML}</div>`;
+            } else if (view === 'list') {
+                let info = `<span>${data.solid ? 'Solid' : 'Not Solid'}</span>`;
+                if (data.miningHardness) info += `<span>Hardness: ${data.miningHardness}</span>`;
+                if (data.miningPower) info += `<span>Power: ${data.miningPower}</span>`;
+                if (data.maxDurability) info += `<span>Dura: ${data.maxDurability}</span>`;
+                if (data.healAmount) info += `<span>Heals: ${data.healAmount}</span>`;
+
+                itemHTML = `${commonImgHTML}<div><p class="item-name">${name}</p><div class="item-info">${info}</div></div><div class="compare-btn-container">${compareHTML}</div>`;
+                compareHTML = ''; // Already added
+            }
+            return `<div class="item" data-key="${key}">${compareHTML}${itemHTML}</div>`;
+        };
+        
+        // --- RENDER & MODALS ---
+        const render = (container, data, state) => {
+            const list = getFilteredAndSorted(data, state);
+            container.innerHTML = list.map(({key, data}) => createItemHTML(key, data, state.view)).join('');
+            container.className = `container view-${state.view}`;
+            updateCompareButtons();
+        };
+
+        const toggleModal = (modalId, show) => document.getElementById(modalId).classList.toggle('visible', show);
+
+        // --- EVENT HANDLERS ---
+        function handleCompareClick(e) {
+            const btn = e.target.closest('.compare-btn');
+            if(!btn) return;
+
+            const key = btn.dataset.key;
+            const type = btn.dataset.type;
+            const existingIndex = comparisonSlots.findIndex(s => s.key === key);
+
+            if(existingIndex > -1) {
+                comparisonSlots.splice(existingIndex, 1);
+            } else {
+                if(comparisonSlots.length > 0 && comparisonSlots[0].type !== type) comparisonSlots = []; // Clear if different type
+                if(comparisonSlots.length >= 2) comparisonSlots.shift();
+                comparisonSlots.push({key, type});
+            }
+
+            if(comparisonSlots.length === 2) {
+                showComparison();
+            }
+            updateCompareButtons();
+        }
+
+        function updateCompareButtons() {
+            document.querySelectorAll('.item').forEach(el => el.classList.remove('comparing'));
+            comparisonSlots.forEach(slot => {
+                const el = document.querySelector(`.item[data-key="${slot.key}"]`);
+                if(el) el.classList.add('comparing');
+            });
+        }
+        
+        function showComparison() {
+            const [item1, item2] = comparisonSlots;
+            const data1 = (item1.type === 'block' ? blockTypes : itemTypes)[item1.key];
+            const data2 = (item2.type === 'block' ? itemTypes : itemTypes)[item2.key]; // Typo corrected from original
+            const allKeys = [...new Set([...Object.keys(data1), ...Object.keys(data2)])];
+            
+            let propsHTML = '';
+            allKeys.forEach(key => {
+                if(key === 'imgSrc') return;
+                propsHTML += `<div class="compare-prop"><span class="prop-value">${data1[key] ?? 'N/A'}</span><span class="prop-key">${formatName(key)}</span><span class="prop-value">${data2[key] ?? 'N/A'}</span></div>`;
+            });
+
+            document.getElementById('compare-grid').innerHTML = `
+                <div class="compare-item">
+                    <img class="item-img" src="${data1.imgSrc}"><p>${formatName(item1.key)}</p>
+                </div>
+                <div class="compare-item">
+                    <img class="item-img" src="${data2.imgSrc}"><p>${formatName(item2.key)}</p>
+                </div>
+                <div class="compare-props" style="grid-column: 1 / -1;">${propsHTML}</div>
+            `;
+            toggleModal('compare-overlay', true);
+        }
+
+        function calculateAndShowStats() {
+            const calcAvg = (data, key) => {
+                const items = Object.values(data).filter(d => typeof d[key] === 'number');
+                if(items.length === 0) return 'N/A';
+                const total = items.reduce((sum, item) => sum + item[key], 0);
+                return (total / items.length).toFixed(1);
+            };
+
+            document.getElementById('stats-grid').innerHTML = `
+                <div class="stat-card"><h4>Avg. Block Hardness</h4><p>${calcAvg(blockTypes, 'miningHardness')}</p></div>
+                <div class="stat-card"><h4>Avg. Tool Power</h4><p>${calcAvg(itemTypes, 'miningPower')}</p></div>
+                <div class="stat-card"><h4>Avg. Tool Durability</h4><p>${calcAvg(itemTypes, 'maxDurability')}</p></div>
+                <div class="stat-card"><h4>Avg. Food Healing</h4><p>${calcAvg(itemTypes, 'healAmount')}</p></div>
+            `;
+            toggleModal('stats-overlay', true);
+        }
+
+        function exportToCSV(type) {
+            const data = type === 'block' ? blockTypes : itemTypes;
+            const state = type === 'block' ? blockState : itemState;
+            const list = getFilteredAndSorted(data, state);
+            if (list.length === 0) return;
+
+            const headers = ['name', ...Object.keys(list[0].data)];
+            let csvContent = headers.join(',') + '\n';
+            list.forEach(({key, data}) => {
+                const row = headers.map(header => {
+                    if (header === 'name') return key;
+                    const value = data[header];
+                    if (typeof value === 'object' && value !== null) return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+                    return value;
+                });
+                csvContent += row.join(',') + '\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8,' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `${type}_data.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- SETUP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Restore settings
+            const savedTheme = localStorage.getItem('theme');
+            if(savedTheme === 'dark') document.body.classList.add('dark-theme');
+            blockState.view = localStorage.getItem('blockView') || 'simple';
+            itemState.view = localStorage.getItem('itemView') || 'simple';
+
+            const setupControls = (type, container, data, state) => {
+                const search = document.getElementById(`${type}-search`);
+                const filter = document.getElementById(`${type}-filter`);
+                const sort = document.getElementById(`${type}-sort`);
+                const viewControls = document.getElementById(`${type}-view-controls`);
+                const randomBtn = document.getElementById(`${type}-random`);
+                const exportBtn = document.getElementById(`${type}-export`);
+                
+                // Set initial view
+                viewControls.querySelector('.active').classList.remove('active');
+                viewControls.querySelector(`[data-view="${state.view}"]`).classList.add('active');
+
+                search.addEventListener('input', () => { state.search = search.value; render(container, data, state); });
+                filter.addEventListener('change', () => { state.filter = filter.value; render(container, data, state); });
+                sort.addEventListener('change', () => { state.sort = sort.value; render(container, data, state); });
+                viewControls.addEventListener('click', (e) => {
+                    if(e.target.tagName === 'BUTTON') {
+                        state.view = e.target.dataset.view;
+                        localStorage.setItem(`${type}View`, state.view);
+                        viewControls.querySelector('.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        render(container, data, state);
+                    }
+                });
+                randomBtn.addEventListener('click', () => {
+                    const visible = Array.from(container.querySelectorAll('.item'));
+                    if (visible.length === 0) return;
+                    const random = visible[Math.floor(Math.random() * visible.length)];
+                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                    random.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    random.classList.add('highlight');
+                    setTimeout(() => random.classList.remove('highlight'), 2000);
+                });
+                exportBtn.addEventListener('click', () => exportToCSV(type));
+            };
+            
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const isDark = document.body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+
+            document.getElementById('stats-toggle').addEventListener('click', calculateAndShowStats);
+            document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => {
+                if(e.target === m || e.target.classList.contains('modal-close')) {
+                    toggleModal(m.id, false);
+                    if(m.id === 'compare-overlay') { // Clear compare on close
+                        comparisonSlots = [];
+                        updateCompareButtons();
+                    }
+                }
+            }));
+            
+            document.getElementById('block-container').addEventListener('click', handleCompareClick);
+            document.getElementById('item-container').addEventListener('click', handleCompareClick);
+            
+            setupControls('block', document.getElementById('block-container'), blockTypes, blockState);
+            setupControls('item', document.getElementById('item-container'), itemTypes, itemState);
+            render(document.getElementById('block-container'), blockTypes, blockState);
+            render(document.getElementById('item-container'), itemTypes, itemState);
+        });
+    </script>
+</body>
+</html>
+
