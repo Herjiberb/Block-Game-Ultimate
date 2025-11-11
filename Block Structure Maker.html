@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGU Structure Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* gray-500 */
+        }
+        /* Main editor canvas */
+        #editorCanvas {
+            background-color: #1a202c; /* gray-900 */
+            cursor: crosshair;
+            image-rendering: pixelated;
+        }
+        /* Palette grid */
+        #paletteGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+            gap: 8px;
+        }
+        .palette-item {
+            @apply relative w-12 h-12 bg-gray-700 border-2 border-gray-600 rounded-md flex items-center justify-center cursor-pointer transition-all duration-100;
+        }
+        .palette-item:hover, .palette-item.selected {
+            @apply border-blue-400 bg-gray-600;
+        }
+        .palette-item img {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+        }
+        .palette-item .fallback {
+            @apply w-full h-full flex items-center justify-center text-white text-xs font-bold;
+        }
+        /* Modal styles */
+        .modal {
+            @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300;
+        }
+        .modal-content {
+            @apply bg-gray-800 text-white p-6 rounded-lg shadow-xl max-w-3xl w-full;
+        }
+        /* Chest inventory grid */
+        .chest-grid {
+            display: grid;
+            grid-template-columns: repeat(9, minmax(48px, 1fr));
+            gap: 8px;
+        }
+        .chest-slot {
+            @apply relative w-12 h-12 bg-gray-700 border-2 border-gray-600 rounded-md flex items-center justify-center;
+        }
+        .chest-slot img {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+        }
+        .chest-slot .item-count {
+            @apply absolute bottom-0 right-1 text-xs font-bold text-white;
+            text-shadow: 1px 1px 1px #000;
+        }
+        /* Simple Tooltip */
+        #tooltip {
+            @apply fixed bg-black bg-opacity-90 text-white text-sm px-3 py-1 rounded-md z-50 pointer-events-none opacity-0 transition-opacity;
+        }
+        /* Data input overlay */
+        #dataInputOverlay, #functionImportOverlay {
+            @apply fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-50;
+        }
+        #dataInputOverlay textarea, #functionImportOverlay textarea {
+            @apply w-3/4 h-3/4 bg-gray-900 text-gray-300 font-mono p-4 rounded-md border border-gray-700;
+        }
+        /* Loading Overlay */
+        #loadingOverlay {
+            @apply fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-[60];
+        }
+        #loadingText {
+            @apply text-white text-lg mb-2;
+        }
+        #loadingBar {
+            @apply w-64 h-4 bg-gray-700 rounded-full overflow-hidden;
+        }
+        #loadingBarFill {
+            @apply h-full bg-blue-500 transition-all duration-150;
+        }
+        /* Custom Alert Box */
+        #customAlertOverlay {
+            @apply fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] hidden;
+        }
+        #customAlert {
+            @apply bg-gray-800 text-white p-6 rounded-lg shadow-xl max-w-sm w-full;
+        }
+        #customAlertMessage {
+            @apply mb-4 text-gray-300;
+        }
+        #customAlertButtons {
+            @apply flex justify-end gap-3;
+        }
+        .alert-btn {
+            @apply px-4 py-2 rounded-md font-semibold transition-colors;
+        }
+        .alert-btn-confirm {
+            @apply bg-blue-600 hover:bg-blue-500 text-white;
+        }
+        .alert-btn-cancel {
+            @apply bg-gray-600 hover:bg-gray-500 text-white;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 h-screen overflow-hidden flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gray-800 text-white p-3 flex justify-between items-center shadow-md z-10">
+        <h1 class="text-xl font-bold">BGU Structure Builder</h1>
+        <div class="flex items-center gap-4">
+            <span class="text-sm hidden md:inline">Pan: WASD/Arrows</span>
+            <span class="text-sm">Zoom:</span>
+            <button id="zoomOutBtn" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-md">-</button>
+            <span id="zoomLevel" class="w-12 text-center">1.0x</span>
+            <button id="zoomInBtn" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-md">+</button>
+            <button id="resetViewBtn" class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded-md">Center View</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- Left Panel: Settings & Code -->
+        <aside class="w-80 bg-gray-800 p-4 overflow-y-auto flex flex-col space-y-4 shadow-lg">
+            <div>
+                <label for="functionName" class="block text-sm font-medium text-gray-300">Function Name</label>
+                <input type="text" id="functionName" value="generateMyStructure" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300">Generation Origin (0,0)</label>
+                <div class="mt-2 space-y-2">
+                    <label class="flex items-center">
+                        <input type="radio" name="originType" value="surface" checked class="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600">
+                        <span class="ml-2">Relative to Surface (`surfaceRow`)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="originType" value="absolute" class="form-radio h-4 w-4 text-blue-500 bg-gray-700 border-gray-600">
+                        <span class="ml-2">Absolute Coordinate (`baseRow`)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Import/Export Buttons -->
+            <div class="pt-4 border-t border-gray-700 space-y-2">
+                <button id="saveStructureBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-md">
+                    Save Structure (.bgu_struct)
+                </button>
+                <button id="loadStructureBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">
+                    Load Structure (.bgu_struct)
+                </button>
+                <input type="file" id="loadStructureInput" accept=".bgu_struct" class="hidden">
+            </div>
+            
+            <!-- NEW: Function Import/Export -->
+            <div class="pt-4 border-t border-gray-700 space-y-2">
+                <button id="importFunctionBtn" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-md">
+                    Import from Function
+                </button>
+                <button id="generateCodeBtn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-md">
+                    Generate Optimized Function
+                </button>
+            </div>
+
+            <div class="flex-1 flex flex-col min-h-0">
+                <label for="generatedCode" class="block text-sm font-medium text-gray-300">Generated Code</label>
+                <textarea id="generatedCode" readonly class="flex-1 mt-1 w-full bg-gray-900 border-gray-700 rounded-md shadow-sm p-2 text-gray-300 font-mono text-xs resize-none"></textarea>
+                <button id="copyCodeBtn" class="mt-2 w-full bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md">
+                    Copy Code
+                </button>
+            </div>
+        </aside>
+
+        <!-- Center Panel: Canvas Editor -->
+        <main class="flex-1 bg-gray-900 overflow-hidden relative">
+            <canvas id="editorCanvas"></canvas>
+            <div id="coordsDisplay" class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-md text-sm">
+                (0, 0)
+            </div>
+        </main>
+
+        <!-- Right Panel: Block Palette -->
+        <aside class="w-80 bg-gray-800 p-4 flex flex-col shadow-lg">
+            <h2 class="text-lg font-semibold mb-2">Block Palette</h2>
+            <div class="flex space-x-2 mb-2">
+                <!-- Special Tools -->
+                <div id="tool-place" class="palette-item selected" data-tool="place" data-name="Place Block (B)">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </div>
+                <div id="tool-erase" class="palette-item" data-tool="erase" data-name="Eraser (E)">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </div>
+                <div id="tool-chest" class="palette-item" data-tool="chest" data-name="Place/Edit Chest (C)">
+                    <!-- Using an inline SVG for the chest icon to avoid asset path issues -->
+                    <svg class="w-6 h-6" fill="#D2B48C" viewBox="0 0 16 16">
+                        <path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1H2V3zm12 2v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5h12zm-3-4H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1z"/>
+                    </svg>
+                </div>
+            </div>
+            <input type="text" id="paletteSearch" placeholder="Search blocks..." class="w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white mb-2">
+            <div id="paletteGrid" class="flex-1 overflow-y-auto pr-2">
+                <!-- Block palette items will be generated here -->
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip"></div>
+
+    <!-- Chest Editor Modal -->
+    <div id="chestModal" class="modal opacity-0 pointer-events-none">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold mb-4">Edit Chest Loot</h2>
+            <div class="flex gap-4">
+                <!-- Chest Grid -->
+                <div class="flex-1">
+                    <h3 class="text-lg mb-2">Chest Inventory (27 Slots)</h3>
+                    <div id="chestEditorGrid" class="chest-grid">
+                        <!-- Chest slots generated by JS -->
+                    </div>
+                </div>
+                <!-- Palette for Chest -->
+                <div class="w-48 flex flex-col">
+                    <h3 class="text-lg mb-2">Items</h3>
+                    <input type="text" id="chestPaletteSearch" placeholder="Search items..." class="w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white mb-2">
+                    <div id="chestPaletteGrid" class="flex-1 overflow-y-auto bg-gray-900 p-2 rounded-md">
+                        <!-- Item palette will be generated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-4">
+                <button id="closeChestModalBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md">Cancel</button>
+                <button id="saveChestModalBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-md">Save Chest</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Input Overlay -->
+    <div id="dataInputOverlay">
+        <h2 class="text-2xl font-bold mb-4">Welcome to the BGU Structure Builder!</h2>
+        <p class="mb-4 text-lg">To begin, please paste the <span class="font-bold text-yellow-400">ENTIRE HTML content</span> of your `Block Game Ultimate.html` file below.</p>
+        <textarea id="gameDataInput" placeholder="Paste your game's HTML code here..."></textarea>
+        <button id="loadGameDataBtn" class="mt-4 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-md text-lg">Load Game Data</button>
+    </div>
+
+    <!-- NEW: Function Import Overlay -->
+    <div id="functionImportOverlay" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Import from Function</h2>
+        <p class="mb-4 text-lg">Paste your generated <span class="font-bold text-yellow-400">function code</span> below to load it into the editor.</p>
+        <textarea id="functionImportInput" placeholder="function generateMyStructure(col, row) { ... }"></textarea>
+        <div class="flex gap-4 mt-4">
+            <button id="cancelImportBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-md text-lg">Cancel</button>
+            <button id="confirmImportBtn" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-6 rounded-md text-lg">Import Structure</button>
+        </div>
+    </div>
+
+    <!-- Asset Loading Overlay -->
+    <div id="loadingOverlay" class="opacity-0 pointer-events-none">
+        <h2 id="loadingText" class="text-white text-lg mb-2">Loading Assets...</h2>
+        <div id="loadingBar" class="w-64 h-4 bg-gray-700 rounded-full overflow-hidden">
+            <div id="loadingBarFill" class="h-full bg-blue-500 transition-all duration-150" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <!-- NEW: Custom Alert/Confirm Modal -->
+    <div id="customAlertOverlay">
+        <div id="customAlert">
+            <p id="customAlertMessage"></p>
+            <div id="customAlertButtons">
+                <!-- Buttons are added by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- GLOBAL STATE ---
+        let allGameBlocks = {};
+        let allGameItems = {};
+        let assets = {}; // Preloaded asset cache (Image objects)
+        let structureBlocks = {}; // Stores placed blocks: {"0,0": "stone", "1,0": { type: "chest", chestId: "loot1" }}
+        let chestSequences = {}; // Stores chest inventories: {"loot1": [item, null, ...]}
+        let chestCounter = 0;
+
+        // History state
+        let historyStack = [];
+        let historyIndex = -1;
+
+        let currentTool = 'place'; // 'place', 'erase', 'chest'
+        let selectedBlock = 'stone'; // Default block
+
+        // Canvas state
+        const canvas = document.getElementById('editorCanvas');
+        const ctx = canvas.getContext('2d');
+        let camera = { x: 0, y: 0, zoom: 32 }; // zoom = pixels per tile
+        let isPanning = false;
+        let lastMouse = { x: 0, y: 0 }; // Stores corrected canvas-relative coords
+        let lastRawMouse = { x: 0, y: 0 }; // Stores raw clientX/Y for ghost block
+        
+        // Tooltip
+        const tooltip = document.getElementById('tooltip');
+        
+        // --- NEW: Custom Alert/Confirm ---
+        const alertOverlay = document.getElementById('customAlertOverlay');
+        const alertMessage = document.getElementById('customAlertMessage');
+        const alertButtons = document.getElementById('customAlertButtons');
+
+        /**
+         * Shows a custom modal alert or confirmation box.
+         * @param {string} message The message to display.
+         * @param {'alert' | 'confirm'} type 'alert' for OK, 'confirm' for OK/Cancel.
+         * @returns {Promise<boolean>} Resolves true if OK, false if Cancel.
+         */
+        function showCustomAlert(message, type = 'alert') {
+            return new Promise((resolve) => {
+                alertMessage.textContent = message;
+                alertButtons.innerHTML = ''; // Clear old buttons
+
+                if (type === 'confirm') {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.className = 'alert-btn alert-btn-cancel';
+                    cancelBtn.onclick = () => {
+                        alertOverlay.classList.add('hidden');
+                        resolve(false);
+                    };
+                    alertButtons.appendChild(cancelBtn);
+                }
+
+                const okBtn = document.createElement('button');
+                okBtn.textContent = 'OK';
+                okBtn.className = 'alert-btn alert-btn-confirm';
+                okBtn.onclick = () => {
+                    alertOverlay.classList.add('hidden');
+                    resolve(true);
+                };
+                alertButtons.appendChild(okBtn);
+
+                alertOverlay.classList.remove('hidden');
+            });
+        }
+
+        // --- DATA LOADING ---
+        const dataInputOverlay = document.getElementById('dataInputOverlay');
+        const dataInput = document.getElementById('gameDataInput');
+        const loadDataBtn = document.getElementById('loadGameDataBtn');
+
+        loadDataBtn.addEventListener('click', () => {
+            const gameHtml = dataInput.value;
+            if (!gameHtml) {
+                showCustomAlert('Please paste your game code.', 'alert');
+                return;
+            }
+
+            try {
+                const blockTypesRegex = /let blockTypes = ({[\s\S]*?};)/s;
+                const itemTypesRegex = /let itemTypes = ({[\s\S]*?};)/s;
+
+                const blockTypesMatch = gameHtml.match(blockTypesRegex);
+                const itemTypesMatch = gameHtml.match(itemTypesRegex);
+
+                if (!blockTypesMatch || !itemTypesMatch) {
+                    throw new Error('Could not find blockTypes or itemTypes definitions. Make sure you pasted the full HTML file.');
+                }
+                
+                const blockTypesString = blockTypesMatch[1].slice(0, -1);
+                const itemTypesString = itemTypesMatch[1].slice(0, -1);
+
+                const blocks = new Function(`return ${blockTypesString}`)();
+                const items = new Function(`return ${itemTypesString}`)();
+
+                allGameBlocks = blocks;
+                allGameItems = items;
+                
+                dataInputOverlay.style.display = 'none';
+                
+                preloadAssets();
+
+            } catch (error) {
+                console.error('Error parsing game data:', error);
+                showCustomAlert(`Error: ${error.message}`, 'alert');
+            }
+        });
+
+        // --- ASSET PRELOADING ---
+        function preloadAssets() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const loadingBarFill = document.getElementById('loadingBarFill');
+            
+            loadingOverlay.classList.remove('opacity-0', 'pointer-events-none');
+
+            const combinedAssets = { ...allGameBlocks, ...allGameItems };
+            const urlsToLoad = new Set();
+            const keyToUrl = {};
+
+            for (const key in combinedAssets) {
+                const src = combinedAssets[key]?.imgSrc;
+                if (src) {
+                    urlsToLoad.add(src);
+                    keyToUrl[key] = src;
+                }
+            }
+
+            const urls = Array.from(urlsToLoad);
+            let assetsLoaded = 0;
+            const totalAssets = urls.length;
+
+            if (totalAssets === 0) {
+                init(); 
+                return;
+            }
+
+            // Preload the special chest icon too
+            const chestIcon = new Image();
+            chestIcon.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWElEQVQ4T2NkoBAwUqifAWTAfzyBABOAP1GIBIqgMwBGYDEQiwG6AGYIJyDsQMyiIBmQZ0AsBuijQI0G6AOtQc0G6CE2NFBjADWpItiINQgiUBOoCQCVO35sD1oYpgAAAABJRU5ErkJggg==';
+            assets['chest_icon'] = chestIcon;
+
+
+            urls.forEach(url => {
+                const img = new Image();
+                img.onload = () => {
+                    assetsLoaded++;
+                    updateLoading();
+                };
+                img.onerror = () => {
+                    assetsLoaded++; 
+                    updateLoading();
+                };
+                img.src = url;
+                assets[url] = img; 
+            });
+
+            function updateLoading() {
+                const percent = (assetsLoaded / totalAssets) * 100;
+                loadingBarFill.style.width = `${percent}%`;
+                loadingText.textContent = `Loading asset ${assetsLoaded} / ${totalAssets}`;
+
+                if (assetsLoaded === totalAssets) {
+                    for (const key in keyToUrl) {
+                        assets[key] = assets[keyToUrl[key]];
+                    }
+                    
+                    loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
+                    init(); 
+                }
+            }
+        }
+
+
+        // --- INITIALIZATION ---
+        function init() {
+            // Setup canvas
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Setup palette
+            renderPalette();
+
+            // Setup canvas events
+            canvas.addEventListener('mousedown', onMouseDown);
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('mouseup', onMouseUp);
+            canvas.addEventListener('mouseleave', onMouseUp);
+            canvas.addEventListener('wheel', onWheel, { passive: false });
+
+            // Setup UI listeners
+            document.getElementById('zoomInBtn').addEventListener('click', () => zoom(1.25));
+            document.getElementById('zoomOutBtn').addEventListener('click', () => zoom(0.8));
+            document.getElementById('resetViewBtn').addEventListener('click', resetView);
+            document.getElementById('paletteSearch').addEventListener('input', renderPalette);
+            document.getElementById('generateCodeBtn').addEventListener('click', generateFunction);
+            document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
+
+            // Setup special tools
+            document.getElementById('tool-place').addEventListener('click', () => selectTool('place'));
+            document.getElementById('tool-erase').addEventListener('click', () => selectTool('erase'));
+            document.getElementById('tool-chest').addEventListener('click', () => selectTool('chest'));
+
+            // Import/Export Listeners
+            document.getElementById('saveStructureBtn').addEventListener('click', saveStructureJSON);
+            const loadInput = document.getElementById('loadStructureInput');
+            document.getElementById('loadStructureBtn').addEventListener('click', () => loadInput.click());
+            loadInput.addEventListener('change', loadStructureJSON);
+
+            // NEW: Function Import Listeners
+            const importOverlay = document.getElementById('functionImportOverlay');
+            document.getElementById('importFunctionBtn').addEventListener('click', () => {
+                importOverlay.classList.remove('hidden');
+                document.getElementById('functionImportInput').focus();
+            });
+            document.getElementById('cancelImportBtn').addEventListener('click', () => {
+                importOverlay.classList.add('hidden');
+            });
+            document.getElementById('confirmImportBtn').addEventListener('click', () => {
+                const code = document.getElementById('functionImportInput').value;
+                importFromFunction(code);
+                importOverlay.classList.add('hidden');
+            });
+
+
+            // History & Tool/Nav Listeners
+            document.addEventListener('keydown', (e) => {
+                // Check if an input is focused
+                const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+
+                // Undo/Redo (always active)
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                }
+                else if (e.ctrlKey && e.key === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+                
+                if (isInputFocused) return; // Don't process other keys if typing
+
+                // Tool hotkeys
+                if (e.key === 'b') {
+                    e.preventDefault();
+                    selectTool('place');
+                } else if (e.key === 'e') {
+                    e.preventDefault();
+                    selectTool('erase');
+                } else if (e.key === 'c') {
+                    e.preventDefault();
+                    selectTool('chest');
+                }
+                
+                // NEW: Keyboard Panning
+                const panSpeed = 50;
+                if (e.key === 'w' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    camera.y += panSpeed;
+                } else if (e.key === 's' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    camera.y -= panSpeed;
+                } else if (e.key === 'a' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    camera.x += panSpeed;
+                } else if (e.key === 'd' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    camera.x -= panSpeed;
+                }
+            });
+            
+            // Set initial history state
+            recordHistory();
+
+            // Start draw loop
+            gameLoop();
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            resetView();
+        }
+        
+        function resetView() {
+            camera.x = canvas.width / 2;
+            camera.y = canvas.height / 2;
+        }
+
+        // --- PALETTE LOGIC ---
+        function renderPalette() {
+            const grid = document.getElementById('paletteGrid');
+            grid.innerHTML = '';
+            const filter = document.getElementById('paletteSearch').value.toLowerCase().replace(/_/g, ' ');
+
+            const combinedAssets = { ...allGameBlocks, ...allGameItems };
+
+            for (const key in combinedAssets) {
+                const item = combinedAssets[key];
+                const name = key.replace(/_/g, ' ');
+                
+                if (filter && !name.includes(filter)) {
+                    continue;
+                }
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'palette-item';
+                itemDiv.dataset.type = key;
+                itemDiv.dataset.name = name;
+
+                if (key === selectedBlock && currentTool === 'place') {
+                    itemDiv.classList.add('selected');
+                }
+
+                const img = assets[key];
+                if (img) {
+                    itemDiv.appendChild(img.cloneNode());
+                } else if (item.color) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'fallback';
+                    fallback.style.backgroundColor = item.color;
+                    fallback.textContent = key.substring(0, 3).toUpperCase();
+                    itemDiv.appendChild(fallback);
+                }
+
+                itemDiv.addEventListener('click', () => {
+                    selectedBlock = key;
+                    selectTool('place');
+                    renderPalette();
+                });
+                
+                itemDiv.addEventListener('mouseenter', () => showTooltip(name));
+                itemDiv.addEventListener('mouseleave', hideTooltip);
+                
+                grid.appendChild(itemDiv);
+            }
+        }
+        
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.palette-item[data-tool]').forEach(el => el.classList.remove('selected'));
+            const toolEl = document.getElementById(`tool-${tool}`);
+            if (toolEl) {
+                toolEl.classList.add('selected');
+            }
+            if (tool !== 'place') {
+                document.querySelectorAll('.palette-item[data-type]').forEach(el => el.classList.remove('selected'));
+            }
+        }
+
+        // --- CANVAS DRAWING ---
+        function gameLoop() {
+            ctx.fillStyle = '#1a202c'; // gray-900
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(camera.x, camera.y);
+            ctx.scale(camera.zoom, camera.zoom);
+
+            drawGrid();
+            drawBlocks(); // OPTIMIZED
+            drawOrigin();
+            drawGhostBlock();
+
+            ctx.restore();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#2d3748'; // gray-800
+            ctx.lineWidth = 1 / camera.zoom;
+
+            const start = screenToWorld(0, 0);
+            const end = screenToWorld(canvas.width, canvas.height);
+
+            for (let x = Math.floor(start.x); x <= Math.ceil(end.x); x++) {
+                ctx.beginPath();
+                ctx.moveTo(x, start.y);
+                ctx.lineTo(x, end.y);
+                ctx.stroke();
+            }
+            for (let y = Math.floor(start.y); y <= Math.ceil(end.y); y++) {
+                ctx.beginPath();
+                ctx.moveTo(start.x, y);
+                ctx.lineTo(end.x, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawOrigin() {
+            ctx.strokeStyle = '#f56565'; // red-500
+            ctx.lineWidth = 3 / camera.zoom;
+            
+            ctx.beginPath();
+            ctx.moveTo(-0.5, 0);
+            ctx.lineTo(0.5, 0);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, -0.5);
+            ctx.lineTo(0, 0.5);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 0.25, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        // --- NEW: Optimized Block Drawing ---
+        function drawBlocks() {
+            const combinedAssets = { ...allGameBlocks, ...allGameItems };
+            
+            // Get screen boundaries in world coordinates
+            const start = screenToWorld(0, 0);
+            const end = screenToWorld(canvas.width, canvas.height);
+
+            // Iterate ONLY over the blocks that exist
+            for (const key in structureBlocks) {
+                const [x, y] = key.split(',').map(Number);
+
+                // Check if the block is within the visible screen area
+                if (x < start.x - 1 || x > end.x + 1 || y < start.y - 1 || y > end.y + 1) {
+                    continue;
+                }
+
+                const block = structureBlocks[key];
+                let blockType = (typeof block === 'object') ? block.type : block;
+                
+                const item = combinedAssets[blockType];
+                if (!item) continue;
+
+                const img = (blockType === 'chest') ? assets['chest_icon'] : assets[blockType];
+                
+                if (img && img.complete) {
+                    ctx.drawImage(img, x, y, 1, 1);
+                } else if (item.color) {
+                    ctx.fillStyle = item.color;
+                    ctx.fillRect(x, y, 1, 1);
+                } else {
+                    ctx.fillStyle = '#A0AEC0'; // gray-500
+                    ctx.fillRect(x, y, 1, 1);
+                }
+                
+                if (blockType === 'chest') {
+                    ctx.fillStyle = 'white';
+                    ctx.font = '0.8px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('C', x + 0.5, y + 0.5);
+                }
+            }
+        }
+        
+        function drawGhostBlock() {
+            // Convert raw mouse coords (clientX/Y) to canvas-relative coords first
+            const rect = canvas.getBoundingClientRect();
+            const canvasX = lastRawMouse.x - rect.left;
+            const canvasY = lastRawMouse.y - rect.top;
+            const { x, y } = screenToWorld(canvasX, canvasY);
+
+            const gridX = Math.floor(x);
+            const gridY = Math.floor(y);
+            
+            ctx.globalAlpha = 0.5;
+            
+            if (currentTool === 'place') {
+                const item = allGameBlocks[selectedBlock] || allGameItems[selectedBlock];
+                if (item) {
+                     const img = assets[selectedBlock]; 
+                     if (img && img.complete) {
+                         ctx.drawImage(img, gridX, gridY, 1, 1);
+                     } else if (item.color) {
+                        ctx.fillStyle = item.color;
+                        ctx.fillRect(gridX, gridY, 1, 1);
+                    }
+                }
+            } else if (currentTool === 'erase') {
+                ctx.fillStyle = '#E53E3E'; // red-600
+                ctx.fillRect(gridX, gridY, 1, 1);
+            } else if (currentTool === 'chest') {
+                const img = assets['chest_icon']; 
+                if (img && img.complete) ctx.drawImage(img, gridX, gridY, 1, 1);
+            }
+            
+            ctx.globalAlpha = 1.0;
+        }
+
+        // --- CANVAS INTERACTION ---
+        
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+        
+        function onMouseDown(e) {
+            const pos = getMousePos(e);
+            lastMouse = pos; 
+            
+            if (e.button === 0) { // Left click
+                isPanning = false;
+                handleDraw(e);
+            } else if (e.button === 1) { // Middle click
+                isPanning = true;
+            }
+        }
+
+        function onMouseMove(e) {
+            lastRawMouse = { x: e.clientX, y: e.clientY }; 
+            const pos = getMousePos(e);
+            const dx = pos.x - lastMouse.x;
+            const dy = pos.y - lastMouse.y;
+            
+            if (isPanning) {
+                camera.x += dx;
+                camera.y += dy;
+            } else if (e.buttons === 1) { // Left click drag
+                handleDraw(e);
+            }
+            
+            lastMouse = pos; 
+            
+            const worldCoords = screenToWorld(pos.x, pos.y);
+            document.getElementById('coordsDisplay').textContent = `(${Math.floor(worldCoords.x)}, ${Math.floor(worldCoords.y)})`;
+        }
+
+        function onMouseUp(e) {
+            isPanning = false;
+        }
+
+        function onWheel(e) {
+            e.preventDefault();
+            const pos = getMousePos(e);
+            const scaleAmount = 1.1;
+            if (e.deltaY < 0) {
+                zoom(scaleAmount, pos.x, pos.y); // Zoom in
+            } else {
+                zoom(1 / scaleAmount, pos.x, pos.y); // Zoom out
+            }
+        }
+        
+        function zoom(factor, mouseX, mouseY) {
+            // NEW: Expanded zoom limits
+            const newZoom = Math.max(4, Math.min(256, camera.zoom * factor));
+            
+            if (mouseX !== undefined && mouseY !== undefined) {
+                const worldPos = screenToWorld(mouseX, mouseY);
+                camera.x = mouseX - worldPos.x * newZoom;
+                camera.y = mouseY - worldPos.y * newZoom;
+            } else {
+                const worldPos = screenToWorld(canvas.width / 2, canvas.height / 2);
+                camera.x = canvas.width / 2 - worldPos.x * newZoom;
+                camera.y = canvas.height / 2 - worldPos.y * newZoom;
+            }
+            
+            camera.zoom = newZoom;
+            document.getElementById('zoomLevel').textContent = `${(camera.zoom / 32).toFixed(1)}x`;
+        }
+
+        function handleDraw(e) {
+            const pos = getMousePos(e);
+            const { x, y } = screenToWorld(pos.x, pos.y);
+            const gridX = Math.floor(x);
+            const gridY = Math.floor(y);
+            const key = `${gridX},${gridY}`;
+
+            let changed = false;
+
+            if (currentTool === 'place') {
+                if (structureBlocks[key] !== selectedBlock) {
+                    structureBlocks[key] = selectedBlock;
+                    changed = true;
+                }
+            } else if (currentTool === 'erase') {
+                if (structureBlocks[key]) {
+                    const block = structureBlocks[key]; // Get block *before* deleting
+                    delete structureBlocks[key];
+                    if (typeof block === 'object' && block.chestId) {
+                        delete chestSequences[block.chestId];
+                    }
+                    changed = true;
+                }
+            } else if (currentTool === 'chest' && e.type === 'mousedown') { 
+                if (typeof structureBlocks[key] !== 'object' || structureBlocks[key].type !== 'chest') {
+                    const chestId = `chest_${chestCounter++}`;
+                    structureBlocks[key] = { type: 'chest', chestId: chestId };
+                    chestSequences[chestId] = new Array(27).fill(null);
+                    changed = true;
+                }
+                openChestModal(key, structureBlocks[key].chestId);
+            }
+            
+            if (changed && e.type === 'mousedown') {
+                recordHistory(); // Only record on the first click, not every drag move
+            } else if (changed && e.type === 'mousemove') {
+                // For drag-drawing, we update the *current* history state
+                // This makes "undo" remove the entire drag operation
+                const currentState = historyStack[historyIndex];
+                currentState.blocks = JSON.parse(JSON.stringify(structureBlocks));
+                currentState.chests = JSON.parse(JSON.stringify(chestSequences));
+            }
+        }
+        
+        // --- CHEST MODAL LOGIC ---
+        const chestModal = document.getElementById('chestModal');
+        const chestEditorGrid = document.getElementById('chestEditorGrid');
+        const chestPaletteGrid = document.getElementById('chestPaletteGrid');
+        const chestPaletteSearch = document.getElementById('chestPaletteSearch');
+        
+        let currentEditingChest = { key: null, id: null };
+        let heldChestItem = null;
+
+        function openChestModal(gridKey, chestId) {
+            currentEditingChest = { key: gridKey, id: chestId };
+            heldChestItem = null;
+            renderChestPalette();
+            renderChestGrid();
+            
+            chestModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        
+        function closeChestModal() {
+            chestModal.classList.add('opacity-0', 'pointer-events-none');
+            currentEditingChest = { key: null, id: null };
+            heldChestItem = null;
+        }
+        
+        document.getElementById('closeChestModalBtn').addEventListener('click', closeChestModal);
+        document.getElementById('saveChestModalBtn').addEventListener('click', () => {
+            recordHistory(); 
+            closeChestModal();
+        });
+        chestPaletteSearch.addEventListener('input', renderChestPalette);
+        
+        function renderChestPalette() {
+            chestPaletteGrid.innerHTML = '';
+            const filter = chestPaletteSearch.value.toLowerCase().replace(/_/g, ' ');
+
+            for (const key in allGameItems) {
+                const item = allGameItems[key];
+                const name = key.replace(/_/g, ' ');
+                
+                if (filter && !name.includes(filter)) continue;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'palette-item';
+                itemDiv.dataset.type = key;
+                
+                const img = assets[key];
+                if (img) {
+                    itemDiv.appendChild(img.cloneNode());
+                } else if (item.color) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'fallback';
+                    fallback.style.backgroundColor = item.color;
+                    fallback.textContent = key.substring(0, 3).toUpperCase();
+                    itemDiv.appendChild(fallback);
+                }
+
+                itemDiv.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    const isTool = item.isTool;
+                    const count = (e.button === 2) ? 1 : (isTool ? 1 : 120);
+                    heldChestItem = {
+                        type: key,
+                        count: count,
+                        durability: item.isTool ? item.maxDurability : null,
+                        maxDurability: item.isTool ? item.maxDurability : null
+                    };
+                    updateCursorItem();
+                });
+                
+                itemDiv.addEventListener('mouseenter', () => showTooltip(name));
+                itemDiv.addEventListener('mouseleave', hideTooltip);
+
+                chestPaletteGrid.appendChild(itemDiv);
+            }
+        }
+        
+        function renderChestGrid() {
+            chestEditorGrid.innerHTML = '';
+            const inventory = chestSequences[currentEditingChest.id];
+            
+            for (let i = 0; i < 27; i++) {
+                const item = inventory[i];
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'chest-slot';
+                
+                if (item) {
+                    const itemProps = allGameItems[item.type] || allGameBlocks[item.type];
+                    if (itemProps) {
+                        const img = assets[item.type];
+                        if (img) {
+                            slotDiv.appendChild(img.cloneNode());
+                        }
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'item-count';
+                        countSpan.textContent = item.count;
+                        slotDiv.appendChild(countSpan);
+                    }
+                }
+                
+                slotDiv.addEventListener('mousedown', (e) => handleChestSlotClick(e, i));
+                slotDiv.addEventListener('mouseenter', () => {
+                    if(item) showTooltip(item.type.replace(/_/g, ' '));
+                });
+                slotDiv.addEventListener('mouseleave', hideTooltip);
+
+                chestEditorGrid.appendChild(slotDiv);
+            }
+        }
+        
+        function handleChestSlotClick(e, slotIndex) {
+            e.preventDefault();
+            const inventory = chestSequences[currentEditingChest.id];
+            const slotItem = inventory[slotIndex];
+            
+            if (e.button === 0) { // Left Click
+                if (heldChestItem) {
+                    if (!slotItem) {
+                        inventory[slotIndex] = heldChestItem;
+                        heldChestItem = null;
+                    } else if (slotItem.type === heldChestItem.type && !allGameItems[slotItem.type]?.isTool) {
+                        const space = 120 - slotItem.count;
+                        const toAdd = Math.min(heldChestItem.count, space);
+                        slotItem.count += toAdd;
+                        heldChestItem.count -= toAdd;
+                        if (heldChestItem.count <= 0) heldChestItem = null;
+                    } else {
+                        [inventory[slotIndex], heldChestItem] = [heldChestItem, slotItem];
+                    }
+                } else {
+                    heldChestItem = slotItem;
+                    inventory[slotIndex] = null;
+                }
+            } else if (e.button === 2) { // Right Click
+                if (heldChestItem) {
+                    if (!slotItem) {
+                        inventory[slotIndex] = { ...heldChestItem, count: 1 };
+                        heldChestItem.count--;
+                    } else if (slotItem.type === heldChestItem.type && !allGameItems[slotItem.type]?.isTool && slotItem.count < 120) {
+                        slotItem.count++;
+                        heldChestItem.count--;
+                    }
+                    if (heldChestItem.count <= 0) heldChestItem = null;
+                } else if (slotItem) {
+                    const half = Math.ceil(slotItem.count / 2);
+                    heldChestItem = { ...slotItem, count: half };
+                    slotItem.count -= half;
+                    if (slotItem.count <= 0) inventory[slotIndex] = null;
+                }
+            }
+            
+            renderChestGrid();
+            updateCursorItem();
+        }
+        
+        // --- CURSOR & TOOLTIP ---
+        document.addEventListener('mousemove', (e) => {
+            if (heldChestItem) {
+                const cursorItem = document.getElementById('cursorItem');
+                cursorItem.style.left = `${e.clientX + 5}px`;
+                cursorItem.style.top = `${e.clientY + 5}px`;
+            }
+            tooltip.style.left = `${e.clientX + 15}px`;
+            tooltip.style.top = `${e.clientY + 10}px`;
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (heldChestItem && e.target.closest('.modal-content') === null) {
+                heldChestItem = null;
+                updateCursorItem();
+            }
+        });
+        
+        function updateCursorItem() {
+            let cursorItem = document.getElementById('cursorItem');
+            if (!cursorItem) {
+                cursorItem = document.createElement('div');
+                cursorItem.id = 'cursorItem';
+                cursorItem.className = 'chest-slot pointer-events-none fixed z-50';
+                document.body.appendChild(cursorItem);
+            }
+            
+            if (heldChestItem) {
+                const itemProps = allGameItems[heldChestItem.type] || allGameBlocks[heldChestItem.type];
+                let content = '';
+                const img = assets[heldChestItem.type]; 
+                if (img) {
+                    content += `<img src="${img.src}" style="width: 32px; height: 32px; image-rendering: pixelated;">`;
+                }
+                content += `<span class="item-count">${heldChestItem.count}</span>`;
+                cursorItem.innerHTML = content;
+                cursorItem.style.display = 'flex';
+            } else {
+                cursorItem.style.display = 'none';
+            }
+        }
+        
+        function showTooltip(text) {
+            tooltip.textContent = text;
+            tooltip.style.opacity = 1;
+        }
+        
+        function hideTooltip() {
+            tooltip.style.opacity = 0;
+        }
+
+        // --- HISTORY (UNDO/REDO) ---
+        function recordHistory() {
+            historyStack = historyStack.slice(0, historyIndex + 1);
+            
+            const snapshot = {
+                blocks: JSON.parse(JSON.stringify(structureBlocks)),
+                chests: JSON.parse(JSON.stringify(chestSequences)),
+                counter: chestCounter
+            };
+            
+            historyStack.push(snapshot);
+            historyIndex++;
+        }
+
+        function undo() {
+            if (historyIndex <= 0) return; 
+            historyIndex--;
+            loadHistoryState();
+        }
+
+        function redo() {
+            if (historyIndex >= historyStack.length - 1) return; 
+            historyIndex++;
+            loadHistoryState();
+        }
+
+        function loadHistoryState() {
+            const snapshot = JSON.parse(JSON.stringify(historyStack[historyIndex]));
+            structureBlocks = snapshot.blocks;
+            chestSequences = snapshot.chests;
+            chestCounter = snapshot.counter;
+        }
+
+        // --- IMPORT/EXPORT JSON ---
+        function saveStructureJSON() {
+            const data = {
+                blocks: structureBlocks,
+                chests: chestSequences,
+                counter: chestCounter
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const functionName = document.getElementById('functionName').value || 'myStructure';
+            a.href = url;
+            a.download = `${functionName}.bgu_struct`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showCustomAlert('Structure saved!', 'alert');
+        }
+
+        function loadStructureJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.blocks || !data.chests) {
+                        throw new Error('Invalid structure file.');
+                    }
+                    
+                    structureBlocks = data.blocks;
+                    chestSequences = data.chests;
+                    chestCounter = data.counter || 0;
+                    
+                    recordHistory(); 
+                    resetView(); 
+                    showCustomAlert('Structure loaded successfully!', 'alert');
+
+                } catch (err) {
+                    console.error('Error loading structure:', err);
+                    showCustomAlert(`Error: ${err.message}`, 'alert');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = null;
+        }
+
+        // --- NEW: FUNCTION IMPORT ---
+        async function importFromFunction(code) {
+            if (!code) {
+                showCustomAlert('No function code was provided.', 'alert');
+                return;
+            }
+            
+            if (!await showCustomAlert('Importing from code will overwrite your current structure. Are you sure?', 'confirm')) {
+                return;
+            }
+
+            try {
+                const newBlocks = {};
+                const newChests = {};
+                let newCounter = 0;
+                const lootMap = {};
+
+                // 1. Parse loot arrays: const loot_0 = [...]
+                const lootRegex = /const\s+(loot_\d+)\s*=\s*(\[[\s\S]*?\]);/g;
+                for (const match of code.matchAll(lootRegex)) {
+                    const varName = match[1];
+                    const arrayString = match[2];
+                    try {
+                        // Use Function constructor to safely parse the array string
+                        const inventory = new Function(`return ${arrayString}`)();
+                        lootMap[varName] = inventory;
+                    } catch (e) {
+                        console.warn(`Could not parse loot array ${varName}: ${e.message}`);
+                    }
+                }
+
+                // 2. Parse block placements
+                const blockRegex = /key = \`\$\{col\s*([+\-]?)\s*(\d+)\},\$\{baseRow\s*([+\-]?)\s*(\d+)\}\`;\s*worldBlocks\[key\]\s*=\s*(\{[\s\S]*?\});/g;
+                
+                for (const match of code.matchAll(blockRegex)) {
+                    const xSign = match[1].trim();
+                    const xVal = parseInt(match[2]);
+                    const ySign = match[3].trim();
+                    const yVal = parseInt(match[4]);
+                    const objStr = match[5];
+
+                    const x = (xSign === '-') ? -xVal : xVal;
+                    const y = (ySign === '-') ? -yVal : yVal;
+                    const key = `${x},${y}`;
+
+                    // Check if it's a chest
+                    if (objStr.includes("type: 'chest'")) {
+                        const chestId = `chest_${newCounter++}`;
+                        newBlocks[key] = { type: 'chest', chestId: chestId };
+                        
+                        // Try to find its loot
+                        const lootVarMatch = objStr.match(/inventory:\s*([^.]*?)\.map/);
+                        if (lootVarMatch && lootMap[lootVarMatch[1]]) {
+                            newChests[chestId] = lootMap[lootVarMatch[1]];
+                        } else {
+                            newChests[chestId] = new Array(27).fill(null);
+                        }
+                    } else {
+                        // Simple block
+                        const typeMatch = objStr.match(/type:\s*'([^']*)'/);
+                        if (typeMatch) {
+                            newBlocks[key] = typeMatch[1];
+                        }
+                    }
+                }
+
+                // 3. Apply the new structure
+                structureBlocks = newBlocks;
+                chestSequences = newChests;
+                chestCounter = newCounter;
+                recordHistory();
+                resetView();
+                showCustomAlert('Structure imported successfully from function!', 'alert');
+
+            } catch (err) {
+                console.error('Error importing from function:', err);
+                showCustomAlert(`Error: ${err.message}`, 'alert');
+            }
+        }
+
+
+        // --- NEW: OPTIMIZED CODE GENERATION ---
+        function generateFunction() {
+            const functionName = document.getElementById('functionName').value || 'generateMyStructure';
+            const originType = document.querySelector('input[name="originType"]:checked').value;
+            
+            let code = `
+// Generated by BGU Structure Builder
+// Function to generate: ${functionName}
+// Origin Type: ${originType}
+            
+function ${functionName}(col, row) {
+    // Determine the base row for placement
+    const baseRow = ((${originType === 'surface'}) ? (columnSurfaceHeights[col] || 0) : 0) + row;
+    
+    // --- Chest Loot Definitions ---
+`;
+            
+            // 1. Generate Chest Loot Arrays
+            const chestVarNames = {};
+            let chestIndex = 0;
+            for (const id in chestSequences) {
+                const varName = `loot_${chestIndex++}`;
+                chestVarNames[id] = varName;
+                const inventory = chestSequences[id].map(item => {
+                    if (!item) return 'null';
+                    let durabilityProps = '';
+                    if (item.durability !== null && item.durability !== undefined) {
+                        durabilityProps += `, durability: ${item.durability}`;
+                    }
+                    if (item.maxDurability !== null && item.maxDurability !== undefined) {
+                        durabilityProps += `, maxDurability: ${item.maxDurability}`;
+                    }
+                    return `{ type: '${item.type}', count: ${item.count}${durabilityProps} }`;
+                });
+                code += `    const ${varName} = [${inventory.join(', ')}];\n`;
+            }
+            
+            code += `
+    // --- Block Placement ---
+    let key = '';
+`;
+
+            // 2. Group all blocks by type
+            const blocksByType = {};
+            const chestsToPlace = [];
+            
+            for (const key in structureBlocks) {
+                const block = structureBlocks[key];
+                if (typeof block === 'object' && block.type === 'chest') {
+                    chestsToPlace.push({ key, ...block });
+                    continue;
+                }
+                
+                const type = block;
+                if (!blocksByType[type]) {
+                    blocksByType[type] = [];
+                }
+                blocksByType[type].push(key.split(',').map(Number));
+            }
+
+            // 3. Generate optimized code for each block type
+            for (const type in blocksByType) {
+                const coords = blocksByType[type].sort((a, b) => a[1] - b[1] || a[0] - b[0]); // Sort by y, then x
+                
+                code += `\n    // Placing all ${type}
+    const ${type}_obj = { type: '${type}', mineProg: 0 };\n`;
+                
+                let i = 0;
+                while (i < coords.length) {
+                    const [x, y] = coords[i];
+                    
+                    // Check for horizontal run
+                    let run = 1;
+                    while (i + run < coords.length && coords[i + run][1] === y && coords[i + run][0] === x + run) {
+                        run++;
+                    }
+                    
+                    if (run > 2) { // Use a loop for 3+ blocks
+                        const xSign = x > 0 ? ' + ' : (x < 0 ? ' - ' : ' + ');
+                        const xVal = x === 0 ? '0' : Math.abs(x);
+                        const ySign = y > 0 ? ' + ' : (y < 0 ? ' - ' : ' + ');
+                        const yVal = y === 0 ? '0' : Math.abs(y);
+                        
+                        code += `    for (let i = 0; i < ${run}; i++) {\n`;
+                        code += `        key = \`\${col${xSign}${xVal} + i},\${baseRow${ySign}${yVal}}\`;\n`;
+                        code += `        worldBlocks[key] = ${type}_obj;\n`;
+                        code += `    }\n`;
+                        i += run;
+                        continue;
+                    }
+
+                    // Check for vertical run
+                    let vRun = 1;
+                    while (i + vRun < coords.length && coords[i + vRun][0] === x && coords[i + vRun][1] === y + vRun) {
+                        vRun++;
+                    }
+
+                    if (vRun > 2) {
+                        const xSign = x > 0 ? ' + ' : (x < 0 ? ' - ' : ' + ');
+                        const xVal = x === 0 ? '0' : Math.abs(x);
+                        const ySign = y > 0 ? ' + ' : (y < 0 ? ' - ' : ' + ');
+                        const yVal = y === 0 ? '0' : Math.abs(y);
+
+                        code += `    for (let i = 0; i < ${vRun}; i++) {\n`;
+                        code += `        key = \`\${col${xSign}${xVal}},\${baseRow${ySign}${yVal} + i}\`;\n`;
+                        code += `        worldBlocks[key] = ${type}_obj;\n`;
+                        code += `    }\n`;
+                        i += vRun;
+                        continue;
+                    }
+                    
+                    // Single block
+                    const xSign = x > 0 ? ' + ' : (x < 0 ? ' - ' : ' + ');
+                    const xVal = x === 0 ? '0' : Math.abs(x);
+                    const ySign = y > 0 ? ' + ' : (y < 0 ? ' - ' : ' + ');
+                    const yVal = y === 0 ? '0' : Math.abs(y);
+                    
+                    code += `    key = \`\${col${xSign}${xVal}},\${baseRow${ySign}${yVal}}\`;\n`;
+                    code += `    worldBlocks[key] = ${type}_obj;\n`;
+                    i++;
+                }
+            }
+
+            // 4. Place all chests individually
+            if (chestsToPlace.length > 0) {
+                code += `\n    // Placing all Chests\n`;
+                for (const chest of chestsToPlace) {
+                    const [x, y] = chest.key.split(',').map(Number);
+                    const xSign = x > 0 ? ' + ' : (x < 0 ? ' - ' : ' + ');
+                    const xVal = x === 0 ? '0' : Math.abs(x);
+                    const ySign = y > 0 ? ' + ' : (y < 0 ? ' - ' : ' + ');
+                    const yVal = y === 0 ? '0' : Math.abs(y);
+                    const varName = chestVarNames[chest.chestId] || '[]';
+
+                    code += `    key = \`\${col${xSign}${xVal}},\${baseRow${ySign}${yVal}}\`;\n`;
+                    code += `    worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: ${varName}.map(item => item ? {...item} : null), label: 'Generated Chest' };\n`;
+                }
+            }
+            
+            code += `
+}
+// --- End of Generated Function ---
+`;
+            
+            document.getElementById('generatedCode').value = code;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('generatedCode').value;
+            if (!code) {
+                showCustomAlert("Please generate the code first!", 'alert');
+                return;
+            }
+            
+            navigator.clipboard.writeText(code).then(() => {
+                showCustomAlert("Code copied to clipboard!", 'alert');
+            }).catch(err => {
+                console.error('Failed to copy code: ', err);
+                showCustomAlert("Failed to copy code. See console for details.", 'alert');
+            });
+        }
+        
+        // --- HELPERS ---
+        function screenToWorld(canvasX, canvasY) {
+            return {
+                x: (canvasX - camera.x) / camera.zoom,
+                y: (canvasY - camera.y) / camera.zoom
+            };
+        }
+        
+        function worldToScreen(worldX, worldY) {
+            return {
+                x: (worldX * camera.zoom) + camera.x,
+                y: (worldY * camera.zoom) + camera.y
+            };
+        }
+
+    </script>
+</body>
+</html>

@@ -125,6 +125,17 @@
             font-size: 14px;
             z-index: 50; /* Ensure it's above the canvas */
         }
+		#hellfireIcon {
+            position: absolute;
+            top: 40px; /* Positioned below the coords display */
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+            z-index: 50;
+            display: none; /* Hidden by default */
+            transition: filter 0.5s linear; /* Smooths the saturation change */
+        }
 		#deathDisplay {
             margin-top: 3px; /* Add some space above the tip */
             padding: 2px;
@@ -938,6 +949,39 @@
 			z-index: 50;
 			pointer-events: none; /* Make it non-interactive */
 		}
+
+        #drunkVignette {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Sits on top of the canvas (z-index: 0) */
+            z-index: 10; 
+            /* Your UI (health, hotbar) is z-index: 50, so it will be on top */
+            pointer-events: none; /* Lets clicks pass through to the canvas */
+            /* The radial gradient creates the vignette. We will control its opacity. */
+            background-image: radial-gradient(circle, 
+                rgba(0,0,0,0) 40%, 
+                rgba(0,0,0,0.8) 100%
+            );
+            transition: opacity 0.5s linear;
+        }
+
+        /* Vibration animation */
+        @keyframes vibrate {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-2px, 2px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(2px, 2px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* Class to apply the animation */
+        .vibrating {
+            animation: vibrate 0.1s linear infinite;
+        }
 		
 		.recipe-controls {
             display: flex;
@@ -1009,6 +1053,7 @@
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="drunkVignette"></div>
         <div id="healthBar"></div>
         <div id="hotbar"></div>
         <div id="loadingScreen" style="display:flex;flex-direction:column;align-items:center;gap:8px;position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:9999;padding:12px;background:rgba(0,0,0,0.75);border-radius:8px;">
@@ -1020,6 +1065,7 @@
           <div id="loadingTipText" style="margin-top: 15px; color: #bbb; font-size: 14px; font-style: italic; max-width: 360px; text-align: center;"></div>
         </div>
         <div id="coordsDisplay">Coords: (0, 0)</div>
+		<img id="hellfireIcon" src="Fire Icon.png" style="display: none;">
 		<div id="debugStats" style="display: none;"></div>
     </div>
 
@@ -1394,6 +1440,12 @@
 		let voidCharacterBob = 0; // For animation
 		let voidCharacterBobDirection = 1;
 		
+		let hellfireOn = true;
+		let hellfireLevel = 1.0; // 1.0 = saturated, 0.0 = desaturated
+		const HELLFIRE_DURATION_MS = 120000; // 120 seconds
+		let isPlayerInHellfireZone = false;
+		let isPlayerOnHellfire = false; // The permanent fire state
+		
 		let showDebugStats = false;
 		const debugStatsDiv = document.getElementById('debugStats');
 		let frameCount = 0;
@@ -1418,6 +1470,7 @@
 		const activeSpoilage = new Set();
         const particleGravity = 0.3;
 		
+		// World border
 		let worldLimitEnabled = false; // Set to true to enable limits
 		let worldMinX = -5000;
 		let worldMaxX = 5000;
@@ -2124,6 +2177,11 @@
             'chili_pepper_soil': { imgSrc: 'Chili Pepper Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'chili_pepper_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
             'chili_pepper_fertilizer': { imgSrc: 'Chili Pepper Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'chili_pepper_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
 			'planted_chili_pepper_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
+			'potato_stem': { imgSrc: 'Potato Stem.png', solid: false, miningHardness: 10, drops: [{item: 'potato', chance: 1, min: 1, max: 2}, {item: 'potato_seeds', chance: 0.5, min: 0, max: 3}], color: '#FF6347' },
+            'potato_dirt': { imgSrc: 'Potato Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'potato_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'potato_soil': { imgSrc: 'Potato Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'potato_seeds', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+            'potato_fertilizer': { imgSrc: 'Potato Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'potato_seeds', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'planted_potato_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#D2B48C' },
             // Golden City/Gilded Forest & Sky Island Blocks
             'gilded_grass_dirt_block': { imgSrc: 'Gilded Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'gilded_dirt_block', chance: 1, min: 1, max: 1}], color: '#F0E68C', shovelBlock: true },
             'gilded_dirt_block': { imgSrc: 'Gilded Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'gilded_dirt_block', chance: 1, min: 1, max: 1}], color: '#DAA520', shovelBlock: true },
@@ -2264,6 +2322,9 @@
 			 'onion_item': { imgSrc: 'Onion.png', color: '#FFFFFF', isFood: true, healAmount: 1, spoilable: { into: 'plant_mush', time: 300000 } },
 			 'chili_pepper_seeds': { imgSrc: 'Chili Pepper Seeds.png', color: '#F5F5DC' },
 			 'chili_pepper': { imgSrc: 'Chili Pepper.png', color: '#FFFFFF', isFood: true, healAmount: 1, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'potato_seeds': { imgSrc: 'Potato Seeds.png', color: '#F5F5DC' },
+			 'potato': { imgSrc: 'Potato.png', color: '#FFFFFF', isFood: true, healAmount: 4, spoilable: { into: 'moldy_potato', time: 300000 } },
+			 'moldy_potato': { imgSrc: 'Moldy Potato.png', color: '#FFFFFF', isFood: true, healAmount: -4, spoilable: { into: 'plant_mush', time: 300000 } },
 			 // ---(CRAFTED) FOOD/DRINK SECTION---
 			 'taco_salad': { imgSrc: 'Taco Salad.png', color: '#FFFFFF', isFood: true, healAmount: 12 },
 			 'mushroom_soup': { imgSrc: 'Mushroom Soup.png', color: '#FFFFFF', isFood: true, healAmount: 4 },
@@ -2280,7 +2341,8 @@
 			 'cup_of_water': { imgSrc: 'Cup Of Water.png', color: '#D24F33', isFood: true, healAmount: 0 },
 			 'cup_of_coffee': { imgSrc: 'Cup Of Coffee.png', color: '#D24F33', isFood: true, healAmount: 2 },
              'cup_of_pine_needle_tea': { imgSrc: 'Cup Of Pine Needle Tea.png', color: '#D24F33', isFood: true, healAmount: 1 },
-			 'cup_of_beer': { imgSrc: 'Cup Of Beer.png', color: '#D24F33', isFood: true, healAmount: 7 },
+			 'cup_of_beer': { imgSrc: 'Cup Of Beer.png', color: '#D24F33', isFood: true, healAmount: 7, alcoholicPower: 10 },
+             'cup_of_vodka': { imgSrc: 'Cup Of Vodka.png', color: '#D24F33', isFood: true, healAmount: 4, alcoholicPower: 65 },
 			 'cup_of_urine': { imgSrc: 'Cup Of Urine.png', color: '#D24F33', isFood: true, healAmount: 0 },
 			 'pinecone': { imgSrc: 'Pinecone.png', color: '#FF0000' },
 			 'pine_needle_living': { imgSrc: 'Pine Needle Living.png', color: '#FF0000', spoilable: { into: 'pine_needle_dying', time: 50000 } },
@@ -2364,9 +2426,9 @@
 			 'hammer_of_infinity': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.01, maxDurability: 9999999999999 },
 			 'hammer_of_eternity': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.003, maxDurability: 9999999999999 },
 			 // Especial
-			 'gravity_sandwich': { color: '#D24F33', isFood: true, healAmount: 20, effectLength: 10, effect: {duration: 10, changes: [ { prop: 'gravity', type: 'set', value: -0.05 } ] } },
-			 'speed_snack': { color: '#D24F33', isFood: true, healAmount: 20, effectLength: 10, effect: {duration: 10, changes: [ { prop: 'speed', type: 'add', value: 1 } ] } },
-			 'jump_juice': { color: '#D24F33', isFood: true, healAmount: 20, effectLength: 10, effect: {duration: 10, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
+			 'gravity_curd': { color: '#D24F33', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 5, changes: [ { prop: 'gravity', type: 'set', value: -0.05 } ] } },
+			 'speed_snack': { color: '#D24F33', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'speed', type: 'add', value: 3 } ] } },
+			 'jump_juice': { color: '#D24F33', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
 			 // Armor
 			 'happy_face': { imgSrc: 'Armor/Happy Face Icon.png', equippedImgSrc: 'Armor/Happy Face.png', color: '#A9A9A9', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
 			 'farmer_trader_mask': { imgSrc: 'Armor/Farmer Trader Mask Icon.png', equippedImgSrc: 'Armor/Farmer Trader Mask.png', color: '#A9A9A9', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
@@ -2392,6 +2454,9 @@
              'diviniron_chestplate': { imgSrc: 'Armor/Diviniron Chestplate Icon.png', equippedImgSrc: 'Armor/Diviniron Chestplate.png', color: '#A9A9A9', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.25, maxDurability: 45 },
 			 'diviniron_pants': { imgSrc: 'Armor/Diviniron Pants Icon.png', equippedImgSrc: 'Armor/Diviniron Pants.png', color: '#A9A9A9', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.25, maxDurability: 35 },
              'diviniron_boots': { imgSrc: 'Armor/Diviniron Boots Icon.png', equippedImgSrc: 'Armor/Diviniron Boots.png', color: '#A9A9A9', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.25, maxDurability: 25 },
+             'sober_mask': { imgSrc: 'Armor/Sober Mask Icon.png', equippedImgSrc: 'Armor/Sober Mask.png', color: '#D4F0F0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 100 },
+             'drunk_mask': { imgSrc: 'Armor/Drunk Mask Icon.png', equippedImgSrc: 'Armor/Drunk Mask.png', color: '#E0B0D0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 100 },
+             'feather_boots': { imgSrc: 'Armor/Feather Boots Icon.png', equippedImgSrc: 'Armor/Feather Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 150, gravityMultiplier: 0.75 },
 			 // Armor Construction
              'armor_tile': { imgSrc: 'Armor Tile.png', color: '#A9A9A9' },
 			 'dark_armor_tile': { imgSrc: 'Dark Armor Tile.png', color: '#A9A9A9' },
@@ -2545,8 +2610,11 @@
 
         const player = {
             x: 0 * tileSize, y: 0, dx: 0, dy: 0,
+			targetDx: 0,
             speed: 5, jumpStrength: -15, onGround: false, gravity: 0.8,
             health: 100, maxHealth: 100,
+			bloodAlcohol: 0,
+            activeEffects: [],
             fallStartY: 0, // Y-position where a fall started
             spawnPoint: { x: 0 * tileSize, y: -10 },
             bedSpawnPoint: null,
@@ -4836,7 +4904,7 @@
             const fridgeInventory = new Array(chestInventorySize).fill(null);
             
             // 1. Add 3 random types of seeds
-            const possibleSeeds = ['grass_seeds', 'moss_seeds', 'wheat_seeds', 'cotton_seeds', 'rice_seeds', 'hop_seeds', 'coffee_seeds', 'oat_seeds', 'corn_seeds', 'barley_seeds', 'pumpkin_seeds', 'tomato_seeds', 'onion_seeds', 'garlic_seeds', 'chili_pepper_seeds'];
+            const possibleSeeds = ['grass_seeds', 'moss_seeds', 'wheat_seeds', 'cotton_seeds', 'rice_seeds', 'hop_seeds', 'coffee_seeds', 'oat_seeds', 'corn_seeds', 'barley_seeds', 'pumpkin_seeds', 'tomato_seeds', 'onion_seeds', 'garlic_seeds', 'chili_pepper_seeds', 'potato_seeds'];
             // Shuffle the array and pick the first 3 unique seeds
             const selectedSeeds = possibleSeeds.sort(() => 0.5 - random()).slice(0, 3);
             for(let i = 0; i < selectedSeeds.length; i++) {
@@ -6091,6 +6159,7 @@
 
 			// Original respawn logic continues here
 			player.x = 0;
+			player.fallStartY = 0;
 			player.y = 0; // Reduced from -320, although -320 definitely looked cooler
             if (random() < 0.5) {
                 if (random() < 0.5) {
@@ -6102,9 +6171,21 @@
 			if (player.bedSpawnPoint) {
 				player.x = player.bedSpawnPoint.x;
 				player.y = player.bedSpawnPoint.y;
+				player.fallStartY = player.bedSpawnPoint.y;
 			}
 			player.health = player.maxHealth;
 			
+			isPlayerOnHellfire = false;
+            hellfireLevel = 1.0;
+            isPlayerInHellfireZone = false;
+			
+			player.bloodAlcohol = 0;
+            player.activeEffects = [];
+            const vignette = document.getElementById('drunkVignette'); // --- ADD THIS ---
+            if (canvas) canvas.style.filter = 'none';
+            if (canvas) canvas.classList.remove('vibrating'); // --- ADD THIS ---
+            if (vignette) vignette.style.display = 'none'; // --- ADD THIS ---
+            
 			player.onFire = false;
 			player.fireDuration = 0;
 			player.fireDamageTimer = 0;
@@ -6159,6 +6240,18 @@
 
         function updatePlayer(dt) {
             const factor = isGameActive ? dt / 1000 * 60 : 0;
+			
+			if (hellfireOn) {
+                const playerGridRow = Math.floor(player.y / tileSize);
+                // Check if Y is between 200 and 600
+                if (playerGridRow >= 200 && playerGridRow <= 600) {
+                    isPlayerInHellfireZone = true;
+                } else {
+                    isPlayerInHellfireZone = false;
+                }
+            } else {
+                isPlayerInHellfireZone = false; // Ensure it's off if the setting is disabled
+            }
 			
 			if (player.portalCooldown > 0) {
 				player.portalCooldown -= dt;
@@ -6279,17 +6372,72 @@
 					}
 				}
 				
-				const currentSpeed = isInCobweb ? player.speed * 0.2 : isOnAsphalt ? player.speed * 1.5 : isOnThickMud ? player.speed * 0.5 : player.speed;
-                const currentJumpStrength = isInCobweb ? player.jumpStrength * 0.2 : isOnThickMud ? player.jumpStrength * 0 : player.jumpStrength;
-                const currentGravity = isInCobweb ? player.gravity * 0.1 : player.gravity;
+				if (hellfireOn && isPlayerOnHellfire) {
+					// Apply constant fire damage. We can re-use the same timers/damage as regular fire.
+					player.fireDamageTimer -= dt;
+					if (player.fireDamageTimer <= 0) {
+						player.fireDamageTimer = PLAYER_FIRE_DAMAGE_TICK; // Reset tick timer
+						if (applyDamage(PLAYER_FIRE_DAMAGE)) return; // Player died
+					}
+					// This ensures the player *looks* on fire
+					player.onFire = true; 
+					player.fireDuration = PLAYER_FIRE_DURATION; // Keep resetting the visual
+				}
+
+                // 1. Get base stats from the player object
+            let effectiveSpeed = player.speed;
+            let effectiveJump = player.jumpStrength;
+            let effectiveGravity = player.gravity; // This is our base 0.8
+
+            // 2. Apply food effects FIRST
+            for (const effect of player.activeEffects) {
+                for (const change of effect.changes) {
+                    if (change.prop === 'speed') {
+                        if (change.type === 'add') effectiveSpeed += change.value;
+                        if (change.type === 'set') effectiveSpeed = change.value;
+                    } else if (change.prop === 'jumpStrength') {
+                        if (change.type === 'add') effectiveJump += change.value;
+                        if (change.type === 'set') effectiveJump = change.value;
+                    } else if (change.prop === 'gravity') {
+                        if (change.type === 'add') effectiveGravity += change.value;
+                        if (change.type === 'set') effectiveGravity = change.value;
+                    }
+                }
+            }
+
+            // 3. Apply armor effects SECOND (Feather Boots)
+            const boots = player.armor.boots;
+            if (boots && boots.type === 'feather_boots') {
+                const bootProps = itemTypes[boots.type];
+                if (bootProps.gravityMultiplier) {
+                    effectiveGravity *= bootProps.gravityMultiplier;
+                }
+            }
+
+            // 4. Apply environmental modifiers (Cobweb, Asphalt, etc.)
+            const currentSpeed = isInCobweb ? effectiveSpeed * 0.2 : isOnAsphalt ? effectiveSpeed * 1.5 : isOnThickMud ? effectiveSpeed * 0.5 : effectiveSpeed;
+            const currentJumpStrength = isInCobweb ? effectiveJump * 0.2 : isOnThickMud ? effectiveJump * 0 : effectiveJump;
+            const currentGravity = isInCobweb ? effectiveGravity * 0.1 : effectiveGravity;
+
+            // 5. Apply gravity
+            player.dy += currentGravity * factor;
     
-                player.dy += currentGravity * factor;
-    
+            // 6. Get effective BAC for drunkenness masks
+            let effectiveBAC = player.bloodAlcohol;
+            const helmet = player.armor.helmet;
+            if (helmet) {
+                if (helmet.type === 'sober_mask') {
+                    effectiveBAC *= 0.25; // 75% reduction
+                } else if (helmet.type === 'drunk_mask') {
+                    effectiveBAC += 100; // Simulate +100
+                }
+            }
+                
                 if (keys['ArrowLeft'] || keys['KeyA']) { // Check for 'A'
 					player.dx = -currentSpeed;
 					player.facingDirection = -1;
 				}
-				else if (keys['ArrowRight'] || keys['KeyD']) { // Check for 'D'
+    			else if (keys['ArrowRight'] || keys['KeyD']) { // Check for 'D'
 					player.dx = currentSpeed;
 					player.facingDirection = 1;
 				}
@@ -6733,6 +6881,28 @@
 				// Player is using their hand
 				currentMiningPower = handMiningPower;
 			}
+			
+			let effectiveBAC = player.bloodAlcohol;
+            const helmet = player.armor.helmet;
+            if (helmet) {
+                if (helmet.type === 'sober_mask') {
+                    effectiveBAC *= 0.25; // 75% reduction
+                } else if (helmet.type === 'drunk_mask') {
+                    effectiveBAC += 100; // Simulate +100
+                }
+            }
+
+            if (effectiveBAC > 25) {
+                // 1% power reduction for every BAC point *above* 25
+                let reductionPercent = (player.bloodAlcohol - 25) * 0.01;
+				if (reductionPercent >= 0.9) {
+					reductionPercent = 0.9
+				}
+                // Clamp reduction between 0% (0.0) and 100% (1.0)
+                const cappedReduction = Math.max(0, Math.min(1, reductionPercent));
+                // Apply the reduction
+                currentMiningPower *= (1 - cappedReduction);
+            }
 
 			// --- NEW: ADVANCED MINING CHECKS ---
 			let canMine = true;
@@ -6921,7 +7091,7 @@
                     }
 
                     // Break all foliage blocks stacked above the mined block
-                    const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'onion', 'garlic', 'chili_pepper_bush', 'fern_stalk', 'sugarcane'];
+                    const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane'];
                     
                     let currentRow = targetRow - 1; // Start with the block directly above
                     
@@ -7487,13 +7657,17 @@
 				const selectedItemObject = getSelectedItem();
 				const selectedItemType = selectedItemObject ? selectedItemObject.type : null;
                 const itemProps = selectedItemObject ? (itemTypes[selectedItemType] || blockTypes[selectedItemType]) : null;
+				
+				const worldMouseX = mouse.x + camera.x;
+				const worldMouseY = mouse.y + camera.y;
+				const targetCol = Math.floor(worldMouseX / tileSize);
+				const targetRow = Math.floor(worldMouseY / tileSize);
+				const targetKey = `${targetCol},${targetRow}`;
+				const blockAtTarget = getBlockData(targetCol, targetRow);
 
-				if (
-				  selectedItemObject &&
-				  selectedItemObject.count > 0 &&
-				  itemTypes[selectedItemType]?.isFood
-				) {
+				if ( selectedItemObject && selectedItemObject.count > 0 && itemTypes[selectedItemType]?.isFood && blockAtTarget.type !== 'item_frame' ) {
 				  const props = itemTypes[selectedItemType];
+                  let actualHealAmount = 0;
 
 				  // 1) If item increases maxHealth, apply it first (so heal can fill the new max)
 				  if (typeof props.addsMaxHealth === 'number' && props.addsMaxHealth !== 0) {
@@ -7504,21 +7678,54 @@
 				  // 2) Apply healing behavior:
 				  if (props.fullHeal) {
 					// set health to the (possibly new) max
+					actualHealAmount = player.maxHealth - player.health;
 					player.health = player.maxHealth;
+                    if (props.alcoholicPower) {
+                        player.bloodAlcohol += props.alcoholicPower;
+                    }
+                    if (props.effect) {
+                          // Add a new effect object to the player's active list
+                          player.activeEffects.push({
+                              ...props.effect, // Copy all properties from the effect
+                              startTime: gameTime // Set the start time
+                          });
+                    }
                     removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 				  } else {
 					const healAmount = props.healAmount || 0;
 					if (healAmount > 0) {
 						if (player.health < player.maxHealth) {
+							const healthBeforeHeal = player.health; // Store old health
 							player.health += healAmount;
 							if (player.health > player.maxHealth) player.health = player.maxHealth;
+                            actualHealAmount = player.health - healthBeforeHeal; // Calculate true amount healed
 							// remove one consumed item and stop placement
+                            if (props.alcoholicPower) {
+                                player.bloodAlcohol += props.alcoholicPower;
+                            }
+                            if (props.effect) {
+                                  // Add a new effect object to the player's active list
+                                  player.activeEffects.push({
+                                      ...props.effect, // Copy all properties from the effect
+                                      startTime: gameTime // Set the start time
+                                  });
+                            }
 							removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 						}
 					} else {
 						player.health += healAmount;
 						if (player.health > player.maxHealth) player.health = player.maxHealth;
 						// remove one consumed item and stop placement
+                        if (props.alcoholicPower) {
+                            player.bloodAlcohol += props.alcoholicPower;
+                        }
+                        if (props.effect) {
+                              // Add a new effect object to the player's active list
+                              player.activeEffects.push({
+                                  ...props.effect, // Copy all properties from the effect
+                                  startTime: gameTime // Set the start time
+                              });
+                        }
 						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 						if (player.health <= 0) {
 							respawnPlayer();
@@ -7526,17 +7733,17 @@
 						}
 					}
 				  }
+				  if (hellfireOn && actualHealAmount > 0 && hellfireLevel < 1.0) {
+                      const saturationGain = (actualHealAmount * 0.03); // 3% per HP
+                      hellfireLevel += saturationGain;
+                      if (hellfireLevel > 1.0) {
+                          hellfireLevel = 1.0;
+                      }
+                  }
 				  mouse.rightDown = false;
 				  return; // Stop block placement
 				}
-			
-            const worldMouseX = mouse.x + camera.x;
-            const worldMouseY = mouse.y + camera.y;
-            const targetCol = Math.floor(worldMouseX / tileSize);
-            const targetRow = Math.floor(worldMouseY / tileSize);
-            const targetKey = `${targetCol},${targetRow}`;
-            const blockAtTarget = getBlockData(targetCol, targetRow);
-
+				
             // --- FIX 1: Cleaned up the interaction logic into a proper if/else if chain ---
             // Check for chest/bed interaction first
             if (blockAtTarget.type === 'chest' || blockAtTarget.type === 'dead_body_chest' || blockAtTarget.type === 'refrigerator' || blockAtTarget.type === 'magical_chest') {
@@ -7664,7 +7871,7 @@
 				const selectedItemIsMossSeeds = selectedItemType === 'moss_seeds';
                 const selectedItemIsPest = selectedItemType === 'pest';
 				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall');
-                const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds';
+                const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds' || selectedItemType === 'potato_seeds';
                 const currentBlockAtTarget = getBlockType(targetCol, targetRow);
                 const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
                 const playerRect = { x: player.x, y: player.y, width: playerWidth, height: playerHeight };
@@ -7971,7 +8178,7 @@
 						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
                     }
                 } else if (selectedItemIsPlaceableBlock) {
-                        const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'onion', 'garlic', 'chili_pepper_bush'];
+                        const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem'];
                         if (replaceableBlocks.includes(currentBlockAtTarget)) {
                         if (currentBlockAtTarget !== '') {
                             const replacedBlockProps = blockTypes[currentBlockAtTarget];
@@ -8765,6 +8972,76 @@
 			}
 		}
 
+        function drawDrunkEffect() {
+            let effectiveBAC = player.bloodAlcohol;
+            const helmet = player.armor.helmet;
+            if (helmet) {
+                if (helmet.type === 'sober_mask') {
+                    effectiveBAC *= 0.25; // 75% reduction
+                } else if (helmet.type === 'drunk_mask') {
+                    effectiveBAC += 100; // Simulate +100
+                }
+            }
+            
+            // Get both the canvas and the new vignette element
+            if (!canvas) return; 
+            const vignette = document.getElementById('drunkVignette');
+            if (!vignette) return;
+
+            if (player.bloodAlcohol > 100) {
+                if (random() < 0.001) {
+                    applyDamage(60);
+                }
+            }
+            
+            if (effectiveBAC > 30) {
+                // 1. Calculate the effect intensity (0.0 to 1.0)
+                const maxBacEffect = 150; // Max effect at this BAC
+                const minBacEffect = 30;  // Effect starts here
+                const effectProgress = Math.max(0, Math.min(1, (effectiveBAC - minBacEffect) / (maxBacEffect - minBacEffect)));
+
+                // 2. Calculate the strength of each effect
+                
+                // HYPER BLUR: Max 50px blur
+                const maxBlur = 50; 
+                const blurAmount = (effectProgress * maxBlur).toFixed(2);
+
+                // GLOW & TINT: Max 90% Sepia (yellow) and 150% Brightness (glow)
+                const maxSepia = 90;
+                const maxBrightness = 1.5; // 1.0 is normal, 1.5 is 50% brighter
+                const sepiaAmount = (effectProgress * maxSepia).toFixed(2);
+                const brightnessAmount = (1.0 + (effectProgress * (maxBrightness - 1.0))).toFixed(2);
+
+                // 3. Apply the filters to the canvas
+                canvas.style.filter = `blur(${blurAmount}px) sepia(${sepiaAmount}%) brightness(${brightnessAmount})`;
+
+                // 4. VIBRATE: Add or remove the vibration class
+                // Start vibrating once the effect is noticeable (e.g., 20% progress)
+                if (effectProgress > 0.2) {
+                    canvas.classList.add('vibrating');
+                } else {
+                    canvas.classList.remove('vibrating');
+                }
+
+                // 5. VIGNETTE: Show and set opacity
+                vignette.style.display = 'block';
+                // Max 90% opacity for the black vignette
+                vignette.style.opacity = (effectProgress * 0.9).toFixed(2);
+
+            } else {
+                // 6. Clear all effects if sober
+                if (canvas.style.filter !== 'none') {
+                    canvas.style.filter = 'none';
+                }
+                if (canvas.classList.contains('vibrating')) {
+                    canvas.classList.remove('vibrating');
+                }
+                if (vignette.style.display !== 'none') {
+                    vignette.style.display = 'none';
+                }
+            }
+        }
+
         window.addEventListener('keydown', (e) => {
 			if (e.key === '/') {
 				e.preventDefault(); // This stops the '/' from being typed anywhere else
@@ -8871,6 +9148,27 @@
             e.preventDefault();
             if (e.button === 0) mouse.down = false;
             else if (e.button === 2) mouse.rightDown = false;
+        });
+		canvas.addEventListener('wheel', (e) => {
+            if (isGamePaused) return; // Don't scroll if game is paused
+            
+            e.preventDefault(); // Stop the page from scrolling
+            
+            if (e.deltaY < 0) { // Scroll Up
+                selectedHotbarSlot--;
+            } else { // Scroll Down
+                selectedHotbarSlot++;
+            }
+
+            // Wrap around logic
+            if (selectedHotbarSlot < 0) {
+                selectedHotbarSlot = hotbarSize - 1; // 9
+            } else if (selectedHotbarSlot >= hotbarSize) {
+                selectedHotbarSlot = 0;
+            }
+
+            updateHotbar();
+            showHotbarSwitchTooltip(getSelectedItem()); // Show tooltip
         });
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -9555,6 +9853,21 @@
 				fuel: 1,
                 output: 'diviniron_helmet', outputCount: 1,
             },
+			{ name: "Diviniron Chestplate",
+                input: { 0: { type: 'diviniron_nugget', count: 1 }, 1: { type: 'diviniron_nugget', count: 1 }, 2: { type: 'diviniron_nugget', count: 1 }, 3: { type: 'diviniron_nugget', count: 1 }, 4: { type: 'armor_tile', count: 1 }, 5: { type: 'diviniron_nugget', count: 1 }, 6: { type: 'diviniron_nugget', count: 1 }, 7: { type: 'diviniron_nugget', count: 1 }, 8: { type: 'diviniron_nugget', count: 1 } },
+				fuel: 1,
+                output: 'diviniron_chestplate', outputCount: 1,
+            },
+            { name: "Diviniron Pants",
+                input: { 0: { type: 'diviniron_nugget', count: 1 }, 1: { type: 'diviniron_nugget', count: 1 }, 2: { type: 'diviniron_nugget', count: 1 }, 3: { type: 'diviniron_nugget', count: 1 }, 4: { type: 'armor_tile', count: 1 }, 5: { type: 'diviniron_nugget', count: 1 }, 6: { type: 'diviniron_nugget', count: 1 }, 8: { type: 'diviniron_nugget', count: 1 } },
+				fuel: 1,
+                output: 'diviniron_pants', outputCount: 1,
+            },
+            { name: "Diviniron Boots",
+                input: { 3: { type: 'diviniron_nugget', count: 1 }, 4: { type: 'armor_tile', count: 1 }, 5: { type: 'diviniron_nugget', count: 1 }, 6: { type: 'diviniron_nugget', count: 1 }, 7: { type: 'diviniron_nugget', count: 1 }, 8: { type: 'diviniron_nugget', count: 1 } },
+				fuel: 1,
+                output: 'diviniron_boots', outputCount: 1,
+            },
 			{ name: "Dark Helmet",
                 input: { 0: { type: 'steel_nugget', count: 1 }, 1: { type: 'steel_nugget', count: 1 }, 2: { type: 'steel_nugget', count: 1 }, 3: { type: 'steel_nugget', count: 1 }, 4: { type: 'dark_armor_tile', count: 1 }, 5: { type: 'steel_nugget', count: 1 } },
 				fuel: 1,
@@ -9667,7 +9980,7 @@
 		// Place a vertical 1x3 trader at (col,row) such that `row` is the bottom block row.
 		// Returns true if placed.
 		function placeTraderAt(col, row, presetTrades = null) {
-			const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'onion', 'garlic', 'chili_pepper_bush'];
+			const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem'];
             // Ensure the three vertical spots (row, row-1, row-2) are replaceable
 			if (!replaceableBlocks.includes(getBlockType(col, row)) || 
                 !replaceableBlocks.includes(getBlockType(col, row - 1)) || 
@@ -10759,6 +11072,7 @@
 						else if (blockData.type === 'planted_onion_seeds') cropType = 'onion';
 						else if (blockData.type === 'planted_garlic_seeds') cropType = 'garlic';
 						else if (blockData.type === 'planted_chili_pepper_seeds') cropType = 'chili_pepper_bush';
+						else if (blockData.type === 'planted_potato_seeds') cropType = 'potato_stem';
 						
 						if (cropType) {
 							worldBlocks[`${coords[0]},${coords[1] - 1}`] = { type: cropType, mineProg: 0 };
@@ -11696,16 +12010,45 @@
             }
 
             // 2. Consume Fuel
-            furnaceData.inventory[9].count -= recipe.fuel;
-            if (furnaceData.inventory[9].count <= 0) {
-                furnaceData.inventory[9] = null;
+            let consumeFuel = true;
+
+            // --- GEOTHERMAL POWER CHECK START ---
+            // Get the block *below* the furnace
+            const [furnaceCol, furnaceRow] = ovenKey.split(',').map(Number);
+            const blockBelow = getBlockType(furnaceCol, furnaceRow + 1);
+
+            // If it's magma, 20% chance to *not* consume fuel
+            if (blockBelow === 'magma_stone_block' && random() < 0.20) {
+                consumeFuel = false;
+                // Optional: show a "Sizzled!" particle effect or message here
+            }
+            // --- GEOTHERMAL POWER CHECK END ---
+
+            if (consumeFuel) {
+                furnaceData.inventory[9].count -= recipe.fuel;
+                if (furnaceData.inventory[9].count <= 0) {
+                    furnaceData.inventory[9] = null;
+                }
             }
 
             // 3. Add to Output
             const outputSlot = furnaceData.inventory[10];
+            // --- ADD THIS LINE ---
+            const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output]; 
+            
             if (!outputSlot) {
-                furnaceData.inventory[10] = { type: recipe.output, count: recipe.outputCount };
+                // --- REPLACE THIS BLOCK ---
+                // Create the new item object
+                const newItem = { type: recipe.output, count: recipe.outputCount };
+                if (outputItemProps?.isTool) { // Check if it's a tool
+                    newItem.durability = outputItemProps.maxDurability;
+                    newItem.maxDurability = outputItemProps.maxDurability;
+                }
+                furnaceData.inventory[10] = newItem; // Assign the complete object
+                // --- END OF REPLACED BLOCK ---
             } else {
+                // This logic is fine, as tools don't stack and this will only
+                // be called for stackable (non-tool) items.
                 outputSlot.count += recipe.outputCount;
             }
             
@@ -11882,7 +12225,18 @@
             player.health = player.maxHealth; player.bedSpawnPoint = null;
             player.armor = { helmet: null, chestGear: null, legGear: null, boots: null };
             deathCount = 0;
-
+			
+			isPlayerOnHellfire = false;
+            hellfireLevel = 1.0;
+            isPlayerInHellfireZone = false;
+			
+			player.bloodAlcohol = 0;
+            player.activeEffects = [];
+            const vignette = document.getElementById('drunkVignette'); // --- ADD THIS ---
+            if (canvas) canvas.style.filter = 'none';
+            if (canvas) canvas.classList.remove('vibrating'); // --- ADD THIS ---
+            if (vignette) vignette.style.display = 'none'; // --- ADD THIS ---
+			
             // Reset inventory
             inventorySlots.fill(null); 
             hotbarIndices.fill(null); 
@@ -11960,11 +12314,54 @@
             requestAnimationFrame(gameLoop);
         }
 
+        function updatePlayerEffects(dt) {
+            if (player.activeEffects.length === 0) return;
+
+            const now = gameTime;
+            // Loop backwards so we can safely remove items
+            for (let i = player.activeEffects.length - 1; i >= 0; i--) {
+                const effect = player.activeEffects[i];
+                
+                // Check if the effect has expired
+                if (now - effect.startTime > (effect.duration * 1000)) {
+                    player.activeEffects.splice(i, 1); // Remove expired effect
+                }
+            }
+        }
+        
         let waiterGo = 0
         
         function update(dt) {
             // Note: The 'dt' here is now a fixed value
 			gameTime += dt;
+			if (player.bloodAlcohol > 0) {
+                player.bloodAlcohol = Math.max(0, player.bloodAlcohol - 1.2 * (dt / 1000)); // Decays 1.2 per second
+            }
+            updatePlayerEffects(dt);
+			if (hellfireOn && !isPlayerOnHellfire) { // Don't update if already on permanent fire
+                if (isPlayerInHellfireZone) {
+                    // Calculate armor slowdown
+                    let armorPieces = 0;
+                    if (player.armor.helmet) armorPieces++;
+                    if (player.armor.chestGear) armorPieces++;
+                    if (player.armor.legGear) armorPieces++;
+                    if (player.armor.boots) armorPieces++;
+
+                    // Calculate slowdown (4 pieces = 80% slowdown)
+                    const slowdown = Math.min(1.0, armorPieces * 0.20); // 0.0 (0%) to 0.8 (80%)
+                    const currentRate = 1.0 - slowdown; // 1.0 (no armor) down to 0.2 (full armor)
+
+                    // Calculate desaturation amount for this tick
+                    const desatAmount = dt / HELLFIRE_DURATION_MS;
+                    
+                    hellfireLevel -= desatAmount * currentRate;
+
+                    if (hellfireLevel <= 0) {
+                        hellfireLevel = 0;
+                        isPlayerOnHellfire = true; // Set on fire!
+                    }
+                }
+            }
             updatePlayer(dt);
             updateCamera();
             updateMining(dt);
@@ -11996,6 +12393,17 @@
             coordsDisplay.textContent = `Coords: (${playerGridCoords.col}, ${playerGridCoords.row})`;
 			deathDisplay.textContent = `Deaths: ${deathCount}`;
         }
+		
+		function drawHellfireIcon() {
+            const icon = document.getElementById('hellfireIcon');
+            if (hellfireOn && (isPlayerInHellfireZone || isPlayerOnHellfire)) {
+                icon.style.display = 'block';
+                // Update the saturation filter
+                icon.style.filter = `saturate(${hellfireLevel * 100}%)`;
+            } else {
+                icon.style.display = 'none';
+            }
+        }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -12008,6 +12416,8 @@
 			drawFire();
 			drawPlayerFire();
             drawHealth();
+			drawHellfireIcon();
+            drawDrunkEffect();
         }
 
         function init() {
@@ -12078,6 +12488,8 @@
                     y: player.y,
                     h: player.health,
 					mh: player.maxHealth,
+					bac: player.bloodAlcohol,
+                    eff: player.activeEffects,
                     bed: player.bedSpawnPoint,
                     armor: player.armor
                 },
@@ -12194,6 +12606,8 @@
                 player.y = data.player.y;
                 player.health = data.player.h;
 				player.maxHealth = data.player.mh;
+				player.bloodAlcohol = data.player.bac || 0;
+                player.activeEffects = data.player.eff || [];
                 player.bedSpawnPoint = data.player.bed;
                 player.armor = data.player.armor;
                 player.armor = data.player.armor || { helmet: null, chestGear: null, legGear: null, boots: null };
@@ -12416,6 +12830,8 @@
                 y: player.y,
                 h: player.health,
                 mh: player.maxHealth,
+				bac: player.bloodAlcohol,
+                eff: player.activeEffects,
                 bed: player.bedSpawnPoint,
                 armor: player.armor
               },
