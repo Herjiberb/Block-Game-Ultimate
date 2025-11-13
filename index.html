@@ -487,7 +487,7 @@
     <!-- NEW: Top Right Controls Container for Version Name and Gallery -->
     <div id="top-right-controls">
         <!-- UPDATE: Version name is now a clickable button for future updates -->
-        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">Molten Sun Edict</span>
+        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">Geobotanical Combustion Thesis</span>
         <!-- Button to launch Block Gallery, now opens the modal -->
         <button id="gallery-button" onclick="openGalleryModal()">
             <img src="Item Frame.png" alt="Block Gallery Icon" class="block-icon"/>
@@ -659,7 +659,12 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added health particle effects rendering! Added better seed drop chances for plants, and plant-to-seed salvage recipes. Added ways to obtain more seeds! Added clay marshes with hard-to-break clay, and update clay brick block recipe. In the underworld, players now suffer from hellfire, which basically after 120 seconds, which can be extended with food and armor, they will eternally catch on fire. Added drunkness as a consequence from drinking too much alcoholic food, which is definitely a worthwhile excuse to avoid the stuff in-game. Added geothermal power. When a furnace of any sort is aboe a magma stone block, it has a 20% chance not to use any pure fuel. Food can be placed in item frames now. Implemented effects on gravity curds, jump juice, and speed snacks. Added mouse scroll hotbar switching support."
+            notes: "Added health particle effects rendering! Added better seed drop chances for plants, and plant-to-seed salvage recipes. Added ways to obtain more seeds! Added clay marshes with hard-to-break clay, and update clay brick block recipe. In the underworld, players now suffer from hellfire, which basically after 120 seconds, which can be extended with food and armor, they will eternally catch on fire. Added drunkness as a consequence from drinking too much alcoholic food, which is definitely a worthwhile excuse to avoid the stuff in-game. Added geothermal power. When a furnace of any sort is aboe a magma stone block, it has a 20% chance not to use any pure fuel. Food can be placed in item frames now. Implemented effects on gravity curds, jump juice, and speed snacks. Added mouse scroll hotbar switching support. Added books made with rubber and paper that have titles and covers that can be used to spread info in your world and put in chests. Also added skin support for custom player sprites by typing SKIN! consecutively. To remove a skin, equip one with improper dimensions (non 1:3). Added getOp() function for easy cheating. Added books to structures with lore and story. Added orange, purple, and green flowers to the grass field and made flowers more abundant. Greatly adjusted and often increased many heal amounts. Added orange trees and oranges to apple groves. Added nitro powder (nitroglycerin) and crude oil for more accurate explosives. Flowers can be placed in grass dirt, soil, mud, and their dark variants now!"
+        },
+        { 
+            name: "Geobotanical Combustion Thesis (Version ###)", 
+            path: "Snapshot - Geobotanical Combustion Thesis.html",
+            notes: "Confirmed Completion Date: 11/12/2025. Added health particle effects rendering! Added better seed drop chances for plants, and plant-to-seed salvage recipes. Added ways to obtain more seeds! Added clay marshes with hard-to-break clay, and update clay brick block recipe. In the underworld, players now suffer from hellfire, which basically after 120 seconds, which can be extended with food and armor, they will eternally catch on fire. Added drunkness as a consequence from drinking too much alcoholic food, which is definitely a worthwhile excuse to avoid the stuff in-game. Added geothermal power. When a furnace of any sort is aboe a magma stone block, it has a 20% chance not to use any pure fuel. Food can be placed in item frames now. Implemented effects on gravity curds, jump juice, and speed snacks. Added mouse scroll hotbar switching support. Added books made with rubber and paper that have titles and covers that can be used to spread info in your world and put in chests. Also added skin support for custom player sprites by typing SKIN! consecutively. To remove a skin, equip one with improper dimensions (non 1:3). Added getOp() function for easy cheating. Added books to structures with lore and story. Added orange, purple, and green flowers to the grass field and made flowers more abundant. Greatly adjusted and often increased many heal amounts. Added orange trees and oranges to apple groves. Added nitro powder (nitroglycerin) and crude oil for more accurate explosives. Flowers can be placed in grass dirt, soil, mud, and their dark variants now!"
         },
 		{ 
             name: "Molten Sun Edict (Version ###)", 
@@ -962,6 +967,9 @@
 		if (snapshotName.includes('Molten Sun Edict (Version ###)')) {
             return 'Snapshot - Molten Sun Edict.png';
         }
+        if (snapshotName.includes('Geobotanical Combustion Thesis (Version ###)')) {
+            return 'Snapshot - Geobotanical Combustion Thesis.png';
+        }
 
         // Clean the name: remove parentheses and contents, replace spaces with underscores.
         let baseName = snapshotName.replace(/\s+\(.*?\)/g, '').trim();
@@ -1009,7 +1017,7 @@
         contentContainer.innerHTML = `
             <button class="modal-close" onclick="closePatchNotesModal()">✕</button>
             <h2 class="modal-title">${snapshot.name} Changelog</h2>
-            <div class="patch-notes-version">Standard Version: Molten Sun Edict</div>
+            <div class="patch-notes-version">Standard Version: Geobotanical Combustion Thesis</div>
             ${formattedNotes}
         `;
 
