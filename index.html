@@ -659,7 +659,7 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added health particle effects rendering! Added better seed drop chances for plants, and plant-to-seed salvage recipes. Added ways to obtain more seeds! Added clay marshes with hard-to-break clay, and update clay brick block recipe. In the underworld, players now suffer from hellfire, which basically after 120 seconds, which can be extended with food and armor, they will eternally catch on fire. Added drunkness as a consequence from drinking too much alcoholic food, which is definitely a worthwhile excuse to avoid the stuff in-game. Added geothermal power. When a furnace of any sort is aboe a magma stone block, it has a 20% chance not to use any pure fuel. Food can be placed in item frames now. Implemented effects on gravity curds, jump juice, and speed snacks. Added mouse scroll hotbar switching support. Added books made with rubber and paper that have titles and covers that can be used to spread info in your world and put in chests. Also added skin support for custom player sprites by typing SKIN! consecutively. To remove a skin, equip one with improper dimensions (non 1:3). Added getOp() function for easy cheating. Added books to structures with lore and story. Added orange, purple, and green flowers to the grass field and made flowers more abundant. Greatly adjusted and often increased many heal amounts. Added orange trees and oranges to apple groves. Added nitro powder (nitroglycerin) and crude oil for more accurate explosives. Flowers can be placed in grass dirt, soil, mud, and their dark variants now!"
+            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Adjusted some chances and drops."
         },
         { 
             name: "Geobotanical Combustion Thesis (Version ###)", 
@@ -949,7 +949,10 @@
      */
     function getBackgroundPath(snapshotName) {
         // Special case for ZZZ Lasers: it uses spaces in the filename.
-        if (snapshotName.includes('ZZZ Lasers')) {
+        if (snapshotName.includes('Current Development Build (Default)')) {
+            return 'Block Game Ultimate Banner 2.png';
+        }
+		if (snapshotName.includes('ZZZ Lasers')) {
             return 'ZZZ Lasers Background.png';
         }
         if (snapshotName.includes('The Prudent Index (Version ###)')) {
@@ -974,11 +977,6 @@
         // Clean the name: remove parentheses and contents, replace spaces with underscores.
         let baseName = snapshotName.replace(/\s+\(.*?\)/g, '').trim();
         baseName = baseName.replace(/[^a-zA-Z0-9_]/g, '_'); // Replace spaces and non-alpha/numeric/underscore with underscore
-        
-        // Handle specific case for 'Current Development Build'
-        if (baseName.startsWith('Current_Development_Build')) {
-            return 'Background.png'; 
-        }
 
         // Default naming convention: "[Cleaned Name] Background.png"
         return `${baseName}Background.png`; 
