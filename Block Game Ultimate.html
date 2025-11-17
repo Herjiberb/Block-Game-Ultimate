@@ -6,6 +6,7 @@
     <title>Block Game Ultimate [HTML EDITION]</title>
 	<link rel="icon" type="image/png" href="Grass Dirt Block.png">
 	<input type="file" id="worldFileInput" accept=".bgu1" style="display: none;">
+    <input type="file" id="texturePackInput" webkitdirectory directory multiple style="display: none;">
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
     <style>
@@ -1579,6 +1580,10 @@
 
 		let cheatItems = false
 
+        let textureOverrides = {}; // Stores filename -> Blob URL mappings
+        let isLoadingAssets = true; // Flags if we are on the loading screen
+        let currentLoadID = null; // Tracks the active loading process
+
         const loadingTips = [
             "Don't Eat Any Food When You Are At Full Health, You Dum Dum!!!",
             "Having A Bed Is Almost Like A Hack! You Can Press The ';' Key And You Will Teleport To Your Bed But At The Cost Of A Little Health. Farm Cotton First Though!",
@@ -1661,6 +1666,12 @@
         const craftButton = document.getElementById('craftButton');
         const recipeListDiv = document.getElementById('recipeList'); // New: Recipe list container
         const deleteSlot = document.getElementById('deleteSlot');
+		
+		deleteSlot.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleSlotClick(e);
+        });
 		
 		// Oven Menu
         const ovenOverlay = document.getElementById('ovenOverlay');
@@ -2235,6 +2246,7 @@
 			'plantation_soil': { imgSrc: 'Plantation Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'plantation_soil', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
             'fertilizer': { imgSrc: 'Fertilizer Block.png', solid: true, miningHardness: 80, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
             'stone': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#808080' },
+            'impotent_stone': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'impotent_stone', chance: 1, min: 1, max: 1}], color: '#808080', requiredTool: 'powered_wooden_pickaxe' },
 			'outer_mantle_molten_stone': { imgSrc: 'Outer Mantle Molten Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'iron_nugget', chance: 0.15, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.1, min: 1, max: 3}], color: '#808080', requiredMiningPower: 2.5 },
 			'inner_mantle_molten_stone': { imgSrc: 'Inner Mantle Molten Stone Block.png', solid: true, miningHardness: 150000, drops: [{item: 'iron_nugget', chance: 0.3, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.2, min: 1, max: 3}], color: '#808080', requiredMiningPower: 5 },
 			'core_molten_stone': { imgSrc: 'Core Molten Stone Block.png', solid: true, miningHardness: 250000, drops: [{item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.4, min: 1, max: 3}], color: '#808080', requiredMiningPower: 10 },
@@ -2328,7 +2340,7 @@
             'birch_bush': { imgSrc: 'Birch Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'birch_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
             'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
             'raw_spruce': { imgSrc: 'Raw Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_spruce', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
-            'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'spruce_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.2, min: 1, max: 1}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A' },
+            'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'spruce_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.3, min: 1, max: 3}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A' },
 			'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'raw_orange': { imgSrc: 'Raw Orange Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_orange', chance: 1, min: 1, max: 1}], color: '#654321' },
             'orange_bush': { imgSrc: 'Orange Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'orange_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22' },
@@ -2589,6 +2601,7 @@
 			 'mythicalithium_nugget': { imgSrc: 'Mythicalithium Nugget.png', color: '#CD7F32' },
              'nuclear_core': { imgSrc: 'Nuclear Core.png', color: '#CD7F32' },
 			 'power_orb': { imgSrc: 'Power Orb.png', color: '#CD7F32' },
+             'impotent_orb': { imgSrc: 'Impotent Orb.png', color: '#CD7F32' },
 			 'nickel_nugget': { imgSrc: 'Nickel Nugget.png', color: '#FFD700' },
 			 'lead_nugget': { imgSrc: 'Lead Nugget.png', color: '#FFD700' },
 			 'aluminum_nugget': { imgSrc: 'Aluminum Nugget.png', color: '#FFD700' },
@@ -2803,16 +2816,88 @@
         // Combine all assets to load
         const assetsToLoadList = { ...blockTypes, ...itemTypes, ...breakingStageAssets, ...healthAssets, ...fireAssets };
         const assets = {};            // will store loaded Image objects keyed by type name (e.g. assets['dirt'])
-		const failedAssets = {};      // track failures
+		let failedAssets = {};      // track failures
 		let assetsToLoad = 0;
 		let assetsLoaded = 0;
 
+        // --- Texture Pack Functions ---
+        function triggerTextureUpload() {
+            const input = document.getElementById('texturePackInput');
+            input.value = ''; // Reset to allow re-uploading same folder if needed
+            input.click();
+        }
+
+        document.getElementById('texturePackInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = "Processing Texture Pack...";
+
+            // Group files by name to handle duplicates
+            const filesByName = {};
+            
+            files.forEach(file => {
+                // We only care about image files
+                if (file.type.startsWith('image/')) {
+                    if (!filesByName[file.name]) {
+                        filesByName[file.name] = [];
+                    }
+                    filesByName[file.name].push(file);
+                }
+            });
+
+            let replacedCount = 0;
+
+            // Iterate keys and pick random if duplicates exist
+            Object.keys(filesByName).forEach(filename => {
+                const candidates = filesByName[filename];
+                const selectedFile = candidates[Math.floor(Math.random() * candidates.length)];
+                
+                // Create a local URL for the file
+                if (textureOverrides[filename]) {
+                    URL.revokeObjectURL(textureOverrides[filename]); // Clean up old one
+                }
+                textureOverrides[filename] = URL.createObjectURL(selectedFile);
+                replacedCount++;
+            });
+
+            console.log(`Texture Pack: Loaded ${replacedCount} textures.`);
+            showMessageBox(`Texture Pack loaded! ${replacedCount} textures replaced. Reloading assets...`, 'alert', () => {
+                // --- FIX: Clear all previously loaded assets to force a fresh reload ---
+                const groups = getAssetGroups();
+                for (const group of groups) {
+                    if (!group) continue;
+                    for (const key in group) {
+                        if (assets[key]) {
+                            delete assets[key]; // Remove from our loaded assets cache
+                        }
+                        // Also delete the equipped asset variants
+                        if (group[key]?.equippedImgSrc) {
+                             delete assets[`${key}_equipped`];
+                        }
+                    }
+                }
+                // --- END FIX ---
+            
+                // Restart asset loading
+                assetsLoaded = 0;
+                failedAssets = {}; // Reset failures
+                loadAssets(); // This will now generate a new currentLoadID and abort the old one
+            });
+        });
+        
 		function getAssetGroups() {
 			// Add any other asset maps you use here
 			return [blockTypes, itemTypes, breakingStageAssets, healthAssets, fireAssets]; // NEW: Added fireAssets
 		}
 
 		function loadAssets() {
+            // --- NEW: Create a unique ID for this specific loading process ---
+            const thisLoadID = Date.now();
+            currentLoadID = thisLoadID;
+            // --- END NEW ---
+
 			const loadingText = document.getElementById('loadingText');
 			const loadingBarFill = document.getElementById('loadingBarFill');
 			const loadingPercent = document.getElementById('loadingPercent');
@@ -2862,32 +2947,50 @@
 			// Sequential loading so the UI shows the "current file" reliably
 			let idx = 0;
 			function updateUI() {
+                // --- NEW: Check ID ---
+                if (thisLoadID !== currentLoadID) return; // Abort if this is an old load
 				const pct = Math.round((assetsLoaded / Math.max(1, assetsToLoad)) * 100);
 				loadingBarFill.style.width = pct + '%';
 				loadingPercent.textContent = pct + '%';
 			}
 
 			function finishLoading() {
+                // --- NEW: Check ID ---
+                if (thisLoadID !== currentLoadID) return; // Abort if this is an old load
+                isLoadingAssets = false;
 				clearInterval(tipInterval);
                 updateUI();
 				// small delay for user to see 100% if desired
 				setTimeout(() => {
+                    // --- NEW: Check ID one last time ---
+                    if (thisLoadID !== currentLoadID) return;
 					loadingScreen.style.display = 'none';
 					init();
 				}, 120);
 			}
 
 			function loadNext() {
+                // --- NEW: Check ID ---
+                if (thisLoadID !== currentLoadID) return; // Abort if this is an old load
+
 				if (idx >= srcs.length) {
 					finishLoading();
 					return;
 				}
 				const src = srcs[idx];
-				const filename = src.split('/').pop();
-				loadingText.textContent = `Loading: ${filename}`;
+                
+                // --- Texture Pack Logic ---
+                const filename = src.split('/').pop(); 
+                const finalSrc = textureOverrides[filename] || src;
+                // ---------------------------
+
+				loadingText.textContent = `Loading: ${filename}` + (textureOverrides[filename] ? " (Custom)" : "");
 
 				const img = new Image();
 				img.onload = () => {
+                    // --- NEW: Check ID ---
+                    if (thisLoadID !== currentLoadID) return; // Abort if this is an old load
+
 					// assign the same Image object to all type keys that reference this src
 					(srcToKeys[src] || []).forEach(typeKey => {
 						assets[typeKey] = img;
@@ -2898,22 +3001,30 @@
 					loadNext();
 				};
 				img.onerror = () => {
+                    // --- NEW: Check ID ---
+                    if (thisLoadID !== currentLoadID) return; // Abort if this is an old load
+
+                    // If a custom texture fails, try falling back to default
+                    if (textureOverrides[filename]) {
+                        console.warn(`Custom texture failed for ${filename}, reverting to default.`);
+                        delete textureOverrides[filename]; // Remove bad override
+                        loadNext(); // Retry this index (recursion will grab default next time)
+                        return;
+                    }
+
 					console.error('Failed to load asset:', src);
-					// mark failure so your UI/canvas logic can fallback if needed
 					failedAssets[src] = true;
-					// still map a fallback so code referencing assets[type] doesn't crash
 					(srcToKeys[src] || []).forEach(typeKey => {
 						assets[typeKey] = null;
 					});
 					assetsLoaded++;
-					// show failure briefly
 					loadingText.textContent = `Failed: ${filename}`;
 					idx++;
 					updateUI();
 					loadNext();
 				};
 				// start loading
-				img.src = src;
+				img.src = finalSrc;
 			}
 
 			// kick off
@@ -3042,7 +3153,7 @@
 			} else if (treeType === 'magma') {
 				trunkBlockType = 'magma_stone_block'; minTrunkHeight = 1; maxTrunkHeight = 5;
 			} else if (treeType === 'granite') {
-				trunkBlockType = 'granite'; minTrunkHeight = 1; maxTrunkHeight = 5;
+				trunkBlockType = 'granite'; minTrunkHeight = 1; maxTrunkHeight = 3;
 			} else if (treeType === 'meat') {
 				trunkBlockType = 'meat_wood'; bushBlockType = 'meat_block'; minTrunkHeight = 25; maxTrunkHeight = 30;
 				minCanopyRadius = 2; maxCanopyRadius = 3; horizontalSpreadFactorMin = 0.7; horizontalSpreadFactorMax = 1.2;
@@ -3587,6 +3698,8 @@
 			}
 		}
 
+        allBiome = 'start'
+        
         // Determines the biome for a given column, now generates in both directions
         function getBiome(col) {
             if (worldBiomes[col]) {
@@ -3596,6 +3709,9 @@
             // Function to determine the next biome type
             function selectNextBiome() {
                 const biomeRoll = random();
+                if (allBiome !== 'start') {
+                    return allBiome;
+                }
                 // Anthill ~4%, Overgrown Forest ~10%, Deciduous Forest ~40%, Desert ~26%, Rocky ~20%
                 if (biomeRoll < 0.03) return 'anthill';
                 if (biomeRoll < 0.08) return 'overgrown_forest';
@@ -3645,14 +3761,19 @@
             
             return worldBiomes[col] ? worldBiomes[col].type : 'deciduous_forest'; // Fallback
         }
-		
+
+        hellBiome = 'start'
+        
 		function getUnderworldBiome(col) {
             if (underworldBiomes[col]) {
                 return underworldBiomes[col].type;
             }
 
             function selectNextUnderworldBiome() {
-				return (r = random()) < 0.4 ? 'hell' : r < 0.5 ? 'golden_city' : r < 0.6 ? 'meat_world' : r < 0.7 ? 'magma_basin' : r < 0.75 ? 'doom_forest' : r < 0.8 ? 'flesh_forest' : r < 0.9 ? 'ash_wastes' : 'icy_hell';
+				if (hellBiome !== 'start') {
+                    return hellBiome;
+                }
+                return (r = random()) < 0.4 ? 'hell' : r < 0.5 ? 'golden_city' : r < 0.6 ? 'meat_world' : r < 0.7 ? 'magma_basin' : r < 0.75 ? 'doom_forest' : r < 0.8 ? 'flesh_forest' : r < 0.9 ? 'ash_wastes' : 'icy_hell';
 			}
 
             if (col > lastUnderworldBiomeEndCol) {
@@ -3677,6 +3798,8 @@
             
             return underworldBiomes[col] ? underworldBiomes[col].type : 'hell'; // Fallback
         }
+
+        heavenBiome = 'start'
 		
 		function getHeavenBiome(col) {
             if (heavenBiomes[col]) {
@@ -3684,6 +3807,9 @@
             }
 
             function selectNextHeavenBiome() {
+                if (heavenBiome !== 'start') {
+                    return heavenBiome;
+                }
                 // We'll give the new gilded forest a 20% chance to appear
                 if (random() < 0.1) {
                     return 'gilded_forest';
@@ -8476,6 +8602,13 @@
 							}
 						}
 					}
+					// Case 5: Target is GRASS DIRT
+					if (blockAtTarget.type === 'grass_dirt') {
+						if (blockAboveType === '') {
+							worldBlocks[blockAboveKey] = { type: 'leaf_plant', mineProg: 0 };
+							seedUsed = true;
+						}
+					}
 					
 					// If any action was successful, consume the seed
 					if (seedUsed) {
@@ -9298,30 +9431,39 @@
             player.lastHealth = player.health;
 
             // 4. Render the heart images (with corrected logic)
-            healthBarDiv.innerHTML = '';
-            const totalHearts = Math.ceil(player.maxHealth / 20); // Use ceil for partial max health
+			healthBarDiv.innerHTML = '';
+			const totalHearts = Math.ceil(player.maxHealth / 20); // Use ceil for partial max health
 
-            for (let i = 0; i < totalHearts; i++) {
-                const img = document.createElement('img');
-                
-                // Calculate the health value for *this specific heart* (from 0 to 20)
-                const heartMinValue = i * 20;
-                const currentHeartValue = Math.min(20, Math.max(0, player.health - heartMinValue));
+			for (let i = 0; i < totalHearts; i++) {
+				const img = document.createElement('img');
+				
+				// Calculate the health value for *this specific heart* (from 0 to 20)
+				const heartMinValue = i * 20;
+				const currentHeartValue = Math.min(20, Math.max(0, player.health - heartMinValue));
 
-                // Apply the new logic:
-                // 10.01 - 20   = Full Heart
-                // 0.01 - 10    = Half Heart
-                // 0 or less    = Empty Heart
-                if (currentHeartValue > 10) {
-                    img.src = assets['full_heart'].src;
-                } else if (currentHeartValue > 0) {
-                    img.src = assets['half_heart'].src;
-                } else {
-                    img.src = assets['empty_heart'].src;
-                }
-                
-                healthBarDiv.appendChild(img);
-            }
+				// Apply the new logic:
+				// 10.01 - 20   = Full Heart
+				// 0.01 - 10    = Half Heart
+				// 0 or less    = Empty Heart
+				if (currentHeartValue > 10) {
+					// --- FIX: Check if asset exists before using it ---
+					if (assets['full_heart']) {
+						img.src = assets['full_heart'].src;
+					}
+				} else if (currentHeartValue > 0) {
+					// --- FIX: Check if asset exists before using it ---
+					if (assets['half_heart']) {
+						img.src = assets['half_heart'].src;
+					}
+				} else {
+					// --- FIX: Check if asset exists before using it ---
+					if (assets['empty_heart']) {
+						img.src = assets['empty_heart'].src;
+					}
+				}
+				
+				healthBarDiv.appendChild(img);
+			}
         }
 		
 		function drawFire() {
@@ -9429,7 +9571,11 @@
         }
 
         window.addEventListener('keydown', (e) => {
-			if (e.key === '/') {
+			if (isLoadingAssets && (e.key === 't' || e.key === 'T')) {
+                triggerTextureUpload();
+                return;
+            }
+            if (e.key === '/') {
 				e.preventDefault(); // This stops the '/' from being typed anywhere else
 				toggleDevConsole();
 				return; // Stop processing other keys
@@ -10068,6 +10214,10 @@
                 input: { 0: { type: 'diamond_nugget', count: 1 }, 1: { type: 'topaz_nugget', count: 1 }, 2: { type: 'sapphire_nugget', count: 1 }, 3: { type: 'ruby_nugget', count: 1 }, 4: { type: 'emerald_nugget', count: 1 }, 5: { type: 'opal_nugget', count: 1 }, 6: { type: 'amethyst_nugget', count: 1 }, 7: { type: 'jade_nugget', count: 1 }, 8: { type: 'gold_nugget', count: 1 }, 9: { type: 'tin_nugget', count: 1 }, 10: { type: 'aluminum_nugget', count: 1 }, 11: { type: 'iron_nugget', count: 1 }, 12: { type: 'copper_nugget', count: 1 }, 13: { type: 'zinc_nugget', count: 1 }, 14: { type: 'palladium_nugget', count: 1}, 15: { type: 'tungsten_nugget', count: 1 } },
                 output: 'power_orb', outputCount: 1
             },
+            { name: "Impotent Orb",
+                input: { 0: { type: 'power_orb', count: 1 }, 1: { type: 'nuclear_core', count: 1 } },
+                output: 'impotent_orb', outputCount: 3
+            },
 			{ name: "Power Soup",
                 input: { 0: { type: 'wooden_bowl', count: 2 }, 1: { type: 'power_orb', count: 1 } },
                 output: 'power_soup', outputCount: 2
@@ -10075,6 +10225,10 @@
 			{ name: "Powered Wooden Pickaxe",
                 input: { 0: { type: 'wooden_pickaxe', count: 1 }, 1: { type: 'power_orb', count: 1 } },
                 output: 'powered_wooden_pickaxe', outputCount: 1,
+            },
+            { name: "Impotent Stone",
+                input: { 0: { type: 'stone', count: 2 }, 1: { type: 'impotent_orb', count: 1 } },
+                output: 'impotent_stone', outputCount: 2
             },
 			{ name: "World Mover",
                 input: { 0: { type: 'red_sand_block', count: 1 }, 3: { type: 'red_sand_block', count: 1 }, 12: { type: 'red_sand_block', count: 1 }, 15: { type: 'red_sand_block', count: 1 }, 5: { type: 'infinitungsten_nugget', count: 1 }, 6: { type: 'infinitungsten_nugget', count: 1 }, 9: { type: 'infinitungsten_nugget', count: 1 }, 10: { type: 'infinitungsten_nugget', count: 1 } },
@@ -10585,11 +10739,11 @@
                 craftingGridDiv.appendChild(slotDiv);
             }
             // Delete Slot
-            deleteSlot.addEventListener('mousedown', (e) => {
+            /*deleteSlot.addEventListener('mousedown', (e) => {
 				e.stopPropagation();
 				e.preventDefault();
 				handleSlotClick(e);
-			});
+			});*/ // Removed From Excessive LAG
 
             checkCraftingRecipe();
         }
@@ -10984,25 +11138,8 @@
             
             // Handle Void click logic separately
             if (sourceType === 'void') {
-				const itemTypeIdentifier = slotIndex; // We stored the item type
-
-				if (event.button === 0) { // Left-click: take whole stack
-					if (heldItem) return; // Cannot pick up if already holding an item
-
-					for (let i = voidStorage.length - 1; i >= 0; i--) {
-						if (voidStorage[i] && voidStorage[i].type === itemTypeIdentifier) {
-							if (!heldItem) {
-								heldItem = { ...voidStorage[i] };
-							} else {
-								heldItem.count += voidStorage[i].count;
-							}
-							voidStorage.splice(i, 1);
-						}
-					}
-					heldItemSource = { type: 'void', index: itemTypeIdentifier };
-
-				} // Right-click logic was moved to the top
-				updateVoidChestMenu(); 
+				// This intentionally prevents items from being picked up from the void.
+				// Items can only be retrieved via the Void Trader.
 				return;
 			}
 

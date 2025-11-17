@@ -10114,26 +10114,9 @@
 			}
             
             // Handle Void click logic separately
-            if (sourceType === 'void') {
-				const itemTypeIdentifier = slotIndex; // We stored the item type
-
-				if (event.button === 0) { // Left-click: take whole stack
-					if (heldItem) return; // Cannot pick up if already holding an item
-
-					for (let i = voidStorage.length - 1; i >= 0; i--) {
-						if (voidStorage[i] && voidStorage[i].type === itemTypeIdentifier) {
-							if (!heldItem) {
-								heldItem = { ...voidStorage[i] };
-							} else {
-								heldItem.count += voidStorage[i].count;
-							}
-							voidStorage.splice(i, 1);
-						}
-					}
-					heldItemSource = { type: 'void', index: itemTypeIdentifier };
-
-				} // Right-click logic was moved to the top
-				updateVoidChestMenu(); 
+			if (sourceType === 'void') {
+				// This intentionally prevents items from being picked up from the void.
+				// Items can only be retrieved via the Void Trader.
 				return;
 			}
 
