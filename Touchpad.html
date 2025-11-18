@@ -1341,9 +1341,9 @@
         /* --- PASTE NEW CSS BEFORE THIS LINE --- */
 
         /* Styling for the "More" button sub-menu */
-        /*#mobileButtonContainer {
-            position: relative;*/ /* Needed for sub-menu positioning */
-        /*}*/
+        #mobileButtonContainer {
+            position: relative; /* Needed for sub-menu positioning */
+        }
 
         #mobileSubMenu {
             display: none; /* Hidden by default */
@@ -14315,7 +14315,7 @@
             }, { passive: false });
 
             // --- 6. UI Button Listeners ---
-            inventoryButton.addEventListener('touchstart', (e) => {
+            /*inventoryButton.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleInventoryMenu();
@@ -14370,7 +14370,7 @@
                         case 'skinUploadOverlay': closeSkinUploader(); break;
                     }
                 });
-            });
+            });*/
         }
         // === END OF NEW MOBILE CONTROLS SCRIPT ===
 
