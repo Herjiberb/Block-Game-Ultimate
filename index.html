@@ -255,6 +255,21 @@
     #gallery-button:hover {
         background-color: #059669;
     }
+	#music-button {
+        position: relative; 
+        top: auto; 
+        right: auto;
+        padding: 0.5rem;
+        border-radius: 9999px;
+        background-color: #047857;
+        transition: all 0.15s ease-in-out;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        border: none;
+        cursor: pointer;
+    }
+    #music-button:hover {
+        background-color: #059669;
+    }
     .block-icon {
         width: 2.5rem;
         height: 2.5rem;
@@ -499,6 +514,9 @@
         <button id="gallery-button" onclick="openArtistModal()">
             <img src="Paper.png" alt="Block Artist Icon" class="block-icon"/>
         </button>
+		<button id="music-button" onclick="openMusicModal()">
+            <img src="Book.png" alt="Block Music Icon" class="block-icon"/>
+        </button>
     </div>
 </div>
 
@@ -540,6 +558,22 @@
             style="width: 100%; padding: 1rem;" 
             onclick="launchContent('Block Gallery.html')">
             Open Gallery
+        </button>
+    </div>
+</div>
+
+<div id="music-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <button class="modal-close" onclick="closeMusicModal()">✕</button>
+        <div class="modal-title">Launch Block Music</div>
+        <p style="margin-bottom: 2rem; font-size: 1.1rem; color: #ccc;">
+            The Block Music is a separate application that shows off all the available soundtracks and sounds!
+        </p>
+        <button 
+            class="launcher-button play-button" 
+            style="width: 100%; padding: 1rem;" 
+            onclick="launchContent('Block Music.html')">
+            Open Music
         </button>
     </div>
 </div>
@@ -659,7 +693,12 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Adjusted some chances and drops."
+            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time."
+        },
+        { 
+            name: "Touchpad", 
+            path: "Touchpad.html",
+            notes: "Confirmed Completion Date: 11/5/2025. Now with a new classy look that you can play with!"
         },
         { 
             name: "Geobotanical Combustion Thesis (Version ###)", 
@@ -800,6 +839,7 @@
     function closeAllModals() {
         closeSnapshotsModal();
         closeGalleryModal();
+		closeMusicModal();
         closeArtistModal();
         closePatchNotesModal();
         closeUpdatesModal();
@@ -838,7 +878,7 @@
         gameIframe.title = contentPath.split('/').pop().split('.')[0]; // Set title dynamically from file name
 
         // Show the exit button only for the Gallery and Snapshots/Experiments, hide for the main game
-        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
+        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Block Music.html') || contentPath.includes('Block Game Artist.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
             exitButton.style.display = 'flex';
         } else {
             // For the main game, the user is typically expected to be there longer
@@ -1062,12 +1102,31 @@
             modal.classList.add('open');
         }, 10);
     }
+	
+	function openMusicModal() {
+        closeAllModals();
+        const modal = document.getElementById('music-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
 
     /**
      * Hides the Gallery modal.
      */
     function closeGalleryModal() {
         const modal = document.getElementById('gallery-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+	
+	function closeMusicModal() {
+        const modal = document.getElementById('music-modal');
         modal.classList.remove('open');
         setTimeout(() => {
             if (!modal.classList.contains('open')) {
