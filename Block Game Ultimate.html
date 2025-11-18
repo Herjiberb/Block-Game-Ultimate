@@ -1261,6 +1261,140 @@
             width: 100%;
             height: 100%;
         }
+        /* --- START OF MOBILE CONTROLS CSS --- */
+        #mobileControlsOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 900; /* Above game, below menus */
+            pointer-events: none; /* Pass clicks through overlay */
+            display: none; /* Hidden by default */
+        }
+
+        #joystickContainer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 140px;
+            height: 140px;
+            background-color: rgba(100, 100, 100, 0.4);
+            border-radius: 50%;
+            pointer-events: auto; /* This element is clickable */
+        }
+
+        #joystickKnob {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            top: 40px; /* (140 - 60) / 2 */
+            left: 40px; /* (140 - 60) / 2 */
+            transition: transform 0.05s linear; /* Smooth reset */
+        }
+
+        #mobileButtonContainer {
+            position: absolute;
+            bottom: 80px; /* MOVED from top */
+            right: 10px;  /* MOVED from left */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+            align-items: flex-end; /* ADDED: Aligns buttons to the right */
+        }
+
+        .mobile-button {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(100, 100, 100, 0.6);
+            border: 2px solid white;
+            border-radius: 10px;
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            user-select: none; /* Prevent text selection */
+        }
+
+        .mobile-close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: #dc3545; /* Red */
+            border: 2px solid white;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 9999; /* On top of everything in the menu */
+            display: none; /* Hidden by default */
+            pointer-events: auto;
+            user-select: none;
+        }
+        #mobileButtonContainer > .mobile-button {
+            pointer-events: auto; /* Makes direct children (buttons) clickable */
+        }
+
+        #mobileSubMenu {
+            display: none; /* Hidden by default */
+            position: absolute;
+            right: 100%; /* CHANGED from left */
+            top: 0;
+            padding-right: 10px; /* CHANGED from padding-left */
+            flex-direction: column;
+            gap: 10px;
+            width: 100px; /* Give the sub-menu a fixed width */
+        }
+
+        #mobileSubMenu.show {
+            display: flex; /* Show the menu */
+        }
+
+        .mobile-sub-button {
+            height: 50px;
+            background-color: rgba(100, 100, 100, 0.6);
+            border: 2px solid white;
+            border-radius: 10px;
+            pointer-events: auto;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            user-select: none;
+        }
+        #fullscreenMapOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 2500; /* Above most menus */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Hide canvas overflow */
+        }
+        #fullscreenMapCanvas {
+            width: 100%;
+            height: 100%;
+            border: none;
+            image-rendering: pixelated;
+            cursor: grab;
+        }
+        #fullscreenMapCanvas:active {
+            cursor: grabbing;
+        }
+        #fullscreenMapCloseButton {
+            z-index: 2501; /* Above map canvas */
+        }
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -1286,6 +1420,32 @@
         <div id="minimapContainer">
             <canvas id="minimapCanvas" width="150" height="150"></canvas>
         </div>
+        <div id="mobileControlsOverlay">
+        <div id="joystickContainer">
+            <div id="joystickKnob"></div>
+        </div>
+
+        <div id="mobileButtonContainer">
+            <button id="mobileInventoryButton" class="mobile-button">🎒</button>
+            <button id="mobileBedButton" class="mobile-button">🛏️</button>
+            <button id="mobileMoverButton" class="mobile-button">🌐</button>
+                
+            <button id="mobileMoreButton" class="mobile-button">...</button>
+            <div id="mobileSubMenu">
+                <button id="mobileConsoleButton" class="mobile-sub-button">Console</button>
+                <button id="mobileMenuButton" class="mobile-sub-button">Menu</button>
+                <button id="mobileMapButton" class="mobile-sub-button">Map</button>
+                <button id="mobileImportButton" class="mobile-sub-button">Import</button>
+                <button id="mobileExportButton" class="mobile-sub-button">Export</button>
+            </div>
+        </div>
+    </div>
+
+        <div id="fullscreenMapOverlay">
+            <button id="fullscreenMapCloseButton" class="mobile-close-button" style="display: block; z-index: 10;">X</button>
+            <canvas id="fullscreenMapCanvas"></canvas>
+        </div>
+
     </div>
 
     <!-- Game Menu Overlay -->
@@ -1296,6 +1456,7 @@
                 <label for="seedInput" style="display: block; margin-bottom: 5px; color: #CCC; text-align: center;">World Seed (optional):</label>
                 <input type="text" id="seedInput" placeholder="Leave empty for random seed">
             </div>
+			<button class="mobile-close-button">X</button>
             <div class="menu-buttons">
                 <button id="newGameButton">New Game</button>
                 <button id="resumeButton">Resume Game</button>
@@ -1318,6 +1479,7 @@
             <div class="inventory-section">
 				<h3>Crafting</h3>
                 <div class="crafting-area">
+                    <button class="mobile-close-button">X</button>
                     <div id="craftingGrid">
                         <!-- Crafting grid slots will be dynamically generated here -->
                     </div>
@@ -1375,6 +1537,7 @@
     </div>
 	
 	<div id="devConsoleOverlay">
+		<button class="mobile-close-button">X</button>
 		<div id="devConsole">
 			<div id="consoleOutput"></div>
 			<div id="consoleInputWrapper">
@@ -1388,6 +1551,7 @@
     <div id="chestOverlay" oncontextmenu="return false;">
         <div id="chestMenu">
             <h2 id="chestTitle">Chest (Esc to Exit)</h2>
+            <button class="mobile-close-button">X</button>
             <div class="inventory-section">
                  <input type="text" id="chestLabelInput" placeholder="Chest Label..." maxlength="30">
                 <div id="chestGrid" class="inventory-grid">
@@ -1413,6 +1577,7 @@
 			<div id="voidChestGrid" class="inventory-grid">
 				</div>
 			<div class="inventory-section">
+                <button class="mobile-close-button">X</button>
 				<h3>Your Inventory</h3>
 				<div id="voidChestPlayerInventoryGrid" class="inventory-grid">
 					</div>
@@ -1449,6 +1614,7 @@
 	<div id="worldMoverConfigOverlay" oncontextmenu="return false;">
         <div id="worldMoverConfigMenu">
             <h2>World Mover Configuration</h2>
+            <button class="mobile-close-button">X</button>
             <div class="config-section">
                 <label for="worldMoverCodeInput">3-Digit Code:</label>
                 <input type="text" id="worldMoverCodeInput" placeholder="e.g., 123" maxlength="3">
@@ -1466,6 +1632,7 @@
     <div id="worldMoverTeleportOverlay" oncontextmenu="return false;">
         <div id="worldMoverTeleportMenu">
             <h2>Teleport Network</h2>
+            <button class="mobile-close-button">X</button>
             <label for="teleportCodeInput">Enter 3-Digit Code:</label>
             <input type="text" id="teleportCodeInput" placeholder="e.g., 123" maxlength="3">
             <p style="font-size: 0.8em; color: #ccc;">Press 'Enter' to teleport.</p>
@@ -1475,6 +1642,7 @@
 	<div id="ovenOverlay" oncontextmenu="return false;">
         <div id="ovenMenu">
             <h2>Oven</h2>
+            <button class="mobile-close-button">X</button>
             <div class="oven-ui-area">
                 <div class="inventory-section">
                     <h3>Input</h3>
@@ -1532,6 +1700,7 @@
 	<div id="bookMenuOverlay" oncontextmenu="return false;">
         <div id="bookEditor">
             <h2>Edit Book</h2>
+            <button class="mobile-close-button">X</button>
             <textarea id="bookContentInput" maxlength="1000000" placeholder="Write your story..."></textarea>
             <div class="book-buttons">
                 <button id="bookSaveButton">Save & Close</button>
@@ -1546,6 +1715,7 @@
     <div id="publishMenuOverlay" oncontextmenu="return false;">
         <div id="publishMenu">
             <h2>Publish Book</h2>
+            <button class="mobile-close-button">X</button>
             <label for="bookTitleInput">Book Title:</label>
             <input type="text" id="bookTitleInput" placeholder="Enter a title...">
             
@@ -1564,6 +1734,7 @@
     <div id="bookReaderOverlay" oncontextmenu="return false;">
         <div id="bookReaderMenu">
             <h2 id="bookReaderTitle">Book</h2>
+            <button class="mobile-close-button">X</button>
             <img id="bookReaderCover" src="" alt="Book Cover">
             <div id="bookReaderContent">
                 </div>
@@ -1575,6 +1746,7 @@
     <div id="skinUploadOverlay" oncontextmenu="return false;">
         <div id="skinUploadMenu">
             <h2>Upload Custom Skin</h2>
+            <button class="mobile-close-button">X</button>
             <p style="font-size: 0.9em; color: #ccc;">Image must have a 1:3 aspect ratio (e.g., 50px wide, 150px tall).</p>
             <label for="skinUploadInput" id="skinUploadLabel">Choose Image...</label>
             <button id="skinResetButton">Reset to Default</button>
@@ -1598,6 +1770,47 @@
 		// Ideas And Mechanics All From The Mind Of Bryant Reitzel
 		const itemTooltip = document.getElementById('itemTooltip');
         const loadingTipText = document.getElementById('loadingTipText');
+		
+		let hotbarTooltipTimer = null;
+        function showHotbarSwitchTooltip(itemObject) {
+            if (hotbarTooltipTimer) {
+                clearTimeout(hotbarTooltipTimer); // Clear any old timer
+            }
+            if (!itemObject) {
+                itemTooltip.style.display = 'none'; // Hide if slot is empty
+                return;
+            }
+
+            // Get item name (like in createInventorySlot)
+            const itemProps = itemTypes[itemObject.type] || blockTypes[itemObject.type];
+            let itemName;
+            if (itemProps && itemProps.isBook) {
+                itemName = itemObject.published && itemObject.title ? itemObject.title : "Book (Editable)";
+            } else {
+                itemName = (itemObject.type.replace(/_/g, ' ')).replace(/\b\w/g, l => l.toUpperCase());
+                if (itemProps && itemProps.isTool && itemObject.durability !== undefined) {
+                    itemName += ` (${Math.ceil(itemObject.durability)} / ${itemObject.maxDurability})`;
+                }
+            }
+
+            // Position and show the tooltip
+            itemTooltip.textContent = itemName;
+            itemTooltip.style.bottom = '70px'; // Position just above the hotbar
+            itemTooltip.style.left = '50%';
+            itemTooltip.style.transform = 'translateX(-50%)';
+            itemTooltip.style.top = 'auto'; // Override mouse-following style
+            itemTooltip.style.display = 'block';
+
+            // Set a timer to hide it
+            hotbarTooltipTimer = setTimeout(() => {
+                itemTooltip.style.display = 'none';
+                // Reset styles for normal mouse-following
+                itemTooltip.style.bottom = 'auto';
+                itemTooltip.style.left = '0px';
+                itemTooltip.style.transform = 'none';
+                hotbarTooltipTimer = null;
+            }, 1000); // Show for 1 second
+        }
 
 		let cheatItems = false
 
@@ -1739,12 +1952,23 @@
         let isCreativeMode = 0;
         const CREATIVE_FLIGHT_SPEED = 5; // How fast the player flies in creative mode (adjust as needed)
 
-        // --- ADD THESE MINIMAP VARIABLES ---
         let showMinimap = false;
         let exploredMap = {}; // This will cache explored pixels
         let mmCanvas = null; // Cache canvas element
         let mmCtx = null; // Cache canvas context
-        // --- END OF ADDITION ---
+		
+		let isFullscreenMapOpen = false;
+        const fullscreenMapOverlay = document.getElementById('fullscreenMapOverlay');
+        const fsMapCanvas = document.getElementById('fullscreenMapCanvas');
+        const fsMapCtx = fsMapCanvas.getContext('2d');
+        const fullscreenMapDrag = {
+            active: false,
+            lastX: 0,
+            lastY: 0,
+            mapCol: 0, // Center of the map view in grid coords
+            mapRow: 0,
+            zoom: 2, // 2x zoom
+        };
 		
 		const traderCharacterContainer = document.getElementById('traderCharacterContainer');
 		
@@ -9159,6 +9383,17 @@
                 slotDiv.classList.add('hotbar-slot');
                 if (i === selectedHotbarSlot) slotDiv.classList.add('selected');
                 
+                // === NEW: Add touch listener for hotbar switching ===
+                slotDiv.addEventListener('touchstart', (e) => {
+                    if (isGamePaused) return; // Don't switch if in a menu
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectedHotbarSlot = i;
+                    updateHotbar(); // Redraw to show new selection
+                    showHotbarSwitchTooltip(getSelectedItem()); // Show name
+                }, { passive: false });
+                // === END NEW ===
+
                 const inventorySlotIndex = hotbarIndices[i];
                 const itemObject = (inventorySlotIndex !== null && inventorySlotIndex !== undefined) ? inventorySlots[inventorySlotIndex] : null;
 
@@ -10825,15 +11060,74 @@
 			slot.classList.add('inventory-slot');
 			slot.dataset.slotIndex = slotIndex;
 			slot.dataset.sourceType = sourceType;
+
+            // --- 1. Standard Mouse Listener (for Desktop) ---
 			slot.addEventListener('mousedown', (e) => {
-				// Prevent the global canvas handlers from intercepting this click
 				e.stopPropagation();
 				e.preventDefault();
 				handleSlotClick(e);
 			});
 
+            // --- 2. NEW: Touch Listeners (for Mobile "Hold-to-Split") ---
+            let touchTimer = null;
+            let touchMoved = false;
 
-			// --- NEW: Add mouse hover events ---
+            slot.addEventListener('touchstart', (e) => {
+                // Only run this logic if we are in a menu
+                if (isGamePaused) {
+                    e.stopPropagation(); // Stop canvas from getting this touch
+                    // e.preventDefault(); // <-- REMOVED: This was blocking the scroll
+                    touchMoved = false;
+                    
+                    // Start a timer. If it fires, it's a long press (right-click)
+                    touchTimer = setTimeout(() => {
+                        e.preventDefault(); // Prevent scroll *now* that we know it's a hold
+                        handleSlotClick({ 
+                            currentTarget: slot, 
+                            button: 2, // 2 = Right Click
+                            preventDefault: () => {}, 
+                            stopPropagation: () => {} 
+                        });
+                        touchTimer = null; // Mark as fired
+                    }, 800); // CHANGED: 300ms to 800ms
+                }
+            }, { passive: false });
+
+            slot.addEventListener('touchmove', (e) => {
+                if (touchTimer) {
+                    touchMoved = true;
+                    clearTimeout(touchTimer); // Cancel long press if finger drags
+                    touchTimer = null;
+                }
+            }, { passive: false });
+
+            slot.addEventListener('touchend', (e) => {
+                if (isGamePaused) {
+                    e.stopPropagation();
+                    
+                    if (touchTimer) { // It was a tap
+                        clearTimeout(touchTimer);
+                        touchTimer = null;
+                        if (!touchMoved) {
+                            e.preventDefault(); // Prevent ghost click
+                            // Fire a simulated Left-Click
+                            handleSlotClick({ 
+                                currentTarget: slot, 
+                                button: 0, // 0 = Left Click
+                                preventDefault: () => {}, 
+                                stopPropagation: () => {} 
+                            });
+                        }
+                    } else if (!touchMoved) { // It was a long press that already fired
+                        e.preventDefault(); // FIX: Prevent the ghost click
+                    }
+                    // If touchMoved, we don't preventDefault, allowing the scroll to finish.
+                }
+            }, { passive: false });
+            // --- END OF NEW TOUCH LOGIC ---
+
+
+			// --- Tooltip Hover Events (for Desktop) ---
 			slot.onmouseenter = (e) => {
                 if (itemObject) {
                     const itemProps = itemTypes[itemObject.type] || blockTypes[itemObject.type]; // Get props
@@ -10861,6 +11155,7 @@
 				itemTooltip.style.display = 'none';
 			};
 
+            // --- Rest of the function (drawing the slot) ---
             if (sourceType === 'delete') {
                 slot.id = 'deleteSlot';
                 slot.innerHTML = 'X';
@@ -13129,7 +13424,153 @@
             mmCtx.fillStyle = '#FF0000'; // Bright red
             mmCtx.fillRect(halfMapSize - 1, halfMapSize - 1, 3, 3);
         }
+		
+		function toggleFullscreenMap() {
+			isFullscreenMapOpen = !isFullscreenMapOpen;
+            isGamePaused = isFullscreenMapOpen;
+            fullscreenMapOverlay.style.display = isFullscreenMapOpen ? 'flex' : 'none';
 
+            if (isFullscreenMapOpen) {
+                // Center map on player when opening
+                fullscreenMapDrag.mapCol = Math.floor(player.x / tileSize);
+                fullscreenMapDrag.mapRow = Math.floor(player.y / tileSize);
+                
+                // Resize canvas to fit screen
+                fsMapCanvas.width = fullscreenMapOverlay.clientWidth;
+                fsMapCanvas.height = fullscreenMapOverlay.clientHeight;
+                
+                drawFullscreenMap();
+            } else {
+                lastTime = performance.now(); // Resume game
+            }
+        }
+
+        function drawFullscreenMap() {
+            if (!isFullscreenMapOpen) return;
+
+            const width = fsMapCanvas.width;
+            const height = fsMapCanvas.height;
+            const zoom = fullscreenMapDrag.zoom;
+
+            // Clear with black
+            fsMapCtx.fillStyle = '#000000';
+            fsMapCtx.fillRect(0, 0, width, height);
+
+            // Center of the screen in pixels
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // Player's grid position
+            const playerCol = Math.floor(player.x / tileSize);
+            const playerRow = Math.floor(player.y / tileSize);
+
+            // Calculate the screen position of a block at (col, row)
+            const getScreenPos = (col, row) => {
+                const screenX = centerX + (col - fullscreenMapDrag.mapCol) * zoom;
+                const screenY = centerY + (row - fullscreenMapDrag.mapRow) * zoom;
+                return { x: screenX, y: screenY };
+            };
+
+            // Iterate over all explored blocks
+            for (const key in exploredMap) {
+                const color = exploredMap[key];
+                if (!color) continue; // Skip null/undefined (unexplored)
+
+                const [col, row] = key.split(',').map(Number);
+                const { x, y } = getScreenPos(col, row);
+
+                // Culling: Don't draw if it's off-screen
+                if (x + zoom < 0 || x > width || y + zoom < 0 || y > height) {
+                    continue;
+                }
+
+                fsMapCtx.fillStyle = color;
+                fsMapCtx.fillRect(x, y, zoom, zoom);
+            }
+
+            // Draw player icon (a larger red square)
+            const playerPos = getScreenPos(playerCol, playerRow);
+            fsMapCtx.fillStyle = '#FF0000';
+            fsMapCtx.fillRect(playerPos.x - 2, playerPos.y - 2, zoom + 4, zoom + 4);
+            fsMapCtx.strokeStyle = '#FFFFFF';
+            fsMapCtx.strokeRect(playerPos.x - 2, playerPos.y - 2, zoom + 4, zoom + 4);
+        }
+
+        function setupMapListeners() {
+            const closeButton = document.getElementById('fullscreenMapCloseButton');
+            closeButton.addEventListener('click', toggleFullscreenMap);
+            closeButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFullscreenMap();
+            });
+
+            // Click minimap to open fullscreen map
+            minimapContainer.addEventListener('click', toggleFullscreenMap);
+            minimapContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFullscreenMap();
+            });
+
+            // Drag to pan map (Mouse)
+            fsMapCanvas.addEventListener('mousedown', (e) => {
+                if (!isFullscreenMapOpen) return;
+                fullscreenMapDrag.active = true;
+                fullscreenMapDrag.lastX = e.clientX;
+                fullscreenMapDrag.lastY = e.clientY;
+                fsMapCanvas.style.cursor = 'grabbing';
+            });
+            fsMapCanvas.addEventListener('mousemove', (e) => {
+                if (!isFullscreenMapOpen || !fullscreenMapDrag.active) return;
+                const deltaX = e.clientX - fullscreenMapDrag.lastX;
+                const deltaY = e.clientY - fullscreenMapDrag.lastY;
+
+                fullscreenMapDrag.mapCol -= deltaX / fullscreenMapDrag.zoom;
+                fullscreenMapDrag.mapRow -= deltaY / fullscreenMapDrag.zoom;
+
+                fullscreenMapDrag.lastX = e.clientX;
+                fullscreenMapDrag.lastY = e.clientY;
+                drawFullscreenMap();
+            });
+            fsMapCanvas.addEventListener('mouseup', () => {
+                fullscreenMapDrag.active = false;
+                fsMapCanvas.style.cursor = 'grab';
+            });
+            fsMapCanvas.addEventListener('mouseleave', () => {
+                fullscreenMapDrag.active = false;
+                fsMapCanvas.style.cursor = 'grab';
+            });
+
+            // Drag to pan map (Touch)
+            fsMapCanvas.addEventListener('touchstart', (e) => {
+                if (!isFullscreenMapOpen || e.touches.length === 0) return;
+                e.preventDefault();
+                fullscreenMapDrag.active = true;
+                fullscreenMapDrag.lastX = e.touches[0].clientX;
+                fullscreenMapDrag.lastY = e.touches[0].clientY;
+            }, { passive: false });
+
+            fsMapCanvas.addEventListener('touchmove', (e) => {
+                if (!isFullscreenMapOpen || !fullscreenMapDrag.active || e.touches.length === 0) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - fullscreenMapDrag.lastX;
+                const deltaY = touch.clientY - fullscreenMapDrag.lastY;
+
+                fullscreenMapDrag.mapCol -= deltaX / fullscreenMapDrag.zoom;
+                fullscreenMapDrag.mapRow -= deltaY / fullscreenMapDrag.zoom;
+
+                fullscreenMapDrag.lastX = touch.clientX;
+                fullscreenMapDrag.lastY = touch.clientY;
+                drawFullscreenMap();
+            }, { passive: false });
+
+            fsMapCanvas.addEventListener('touchend', () => {
+                fullscreenMapDrag.active = false;
+            });
+        }
+		
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawWorld();
@@ -13964,7 +14405,324 @@
             closeSkinUploader();
         });
         skinUploadCancelButton.addEventListener('click', closeSkinUploader);
+
+        // ... (This should be after your existing code) ...
+
+        // === START OF NEW MOBILE CONTROLS SCRIPT ===
+
+        function setupMobileControls() {
+            // If this isn't a touch device, don't show the controls
+            if (!('ontouchstart' in window)) {
+                return;
+            }
+
+            // --- 1. Get Element References ---
+            const mobileControlsOverlay = document.getElementById('mobileControlsOverlay');
+            const joystickContainer = document.getElementById('joystickContainer');
+            const joystickKnob = document.getElementById('joystickKnob');
+            
+            const inventoryButton = document.getElementById('mobileInventoryButton');
+            const bedButton = document.getElementById('mobileBedButton');
+            const moverButton = document.getElementById('mobileMoverButton');
+
+            const moreButton = document.getElementById('mobileMoreButton');
+            const subMenu = document.getElementById('mobileSubMenu');
+            const consoleButton = document.getElementById('mobileConsoleButton');
+            const menuButton = document.getElementById('mobileMenuButton');
+            const mapButton = document.getElementById('mobileMapButton');
+			const mobileImportButton = document.getElementById('mobileImportButton');
+            const mobileExportButton = document.getElementById('mobileExportButton');
+
+            // Find ALL close buttons
+            const closeButtons = document.querySelectorAll('.mobile-close-button');
+
+            // Show all mobile controls
+            mobileControlsOverlay.style.display = 'block';
+            closeButtons.forEach(btn => btn.style.display = 'block');
+
+            // --- 2. State Variables ---
+            let joystickActive = false;
+            let joystickBaseX = 0;
+            let joystickBaseY = 0;
+            const joystickRadius = joystickContainer.clientWidth / 2;
+            const knobRadius = joystickKnob.clientWidth / 2;
+            const joystickDeadzone = 20;
+            const jumpThreshold = -45; // How far "up" to pull to jump
+
+            let miningTouchIdentifier = null;
+            let longPressTimer = null;
+            const longPressDuration = 200; // 200ms hold to start mining
+
+            // --- 3. Helper Function ---
+            function findTouch(touchList, identifier) {
+                if (identifier === null) return null;
+                for (let i = 0; i < touchList.length; i++) {
+                    if (touchList[i].identifier === identifier) {
+                        return touchList[i];
+                    }
+                }
+                return null;
+            }
+
+            // --- 4. Joystick Listeners (Movement) ---
+            joystickContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                joystickActive = true;
+                
+                const rect = joystickContainer.getBoundingClientRect();
+                joystickBaseX = rect.left + joystickRadius;
+                joystickBaseY = rect.top + joystickRadius;
+                
+                joystickKnob.style.transition = 'none'; // Allow instant dragging
+                
+                // Handle first touch
+                handleJoystickMove(e.changedTouches[0]);
+            }, { passive: false });
+
+            joystickContainer.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!joystickActive) return;
+                handleJoystickMove(e.changedTouches[0]);
+            }, { passive: false });
+
+            joystickContainer.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                joystickActive = false;
+                
+                // Reset knob position
+                joystickKnob.style.transition = 'transform 0.1s linear';
+                joystickKnob.style.transform = 'translate(0px, 0px)';
+                
+                // Reset keys
+                keys['ArrowLeft'] = false;
+                keys['KeyA'] = false;
+                keys['ArrowRight'] = false;
+                keys['KeyD'] = false;
+                keys['ArrowUp'] = false;
+                keys['KeyW'] = false;
+            }, { passive: false });
+
+            function handleJoystickMove(touch) {
+                let deltaX = touch.clientX - joystickBaseX;
+                let deltaY = touch.clientY - joystickBaseY;
+
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                let knobX = deltaX;
+                let knobY = deltaY;
+
+                // Clamp knob visual position to the edge of the joystick
+                if (distance > joystickRadius - knobRadius) {
+                    knobX = (deltaX / distance) * (joystickRadius - knobRadius);
+                    knobY = (deltaY / distance) * (joystickRadius - knobRadius);
+                }
+                
+                joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+
+                // --- Update Game Keys ---
+                
+                // Horizontal (Left/Right)
+                if (deltaX < -joystickDeadzone) {
+                    keys['ArrowLeft'] = true;
+                    keys['KeyA'] = true;
+                    keys['ArrowRight'] = false;
+                    keys['KeyD'] = false;
+                } else if (deltaX > joystickDeadzone) {
+                    keys['ArrowLeft'] = false;
+                    keys['KeyA'] = false;
+                    keys['ArrowRight'] = true;
+                    keys['KeyD'] = true;
+                } else {
+                    keys['ArrowLeft'] = false;
+                    keys['KeyA'] = false;
+                    keys['ArrowRight'] = false;
+                    keys['KeyD'] = false;
+                }
+
+                // Vertical (Jump)
+                if (deltaY < jumpThreshold) {
+                    keys['ArrowUp'] = true;
+                    keys['KeyW'] = true;
+                } else {
+                    keys['ArrowUp'] = false;
+                    keys['KeyW'] = false;
+                }
+            }
+
+            // --- 5. Canvas Listeners (Mining/Placing) ---
+            canvas.addEventListener('touchstart', (e) => {
+                if (isGamePaused || miningTouchIdentifier !== null) return;
+                
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                miningTouchIdentifier = touch.identifier;
+                
+                // Update mouse aim position
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = touch.clientX - rect.left;
+                mouse.y = touch.clientY - rect.top;
+
+                // Start a timer to see if this is a "long press" (for mining)
+                longPressTimer = setTimeout(() => {
+                    if (miningTouchIdentifier === touch.identifier) {
+                        mouse.down = true; // Start mining
+                    }
+                    longPressTimer = null;
+                }, longPressDuration);
+
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (isGamePaused) return;
+                
+                const touch = findTouch(e.changedTouches, miningTouchIdentifier);
+                if (touch) {
+                    e.preventDefault();
+                    // Update mouse aim position
+                    const rect = canvas.getBoundingClientRect();
+                    mouse.x = touch.clientX - rect.left;
+                    mouse.y = touch.clientY - rect.top;
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (isGamePaused) return;
+
+                const touch = findTouch(e.changedTouches, miningTouchIdentifier);
+                if (touch) {
+                    e.preventDefault();
+                    
+                    if (longPressTimer) {
+                        // This was a "tap" (press and release < 200ms)
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                        
+                        // Simulate a right-click to place/eat
+                        mouse.rightDown = true;
+                        // Reset it immediately after this frame
+                        setTimeout(() => { mouse.rightDown = false; }, 0);
+
+                    } else if (mouse.down) {
+                        // This was a "long press" that just ended
+                        mouse.down = false; // Stop mining
+                    }
+                    
+                    miningTouchIdentifier = null;
+                }
+            }, { passive: false });
+
+            // --- 6. UI Button Listeners ---
+            inventoryButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleInventoryMenu();
+            });
+
+            bedButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (player.bedSpawnPoint) {
+                    if (player.health > 50) {
+                        applyDamage(10);
+                        player.x = player.bedSpawnPoint.x;
+                        player.y = player.bedSpawnPoint.y;
+                    } else {
+                        showMessageBox("You are too weak to teleport to bed.", 'alert');
+                    }
+                } else {
+                    showMessageBox("You haven't set a bed spawn point!", 'alert');
+                }
+            });
+            
+            moverButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (canOpenTeleportMenu()) {
+                    toggleTeleportMenu();
+                } else {
+                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
+                }
+            });
+
+            // --- 7. Close Button Listeners ---
+            // This is complex, but we find the button's parent menu and call the correct toggle function
+            closeButtons.forEach(button => {
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const parentMenu = e.target.closest('[id$="Overlay"]'); // Finds nearest parent with an ID ending in "Overlay"
+                    if (!parentMenu) return;
+
+                    switch(parentMenu.id) {
+                        // ADDED THESE TWO
+                        case 'gameMenuOverlay': toggleGameMenu(); break;
+                        case 'devConsoleOverlay': toggleDevConsole(); break;
+
+                        // EXISTING
+                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
+                        case 'chestOverlay': toggleChestMenu(); break;
+                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
+                        case 'ovenOverlay': toggleFurnaceMenu(); break;
+                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
+                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
+                        case 'bookMenuOverlay': saveAndCloseBook(); break;
+                        case 'publishMenuOverlay': closePublishMenu(); break;
+                        case 'bookReaderOverlay': closeBookReader(); break;
+                        case 'skinUploadOverlay': closeSkinUploader(); break;
+                    }
+                });
+            });
+            // --- 8. "More" Button Listeners ---
+            moreButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                subMenu.classList.toggle('show'); // Toggle visibility
+            });
+    
+            consoleButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleDevConsole();
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+    
+            menuButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleGameMenu();
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+    
+            mapButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showMinimap = !showMinimap;
+                document.getElementById('minimapContainer').style.display = showMinimap ? 'block' : 'none';
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+
+            // --- ADD THESE LISTENERS ---
+            mobileImportButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                bgu2Input.click(); // Open the hidden file input
+                subMenu.classList.remove('show');
+            });
+
+            mobileExportButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                exportWorldBGU2(); // Call the export function
+                subMenu.classList.remove('show');
+            });
+            // --- END OF ADDITION ---
+
+        }
 		
+        setupMapListeners();
+		setupMobileControls();
         loadAssets();
 		
 		//The story is written from the view of a man named Cornelius Zaezit, who is writing a somber and solemn letter to a dear friend who passed away named Gorge Lanbridge. He is writing about how he is sorry for his death. It should include these BGU lore details and expanded: The governments and cities were thriving with people until the meteors started falling. At first, they left chasms through the Earth that created literal hell gates, but eventually the chasms resulted in a sickness that left things overgrown with "pest" and disease. Places became sick, magma pooled on the surface, and food spoiled. People turned on each other and burnt their houses and buildings down with lighters and broke them with axes and tools. Many people built underground mineshafts and minechambers, and some created watchtowers to look down at others. Some people found their way into dungeons, caves, but many rural plantations where peaceful in the fields. It wasn't until the whole world heated that everyone died, except miraculously from the dead bodies of those people who overheated, traders emerged with masks, but their grief paralyzed ALL of the millions of traders, so they couldn't move. They simply traded supplies and spoke, unresistant to anything. The void gates opened beneath hell and the underworld, and demons along with doom shacks rose. Eventually the demons died when heaven came into contact with the clouds of the mortal world, but so did the [laggy] cows and everything disappeared that was once living. Cornelius says the only hope rests in an unnamed man, who was chosen to live and survive on his own with no companions except that of the void trader and the traders.
