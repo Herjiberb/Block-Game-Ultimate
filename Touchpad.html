@@ -1338,6 +1338,39 @@
             pointer-events: auto;
             user-select: none;
         }
+        /* --- PASTE NEW CSS BEFORE THIS LINE --- */
+
+        /* Styling for the "More" button sub-menu */
+        #mobileButtonContainer {
+            position: relative; /* Needed for sub-menu positioning */
+        }
+
+        #mobileSubMenu {
+            display: none; /* Hidden by default */
+            position: absolute;
+            left: 100%; /* Position to the right of the button container */
+            top: 0;
+            padding-left: 10px;
+            flex-direction: column;
+            gap: 10px;
+            width: 100px; /* Give the sub-menu a fixed width */
+        }
+
+        #mobileSubMenu.show {
+            display: flex; /* Show the menu */
+        }
+
+        .mobile-sub-button {
+            height: 50px;
+            background-color: rgba(100, 100, 100, 0.6);
+            border: 2px solid white;
+            border-radius: 10px;
+            pointer-events: auto;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            user-select: none;
+        }
         /* --- END OF MOBILE CONTROLS CSS --- */
     </style>
 	<!-- Created By Bryant Reitzel 
@@ -1373,6 +1406,13 @@
             <button id="mobileInventoryButton" class="mobile-button">🎒</button>
             <button id="mobileBedButton" class="mobile-button">🛏️</button>
             <button id="mobileMoverButton" class="mobile-button">🌐</button>
+                
+            <button id="mobileMoreButton" class="mobile-button">...</button>
+            <div id="mobileSubMenu">
+                <button id="mobileConsoleButton" class="mobile-sub-button">Console</button>
+                <button id="mobileMenuButton" class="mobile-sub-button">Menu</button>
+                <button id="mobileMapButton" class="mobile-sub-button">Map</button>
+            </div>
         </div>
     </div>
     </div>
@@ -9259,6 +9299,17 @@
                 slotDiv.classList.add('hotbar-slot');
                 if (i === selectedHotbarSlot) slotDiv.classList.add('selected');
                 
+                // === NEW: Add touch listener for hotbar switching ===
+                slotDiv.addEventListener('touchstart', (e) => {
+                    if (isGamePaused) return; // Don't switch if in a menu
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectedHotbarSlot = i;
+                    updateHotbar(); // Redraw to show new selection
+                    showHotbarSwitchTooltip(getSelectedItem()); // Show name
+                }, { passive: false });
+                // === END NEW ===
+
                 const inventorySlotIndex = hotbarIndices[i];
                 const itemObject = (inventorySlotIndex !== null && inventorySlotIndex !== undefined) ? inventorySlots[inventorySlotIndex] : null;
 
@@ -10925,15 +10976,70 @@
 			slot.classList.add('inventory-slot');
 			slot.dataset.slotIndex = slotIndex;
 			slot.dataset.sourceType = sourceType;
+
+            // --- 1. Standard Mouse Listener (for Desktop) ---
 			slot.addEventListener('mousedown', (e) => {
-				// Prevent the global canvas handlers from intercepting this click
 				e.stopPropagation();
 				e.preventDefault();
 				handleSlotClick(e);
 			});
 
+            // --- 2. NEW: Touch Listeners (for Mobile "Hold-to-Split") ---
+            let touchTimer = null;
+            let touchMoved = false;
 
-			// --- NEW: Add mouse hover events ---
+            slot.addEventListener('touchstart', (e) => {
+                // Only run this logic if we are in a menu
+                if (isGamePaused) {
+                    e.stopPropagation(); // Stop canvas from getting this touch
+                    e.preventDefault();
+                    touchMoved = false;
+                    
+                    // Start a timer. If it fires, it's a long press (right-click)
+                    touchTimer = setTimeout(() => {
+                        handleSlotClick({ 
+                            currentTarget: slot, 
+                            button: 2, // 2 = Right Click
+                            preventDefault: () => {}, 
+                            stopPropagation: () => {} 
+                        });
+                        touchTimer = null; // Mark as fired
+                    }, 400); // 400ms hold time
+                }
+            }, { passive: false });
+
+            slot.addEventListener('touchmove', (e) => {
+                if (touchTimer) {
+                    touchMoved = true;
+                    clearTimeout(touchTimer); // Cancel long press if finger drags
+                    touchTimer = null;
+                }
+            }, { passive: false });
+
+            slot.addEventListener('touchend', (e) => {
+                if (isGamePaused) {
+                    e.stopPropagation();
+                    // If the timer is still active, it was a short tap
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                        touchTimer = null;
+                        if (!touchMoved) {
+                            // Fire a simulated Left-Click
+                            handleSlotClick({ 
+                                currentTarget: slot, 
+                                button: 0, // 0 = Left Click
+                                preventDefault: () => {}, 
+                                stopPropagation: () => {} 
+                            });
+                        }
+                    }
+                    // If touchTimer is null, the long press already fired, so do nothing.
+                }
+            }, { passive: false });
+            // --- END OF NEW TOUCH LOGIC ---
+
+
+			// --- Tooltip Hover Events (for Desktop) ---
 			slot.onmouseenter = (e) => {
                 if (itemObject) {
                     const itemProps = itemTypes[itemObject.type] || blockTypes[itemObject.type]; // Get props
@@ -10961,6 +11067,7 @@
 				itemTooltip.style.display = 'none';
 			};
 
+            // --- Rest of the function (drawing the slot) ---
             if (sourceType === 'delete') {
                 slot.id = 'deleteSlot';
                 slot.innerHTML = 'X';
@@ -14320,6 +14427,37 @@
                     }
                 });
             });
+            // === PASTE NEW LISTENERS HERE ===
+            // --- 8. "More" Button Listeners ---
+            moreButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                subMenu.classList.toggle('show'); // Toggle visibility
+            });
+    
+            consoleButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleDevConsole();
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+    
+            menuButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleGameMenu();
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+    
+            mapButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showMinimap = !showMinimap; // Toggle map visibility
+                document.getElementById('minimapContainer').style.display = showMinimap ? 'block' : 'none';
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+            // === END NEW LISTENERS ===
+    
         }
         // === END OF NEW MOBILE CONTROLS SCRIPT ===
 
