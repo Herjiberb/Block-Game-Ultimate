@@ -14379,6 +14379,19 @@
                 }
             });
 
+            // --- Missing Mobile Menu Toggle (The "..." Button) ---
+            mobileMenuButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMobileMenuButtons(); // Function to open/close the other mobile menu buttons
+            });
+            // <<< FIX: Added 'click' listener for mouse users.
+            mobileMenuButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMobileMenuButtons();
+            });
+
             // --- 7. Close Button Listeners ---
             // This is complex, but we find the button's parent menu and call the correct toggle function
             closeButtons.forEach(button => {
