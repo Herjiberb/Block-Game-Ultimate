@@ -10976,15 +10976,70 @@
 			slot.classList.add('inventory-slot');
 			slot.dataset.slotIndex = slotIndex;
 			slot.dataset.sourceType = sourceType;
+
+            // --- 1. Standard Mouse Listener (for Desktop) ---
 			slot.addEventListener('mousedown', (e) => {
-				// Prevent the global canvas handlers from intercepting this click
 				e.stopPropagation();
 				e.preventDefault();
 				handleSlotClick(e);
 			});
 
+            // --- 2. NEW: Touch Listeners (for Mobile "Hold-to-Split") ---
+            let touchTimer = null;
+            let touchMoved = false;
 
-			// --- NEW: Add mouse hover events ---
+            slot.addEventListener('touchstart', (e) => {
+                // Only run this logic if we are in a menu
+                if (isGamePaused) {
+                    e.stopPropagation(); // Stop canvas from getting this touch
+                    e.preventDefault();
+                    touchMoved = false;
+                    
+                    // Start a timer. If it fires, it's a long press (right-click)
+                    touchTimer = setTimeout(() => {
+                        handleSlotClick({ 
+                            currentTarget: slot, 
+                            button: 2, // 2 = Right Click
+                            preventDefault: () => {}, 
+                            stopPropagation: () => {} 
+                        });
+                        touchTimer = null; // Mark as fired
+                    }, 400); // 400ms hold time
+                }
+            }, { passive: false });
+
+            slot.addEventListener('touchmove', (e) => {
+                if (touchTimer) {
+                    touchMoved = true;
+                    clearTimeout(touchTimer); // Cancel long press if finger drags
+                    touchTimer = null;
+                }
+            }, { passive: false });
+
+            slot.addEventListener('touchend', (e) => {
+                if (isGamePaused) {
+                    e.stopPropagation();
+                    // If the timer is still active, it was a short tap
+                    if (touchTimer) {
+                        clearTimeout(touchTimer);
+                        touchTimer = null;
+                        if (!touchMoved) {
+                            // Fire a simulated Left-Click
+                            handleSlotClick({ 
+                                currentTarget: slot, 
+                                button: 0, // 0 = Left Click
+                                preventDefault: () => {}, 
+                                stopPropagation: () => {} 
+                            });
+                        }
+                    }
+                    // If touchTimer is null, the long press already fired, so do nothing.
+                }
+            }, { passive: false });
+            // --- END OF NEW TOUCH LOGIC ---
+
+
+			// --- Tooltip Hover Events (for Desktop) ---
 			slot.onmouseenter = (e) => {
                 if (itemObject) {
                     const itemProps = itemTypes[itemObject.type] || blockTypes[itemObject.type]; // Get props
@@ -11012,6 +11067,7 @@
 				itemTooltip.style.display = 'none';
 			};
 
+            // --- Rest of the function (drawing the slot) ---
             if (sourceType === 'delete') {
                 slot.id = 'deleteSlot';
                 slot.innerHTML = 'X';
@@ -14135,6 +14191,12 @@
             const bedButton = document.getElementById('mobileBedButton');
             const moverButton = document.getElementById('mobileMoverButton');
 
+            const moreButton = document.getElementById('mobileMoreButton');
+            const subMenu = document.getElementById('mobileSubMenu');
+            const consoleButton = document.getElementById('mobileConsoleButton');
+            const menuButton = document.getElementById('mobileMenuButton');
+            const mapButton = document.getElementById('mobileMapButton');
+
             // Find ALL close buttons
             const closeButtons = document.querySelectorAll('.mobile-close-button');
 
@@ -14315,128 +14377,90 @@
             }, { passive: false });
 
             // --- 6. UI Button Listeners ---
-            inventoryButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleInventoryMenu();
-            });
-            // <<< FIX: Added 'click' listener for mouse users.
-            inventoryButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleInventoryMenu();
-            });
-
-            bedButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (player.bedSpawnPoint) {
-                    if (player.health > 50) {
-                        applyDamage(10);
-                        player.x = player.bedSpawnPoint.x;
-                        player.y = player.bedSpawnPoint.y;
-                    } else {
-                        showMessageBox("You are too weak to teleport to bed.", 'alert');
-                    }
-                } else {
-                    showMessageBox("You haven't set a bed spawn point!", 'alert');
-                }
-            });
-            // <<< FIX: Added 'click' listener for mouse users.
-            bedButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (player.bedSpawnPoint) {
-                    if (player.health > 50) {
-                        applyDamage(10);
-                        player.x = player.bedSpawnPoint.x;
-                        player.y = player.bedSpawnPoint.y;
-                    } else {
-                        showMessageBox("You are too weak to teleport to bed.", 'alert');
-                    }
-                } else {
-                    showMessageBox("You haven't set a bed spawn point!", 'alert');
-                }
-            });
-            
-            moverButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (canOpenTeleportMenu()) {
-                    toggleTeleportMenu();
-                } else {
-                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
-                }
-            });
-            // <<< FIX: Added 'click' listener for mouse users.
-            moverButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (canOpenTeleportMenu()) {
-                    toggleTeleportMenu();
-                } else {
-                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
-                }
-            });
-
-            // --- Missing Mobile Menu Toggle (The "..." Button) ---
-            mobileMenuButton.addEventListener('touchstart', (e) => {
+            inventoryButton.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleMobileMenuButtons(); // Function to open/close the other mobile menu buttons
+                toggleInventoryMenu();
             });
-            // <<< FIX: Added 'click' listener for mouse users.
-            mobileMenuButton.addEventListener('click', (e) => {
+
+            bedButton.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleMobileMenuButtons();
+                if (player.bedSpawnPoint) {
+                    if (player.health > 50) {
+                        applyDamage(10);
+                        player.x = player.bedSpawnPoint.x;
+                        player.y = player.bedSpawnPoint.y;
+                    } else {
+                        showMessageBox("You are too weak to teleport to bed.", 'alert');
+                    }
+                } else {
+                    showMessageBox("You haven't set a bed spawn point!", 'alert');
+                }
+            });
+            
+            moverButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (canOpenTeleportMenu()) {
+                    toggleTeleportMenu();
+                } else {
+                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
+                }
             });
 
-            // --- 7. Close Button Listeners ---
-            // This is complex, but we find the button's parent menu and call the correct toggle function
-            closeButtons.forEach(button => {
-                button.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const parentMenu = e.target.closest('[id$="Overlay"]'); // Finds nearest parent with an ID ending in "Overlay"
-                    if (!parentMenu) return;
+            // --- 7. Close Button Listeners ---
+            // This is complex, but we find the button's parent menu and call the correct toggle function
+            closeButtons.forEach(button => {
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const parentMenu = e.target.closest('[id$="Overlay"]'); // Finds nearest parent with an ID ending in "Overlay"
+                    if (!parentMenu) return;
 
-                    switch(parentMenu.id) {
-                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
-                        case 'chestOverlay': toggleChestMenu(); break;
-                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
-                        case 'ovenOverlay': toggleFurnaceMenu(); break;
-                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
-                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
-                        case 'bookMenuOverlay': saveAndCloseBook(); break;
-                        case 'publishMenuOverlay': closePublishMenu(); break;
-                        case 'bookReaderOverlay': closeBookReader(); break;
-                        case 'skinUploadOverlay': closeSkinUploader(); break;
-                    }
-                });
-                // <<< FIX: Added 'click' listener for mouse users.
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const parentMenu = e.target.closest('[id$="Overlay"]'); 
-                    if (!parentMenu) return;
-
-                    switch(parentMenu.id) {
-                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
-                        case 'chestOverlay': toggleChestMenu(); break;
-                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
-                        case 'ovenOverlay': toggleFurnaceMenu(); break;
-                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
-                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
-                        case 'bookMenuOverlay': saveAndCloseBook(); break;
-                        case 'publishMenuOverlay': closePublishMenu(); break;
-                        case 'bookReaderOverlay': closeBookReader(); break;
-                        case 'skinUploadOverlay': closeSkinUploader(); break;
-                    }
-                });
-            });
+                    switch(parentMenu.id) {
+                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
+                        case 'chestOverlay': toggleChestMenu(); break;
+                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
+                        case 'ovenOverlay': toggleFurnaceMenu(); break;
+                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
+                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
+                        case 'bookMenuOverlay': saveAndCloseBook(); break;
+                        case 'publishMenuOverlay': closePublishMenu(); break;
+                        case 'bookReaderOverlay': closeBookReader(); break;
+                        case 'skinUploadOverlay': closeSkinUploader(); break;
+                    }
+                });
+            });
+            // --- 8. "More" Button Listeners ---
+            moreButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                subMenu.classList.toggle('show'); // Toggle visibility
+            });
+    
+            consoleButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleDevConsole();
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+    
+            menuButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleGameMenu();
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
+    
+            mapButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showMinimap = !showMinimap; // Toggle map visibility
+                document.getElementById('minimapContainer').style.display = showMinimap ? 'block' : 'none';
+                subMenu.classList.remove('show'); // Close sub-menu
+            });
         }
         // === END OF NEW MOBILE CONTROLS SCRIPT ===
 
