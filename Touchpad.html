@@ -14315,62 +14315,115 @@
             }, { passive: false });
 
             // --- 6. UI Button Listeners ---
-            /*inventoryButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleInventoryMenu();
-            });
+            inventoryButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleInventoryMenu();
+            });
+            // <<< FIX: Added 'click' listener for mouse users.
+            inventoryButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleInventoryMenu();
+            });
 
-            bedButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (player.bedSpawnPoint) {
-                    if (player.health > 50) {
-                        applyDamage(10);
-                        player.x = player.bedSpawnPoint.x;
-                        player.y = player.bedSpawnPoint.y;
-                    } else {
-                        showMessageBox("You are too weak to teleport to bed.", 'alert');
-                    }
-                } else {
-                    showMessageBox("You haven't set a bed spawn point!", 'alert');
-                }
-            });
-            
-            moverButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (canOpenTeleportMenu()) {
-                    toggleTeleportMenu();
-                } else {
-                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
-                }
-            });
+            bedButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (player.bedSpawnPoint) {
+                    if (player.health > 50) {
+                        applyDamage(10);
+                        player.x = player.bedSpawnPoint.x;
+                        player.y = player.bedSpawnPoint.y;
+                    } else {
+                        showMessageBox("You are too weak to teleport to bed.", 'alert');
+                    }
+                } else {
+                    showMessageBox("You haven't set a bed spawn point!", 'alert');
+                }
+            });
+            // <<< FIX: Added 'click' listener for mouse users.
+            bedButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (player.bedSpawnPoint) {
+                    if (player.health > 50) {
+                        applyDamage(10);
+                        player.x = player.bedSpawnPoint.x;
+                        player.y = player.bedSpawnPoint.y;
+                    } else {
+                        showMessageBox("You are too weak to teleport to bed.", 'alert');
+                    }
+                } else {
+                    showMessageBox("You haven't set a bed spawn point!", 'alert');
+                }
+            });
+            
+            moverButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (canOpenTeleportMenu()) {
+                    toggleTeleportMenu();
+                } else {
+                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
+                }
+            });
+            // <<< FIX: Added 'click' listener for mouse users.
+            moverButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (canOpenTeleportMenu()) {
+                    toggleTeleportMenu();
+                } else {
+                    showMessageBox("You haven't configured any World Movers yet.", 'alert');
+                }
+            });
 
-            // --- 7. Close Button Listeners ---
-            // This is complex, but we find the button's parent menu and call the correct toggle function
-            closeButtons.forEach(button => {
-                button.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const parentMenu = e.target.closest('[id$="Overlay"]'); // Finds nearest parent with an ID ending in "Overlay"
-                    if (!parentMenu) return;
+            // --- 7. Close Button Listeners ---
+            // This is complex, but we find the button's parent menu and call the correct toggle function
+            closeButtons.forEach(button => {
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const parentMenu = e.target.closest('[id$="Overlay"]'); // Finds nearest parent with an ID ending in "Overlay"
+                    if (!parentMenu) return;
 
-                    switch(parentMenu.id) {
-                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
-                        case 'chestOverlay': toggleChestMenu(); break;
-                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
-                        case 'ovenOverlay': toggleFurnaceMenu(); break;
-                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
-                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
-                        case 'bookMenuOverlay': saveAndCloseBook(); break;
-                        case 'publishMenuOverlay': closePublishMenu(); break;
-                        case 'bookReaderOverlay': closeBookReader(); break;
-                        case 'skinUploadOverlay': closeSkinUploader(); break;
-                    }
-                });
-            });*/
+                    switch(parentMenu.id) {
+                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
+                        case 'chestOverlay': toggleChestMenu(); break;
+                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
+                        case 'ovenOverlay': toggleFurnaceMenu(); break;
+                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
+                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
+                        case 'bookMenuOverlay': saveAndCloseBook(); break;
+                        case 'publishMenuOverlay': closePublishMenu(); break;
+                        case 'bookReaderOverlay': closeBookReader(); break;
+                        case 'skinUploadOverlay': closeSkinUploader(); break;
+                    }
+                });
+                // <<< FIX: Added 'click' listener for mouse users.
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const parentMenu = e.target.closest('[id$="Overlay"]'); 
+                    if (!parentMenu) return;
+
+                    switch(parentMenu.id) {
+                        case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
+                        case 'chestOverlay': toggleChestMenu(); break;
+                        case 'voidChestOverlay': toggleVoidChestMenu(); break;
+                        case 'ovenOverlay': toggleFurnaceMenu(); break;
+                        case 'worldMoverConfigOverlay': toggleWorldMoverMenu(); break;
+                        case 'worldMoverTeleportOverlay': toggleTeleportMenu(); break;
+                        case 'bookMenuOverlay': saveAndCloseBook(); break;
+                        case 'publishMenuOverlay': closePublishMenu(); break;
+                        case 'bookReaderOverlay': closeBookReader(); break;
+                        case 'skinUploadOverlay': closeSkinUploader(); break;
+                    }
+                });
+            });
         }
         // === END OF NEW MOBILE CONTROLS SCRIPT ===
 
