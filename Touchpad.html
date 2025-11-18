@@ -1340,7 +1340,6 @@
         }
         /* --- END OF MOBILE CONTROLS CSS --- */
     </style>
-    </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
 </head>
@@ -1365,20 +1364,18 @@
         <div id="minimapContainer">
             <canvas id="minimapCanvas" width="150" height="150"></canvas>
         </div>
-    </div>
+        <div id="mobileControlsOverlay">
+        <div id="joystickContainer">
+            <div id="joystickKnob"></div>
+        </div>
 
-    <div id="mobileControlsOverlay">
-            <div id="joystickContainer">
-                <div id="joystickKnob"></div>
-            </div>
-            
-            <div id="mobileButtonContainer">
-                <button id="mobileInventoryButton" class="mobile-button">🎒</button>
-                <button id="mobileBedButton" class="mobile-button">🛏️</button>
-                <button id="mobileMoverButton" class="mobile-button">🌐</button>
-            </div>
+        <div id="mobileButtonContainer">
+            <button id="mobileInventoryButton" class="mobile-button">🎒</button>
+            <button id="mobileBedButton" class="mobile-button">🛏️</button>
+            <button id="mobileMoverButton" class="mobile-button">🌐</button>
         </div>
-        </div>
+    </div>
+    </div>
 
     <!-- Game Menu Overlay -->
     <div id="gameMenuOverlay" oncontextmenu="return false;">
@@ -14325,7 +14322,8 @@
             });
         }
         // === END OF NEW MOBILE CONTROLS SCRIPT ===
-        
+
+        setupMobileControls();
         loadAssets();
 		
 		//The story is written from the view of a man named Cornelius Zaezit, who is writing a somber and solemn letter to a dear friend who passed away named Gorge Lanbridge. He is writing about how he is sorry for his death. It should include these BGU lore details and expanded: The governments and cities were thriving with people until the meteors started falling. At first, they left chasms through the Earth that created literal hell gates, but eventually the chasms resulted in a sickness that left things overgrown with "pest" and disease. Places became sick, magma pooled on the surface, and food spoiled. People turned on each other and burnt their houses and buildings down with lighters and broke them with axes and tools. Many people built underground mineshafts and minechambers, and some created watchtowers to look down at others. Some people found their way into dungeons, caves, but many rural plantations where peaceful in the fields. It wasn't until the whole world heated that everyone died, except miraculously from the dead bodies of those people who overheated, traders emerged with masks, but their grief paralyzed ALL of the millions of traders, so they couldn't move. They simply traded supplies and spoke, unresistant to anything. The void gates opened beneath hell and the underworld, and demons along with doom shacks rose. Eventually the demons died when heaven came into contact with the clouds of the mortal world, but so did the [laggy] cows and everything disappeared that was once living. Cornelius says the only hope rests in an unnamed man, who was chosen to live and survive on his own with no companions except that of the void trader and the traders.
