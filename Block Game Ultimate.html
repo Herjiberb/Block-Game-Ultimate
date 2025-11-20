@@ -451,7 +451,7 @@
         }
 
         /* Inventory & Crafting Menu Styles */
-        #inventoryCraftingOverlay, #chestOverlay, #voidChestOverlay {
+        #inventoryCraftingOverlay, #chestOverlay, #voidChestOverlay, #anvilOverlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -620,7 +620,7 @@
             border: 1px solid #666; border-radius: 5px;
         }
 
-        #inventoryCraftingMenu, #chestMenu, #voidChestMenu {
+        #inventoryCraftingMenu, #chestMenu, #voidChestMenu, #anvilMenu {
             background-color: #333;
             padding: 20px;
             border-radius: 15px;
@@ -1395,6 +1395,301 @@
         #fullscreenMapCloseButton {
             z-index: 2501; /* Above map canvas */
         }
+		@media (max-width: 500px) {
+            #hotbar {
+                width: 98%; /* Make it almost full width */
+                gap: 2px;
+                padding: 3px;
+                bottom: 5px; /* Move it closer to the bottom edge */
+            }
+            .hotbar-slot {
+                /* Shrink slots to fit 10 on screen */
+                width: 32px; 
+                height: 32px;
+                font-size: 10px; /* Smaller count text */
+            }
+            .hotbar-slot img {
+                width: 24px; /* Shrink the item image */
+                height: 24px;
+            }
+            .hotbar-slot span {
+                /* Adjust count position for smaller slot */
+                font-size: 9px;
+                bottom: 1px;
+                right: 1px;
+            }
+        }
+		/* --- Achievement Toast (Pop-up) Styles --- */
+		#achievementToastContainer {
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			z-index: 9999;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			pointer-events: none; /* Let clicks pass through */
+		}
+
+		.achievement-toast {
+			background-color: rgba(40, 40, 40, 0.9);
+			border: 2px solid #DAA520;
+			border-radius: 10px;
+			padding: 15px;
+			display: flex;
+			align-items: center;
+			gap: 15px;
+			width: 300px;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+			animation: toast-fade-in 0.5s ease-out forwards, toast-fade-out 0.5s ease-in 4.5s forwards;
+		}
+
+		@keyframes toast-fade-in {
+			from {
+				opacity: 0;
+				transform: translateX(100%);
+			}
+			to {
+				opacity: 1;
+				transform: translateX(0);
+			}
+		}
+
+		@keyframes toast-fade-out {
+			from {
+				opacity: 1;
+				transform: translateX(0);
+			}
+			99.9% {
+				opacity: 0;
+				transform: translateX(0);
+			}
+			100% {
+				opacity: 0;
+				transform: translateX(100%);
+				display: none; /* Hide it completely after animation */
+			}
+		}
+
+		.achievement-toast-icon {
+			width: 45px;
+			height: 45px;
+			image-rendering: pixelated;
+			border: 2px solid #777;
+			background-color: #555;
+			border-radius: 5px;
+			flex-shrink: 0;
+		}
+
+		.achievement-toast-text {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			color: white;
+		}
+
+		.achievement-toast-text h4 {
+			margin: 0;
+			color: #FFD700;
+			font-size: 1.1em;
+		}
+
+		.achievement-toast-text p {
+			margin: 0;
+			font-size: 0.9em;
+			color: #E0E0E0;
+		}
+
+		.achievement-toast-text .xp-gain {
+			margin-top: 4px;
+			font-size: 0.9em;
+			font-weight: bold;
+			color: #4CAF50; /* Green */
+		}
+		
+		/* Style for the description text */
+		.achievement-slot-desc {
+			font-size: 0.8em;
+			color: #B0B0B0;
+			margin-top: 4px;
+			/* Allow text to wrap */
+			white-space: normal;
+			word-wrap: break-word;
+		}
+
+		/* --- XP & Achievements Menu Styles --- */
+		#xpMenuOverlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background-color: rgba(0, 0, 0, 0.85);
+			display: none; /* Hidden by default */
+			justify-content: center;
+			align-items: center;
+			z-index: 1000;
+			font-family: 'Inter', sans-serif;
+			color: #E0E0E0;
+		}
+
+		#xpMenu {
+			background-color: #333;
+			padding: 20px;
+			border-radius: 15px;
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			width: 90%;
+			max-width: 700px;
+			border: 2px solid #DAA520;
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+			max-height: 90vh;
+		}
+
+		#xpMenu h2 {
+			color: #DAA520;
+			text-align: center;
+			margin: 0 0 10px 0;
+		}
+
+		#xpHeader {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: #444;
+			padding: 10px 15px;
+			border-radius: 8px;
+			font-size: 1.2em;
+		}
+
+		#xpTotalDisplay {
+			font-weight: bold;
+			color: #4CAF50;
+			font-size: 1.3em;
+		}
+
+		#achievementGrid {
+			display: grid;
+			/* UPDATED: Make columns wider to fit text */
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+			gap: 10px;
+			overflow-y: auto;
+			padding: 10px;
+			background-color: #2a2a2a;
+			border-radius: 10px;
+			min-height: 300px;
+		}
+
+		.achievement-slot {
+			background-color: #444;
+			border: 1px solid #666;
+			border-radius: 8px;
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+			/* UPDATED: Align items to the start (left) */
+			align-items: flex-start;
+			text-align: left;
+			gap: 8px; /* UPDATED: Increased gap */
+			position: relative;
+			cursor: default;
+		}
+
+		.achievement-slot-icon {
+			width: 48px;
+			height: 48px;
+			image-rendering: pixelated;
+			border: 2px solid #777;
+			background-color: #555;
+			border-radius: 5px;
+		}
+
+		.achievement-slot-name {
+			font-size: 0.9em;
+			font-weight: bold;
+			color: #FFD700;
+		}
+
+		.achievement-slot-xp {
+			font-size: 0.8em;
+			color: #4CAF50;
+		}
+
+		/* Tooltip for achievement description */
+		.achievement-slot .tooltiptext {
+			visibility: hidden;
+			width: 200px;
+			background-color: rgba(0, 0, 0, 0.9);
+			color: #fff;
+			text-align: center;
+			border-radius: 6px;
+			padding: 8px;
+			position: absolute;
+			z-index: 100;
+			bottom: 110%; /* Position above the slot */
+			left: 50%;
+			margin-left: -100px; /* Use half of the width */
+			opacity: 0;
+			transition: opacity 0.3s;
+			font-size: 0.85em;
+			pointer-events: none;
+		}
+
+		.achievement-slot:hover .tooltiptext {
+			visibility: visible;
+			opacity: 1;
+		}
+
+		/* Grayed out for unearned */
+		.achievement-slot.unearned {
+			background-color: #383838;
+		}
+
+		.achievement-slot.unearned .achievement-slot-icon {
+			filter: grayscale(1);
+			opacity: 0.6;
+		}
+
+		.achievement-slot.unearned .achievement-slot-name {
+			color: #999;
+		}
+
+		.achievement-slot.unearned .achievement-slot-xp {
+			color: #777;
+		}
+		
+		/* Grayed out for unearned */
+		.achievement-slot.unearned .achievement-slot-desc {
+			color: #777;
+		}
+
+		/* --- Mobile Specific Style Overrides --- */
+		@media (max-width: 600px) {
+			/* Move toast container to the top center */
+			#achievementToastContainer {
+				top: 10px;
+				right: 50%;
+				transform: translateX(50%);
+				width: 95%;
+				align-items: center;
+			}
+
+			.achievement-toast {
+				width: 100%;
+				box-sizing: border-box; /* Ensure padding doesn't break width */
+			}
+
+			/* Make XP menu grid columns smaller */
+			#achievementGrid {
+				grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+			}
+			
+			.achievement-slot-icon {
+				width: 40px;
+				height: 40px;
+			}
+		}
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -1447,6 +1742,8 @@
         </div>
 
     </div>
+	
+	<div id="achievementToastContainer"></div>
 
     <!-- Game Menu Overlay -->
     <div id="gameMenuOverlay" oncontextmenu="return false;">
@@ -1460,6 +1757,7 @@
             <div class="menu-buttons">
                 <button id="newGameButton">New Game</button>
                 <button id="resumeButton">Resume Game</button>
+				<button id="achievementsButton" style="background-color: #DAA520; color: white;">Achievements</button>
             </div>
             <label style="margin-top: 10px; display: flex; align-items: center; justify-content: center;">
                 <input type="checkbox" id="maintainDurabilityCheckbox" style="margin-right: 8px;"> Maintain Block Durability
@@ -1611,6 +1909,48 @@
 	  </div>
 	</div>
 	
+	<div id="anvilOverlay" oncontextmenu="return false;">
+        <div id="anvilMenu">
+            <h2>Anvil</h2>
+            <div class="inventory-section">
+				<h3>Anvil Crafting</h3>
+                <div class="crafting-area">
+                    <button class="mobile-close-button">X</button>
+                    <div id="anvilGrid" class="inventory-grid" style="grid-template-columns: repeat(4, 45px); grid-template-rows: repeat(4, 45px);">
+                    </div>
+                    <div class="crafting-arrow">&#10144;</div>
+                    <div class="inventory-slot" id="anvilOutput"></div>
+                </div>
+                 <button id="anvilCraftButton" disabled>Craft</button>
+            </div>
+            
+            <div class="inventory-section">
+                <h3>Your Inventory</h3>
+                <div id="anvilPlayerInventoryGrid" class="inventory-grid">
+                </div>
+            </div>
+            <div class="inventory-section">
+                <h3>Hotbar Slots</h3>
+                <div id="anvilHotbarGrid" class="inventory-grid">
+                </div>
+            </div>
+            <div id="anvilRecipeMenu" class="inventory-section">
+                <h3>Recipes</h3>
+                
+                <div class="recipe-controls">
+                    <input type="text" id="anvilRecipeSearchInput" placeholder="Search recipes...">
+                    <button id="anvilRecipeViewToggleList" class="recipe-view-toggle active">List</button>
+                    <button id="anvilRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
+                </div>
+
+                <div id="anvilRecipeIconContainer" style="display: none;">
+                </div>
+
+                <div id="anvilRecipeListContainer" style="display: block;">
+                </div>
+            </div>
+        </div>
+    </div>
 	<div id="worldMoverConfigOverlay" oncontextmenu="return false;">
         <div id="worldMoverConfigMenu">
             <h2>World Mover Configuration</h2>
@@ -1754,6 +2094,21 @@
         </div>
     </div>
 	
+	<div id="xpMenuOverlay" oncontextmenu="return false;">
+		<div id="xpMenu">
+			<h2>Achievements & Progression</h2>
+			<button class="mobile-close-button">X</button>
+
+			<div id="xpHeader">
+				<span>Total XP:</span>
+				<span id="xpTotalDisplay">0 XP</span>
+			</div>
+
+			<div id="achievementGrid">
+				</div>
+		</div>
+	</div>
+	
     <!-- Custom Message Box Overlay -->
     <div id="customMessageBoxOverlay">
         <div id="customMessageBox">
@@ -1770,6 +2125,8 @@
 		// Ideas And Mechanics All From The Mind Of Bryant Reitzel
 		const itemTooltip = document.getElementById('itemTooltip');
         const loadingTipText = document.getElementById('loadingTipText');
+		
+		let showBlockOutline = false; // Toggle block outline on/off
 		
 		let hotbarTooltipTimer = null;
         function showHotbarSwitchTooltip(itemObject) {
@@ -1864,6 +2221,7 @@
 		let cloakingEnabled = true //Non constant to enable console cheats
 		let displayType = 'stone';
 		let deathCount = 0;
+		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
 		let portals = []; // Will store all portal locations and links
@@ -1916,6 +2274,15 @@
         const ovenPlayerInventoryGrid = document.getElementById('ovenPlayerInventoryGrid');
         const ovenRecipeList = document.getElementById('ovenRecipeList');
         let currentlyOpenFurnace = null; // Will store {col, row} of the open oven
+		
+		const anvilOverlay = document.getElementById('anvilOverlay');
+        const anvilGridDiv = document.getElementById('anvilGrid');
+        const anvilOutputSlot = document.getElementById('anvilOutput');
+        const anvilCraftButton = document.getElementById('anvilCraftButton');
+        const anvilPlayerInventoryGrid = document.getElementById('anvilPlayerInventoryGrid');
+        const anvilHotbarGrid = document.getElementById('anvilHotbarGrid');
+        let anvilGridSlots = new Array(16).fill(null);
+        let currentlyOpenAnvil = null;
 		
 		const worldMoverConfigOverlay = document.getElementById('worldMoverConfigOverlay');
         const worldMoverCodeInput = document.getElementById('worldMoverCodeInput');
@@ -1970,6 +2337,12 @@
             zoom: 2, // 2x zoom
         };
 		
+		const bullets = [];
+        let gunCooldown = 0;
+        let BULLET_SPEED = 20; // Speed of the bullet (pixels per frame)
+        let BULLET_SIZE = 10;   // Size of the bullet (pixels)
+		let lastAmmoTypeFired = null;
+		
 		const traderCharacterContainer = document.getElementById('traderCharacterContainer');
 		
         // Chest Menu
@@ -2003,7 +2376,8 @@
             bobTimer: 0,       // Timer for the walking bob animation
             swingTimer: 0,     // Timer for the swinging animation
             isSwinging: false, // Is the swing animation active?
-            lastSwingTime: 0   // To make the swing animation snappy
+            lastSwingTime: 0,   // To make the swing animation snappy
+			gunAngle: 0 // FIRE!!! PEW PEW PEW, KABLOOM!!!
         };
 
         // Custom Message Box elements
@@ -2040,8 +2414,104 @@
         const skinUploadLabel = document.getElementById('skinUploadLabel');
         const skinResetButton = document.getElementById('skinResetButton');
         const skinUploadCancelButton = document.getElementById('skinUploadCancelButton');
+		
+		// --- Achievement & XP System ---
+		let playerXP = 0;
+		let earnedAchievements = []; // This will be an array of achievement IDs
 
+		const achievements = {
+			'DEATH_CATALYST': {
+				id: 'DEATH_CATALYST',
+				name: 'Death Catalyst',
+				desc: 'Reach the underworld and face the hellfire.',
+				icon: 'Hellstone Block.png',
+				xp: 10
+			},
+			'SKY_CHASER': {
+				id: 'SKY_CHASER',
+				name: 'Sky Chaser',
+				desc: 'Reach heaven and the clouds above.',
+				icon: 'Cloud Block.png',
+				xp: 10
+			},
+			'TIMBER': {
+				id: 'TIMBER',
+				name: 'TIMBER!',
+				desc: 'Use an axe to hover over an axe-suited block.',
+				icon: 'Wooden Axe.png',
+				xp: 5
+			},
+			'POOP_SCOOP': {
+				id: 'POOP_SCOOP',
+				name: 'Poop Scoop!',
+				desc: 'Use a shovel to hover over a shovel-suited block.',
+				icon: 'Wooden Shovel.png',
+				xp: 5
+			},
+			'TERRAFORMER': {
+				id: 'TERRAFORMER',
+				name: 'Terraformer!',
+				desc: 'Use a pickaxe to hover over a pickaxe-suited block.',
+				icon: 'Wooden Pickaxe.png',
+				xp: 5
+			},
+			'PEW_PEW': {
+				id: 'PEW_PEW',
+				name: 'PEW PEW PEW!',
+				desc: 'Use a gun to hit any block.',
+				icon: 'Machine Gun.png',
+				xp: 5
+			},
+			'DEDICATED_ONE': {
+				id: 'DEDICATED_ONE',
+				name: 'Dedicated One',
+				desc: 'Waste your steel to make a steel brick block.',
+				icon: 'Steel Brick Block.png',
+				xp: 5
+			},
+			'FRANTIC_FARMER': {
+				id: 'FRANTIC_FARMER',
+				name: 'Frantic Farmer',
+				desc: 'Plant any seed inside of fertilizer.',
+				icon: 'Fertilizer Block.png',
+				xp: 5
+			},
+			'REALM_NOTHINGNESS': {
+				id: 'REALM_NOTHINGNESS',
+				name: 'Realm of Nothingness',
+				desc: 'Mine void crystal in the void.',
+				icon: 'Void Crystal Block.png',
+				xp: 10
+			},
+			'TRAGIC_BARGAIN': {
+				id: 'TRAGIC_BARGAIN',
+				name: 'Tragic Bargain',
+				desc: 'Trade with the void trader.',
+				icon: 'Void Chest.png',
+				xp: 5
+			},
+			'BARTERIN_TIME': {
+				id: 'BARTERIN_TIME',
+				name: "Barterin' Time",
+				desc: 'Trade with a trader.',
+				icon: 'Gold Coin.png',
+				xp: 5
+			},
+			'IT_BURNS': {
+				id: 'IT_BURNS',
+				name: 'It Burns!',
+				desc: 'Eat a spicy Chili Pepper.',
+				icon: 'Chili Pepper.png',
+				xp: 5
+			},
+		};
+
+		const xpMenuOverlay = document.getElementById('xpMenuOverlay');
+		const achievementsButton = document.getElementById('achievementsButton');
+		
         let heldItem = null; // Stores the item object being dragged by the cursor {type, count, durability}
+		
+		
 		// --- IN-GAME DEV CONSOLE CODE START ---
 
 		// Get references to the console elements
@@ -2052,7 +2522,7 @@
 		let commandHistory = [];
 		let historyIndex = -1;
 		const consoleAutocompleteSuggestions = [
-			'addToInventory("",1)', 'player', 'tp(', 'killMyself()', 'npcs', 'particles', 'animatedDrops', 'gameTime', 'isGamePaused', 'inventorySize', 'maxStackSize', 'handMiningPower', 'playerHeight', 'playerWidth', 'maxSurfaceVariation', 'exportWorldData()', 'importWorldData(', 'showMessageBox(', 'toggleDevConsole()', 'worldBlocks', 'itemTypes', 'blockTypes', 'player.health', 'player.speed', 'player.jumpStrength', 'player.gravity', 'getOp("")',
+			'addToInventory("",1)', 'player', 'tp(', 'killMyself()', 'npcs', 'particles', 'animatedDrops', 'gameTime', 'isGamePaused', 'inventorySize', 'maxStackSize', 'handMiningPower', 'playerHeight', 'playerWidth', 'maxSurfaceVariation', 'exportWorldData()', 'importWorldData(', 'showMessageBox(', 'toggleDevConsole()', 'worldBlocks', 'itemTypes', 'blockTypes', 'player.health', 'player.speed', 'player.jumpStrength', 'player.gravity', 'getOp("")', 'showBlockOutline = true',
 		];
 		
 		function getOp(opMax) {
@@ -2086,7 +2556,7 @@
 			// Scroll to the bottom
 			consoleOutput.scrollTop = consoleOutput.scrollHeight;
 		}
-
+		
 		// Function to toggle the console's visibility
 		function toggleDevConsole() {
 			isConsoleOpen = !isConsoleOpen;
@@ -2233,6 +2703,8 @@
 
 			// Add bought item to player inventory
 			addToInventory(currentVoidTrade.itemType, currentVoidTrade.count, currentVoidTrade.durability);
+			
+			unlockAchievement('TRAGIC_BARGAIN');
 
 			// Clear the trade and update UI
 			currentVoidTrade = null;
@@ -2322,7 +2794,7 @@
 		const saltVeinProbability = 0.0005;
 		const rockVeinProbability = 0.0003;
 		const crudeOilVeinProbability = 0.0003;
-		const nitroVeinProbability = 0.00015;
+		const nitroVeinProbability = 0.0002;
         const antLarvaVeinProbability = 0.015;
         const boneSpineProbability = 0.001;
 
@@ -2457,6 +2929,10 @@
 			'magical_chest': { imgSrc: 'Magical Chest.png', solid: true, miningHardness: 150, drops: [{item: 'magical_chest', chance: 1, min: 1, max: 1}], color: '#9400D3' },
             'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#483D8B' },
 			'refrigerator': { imgSrc: 'Refrigerator.png', solid: true, miningHardness: 150, drops: [{item: 'refrigerator', chance: 1, min: 1, max: 1}], color: '#E6E8FA' },
+			'rock_anvil': { imgSrc: 'Rock Anvil.png', solid: true, miningHardness: 1000, drops: [{item: 'rock_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 1 },
+			'iron_anvil': { imgSrc: 'Iron Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'iron_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
+			'tungsten_anvil': { imgSrc: 'Tungsten Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'tungsten_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
+			'brass_anvil': { imgSrc: 'Brass Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'brass_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
 			'oven': { imgSrc: 'Oven.png', solid: true, miningHardness: 750, drops: [{item: 'oven', chance: 1, min: 1, max: 1}], color: '#696969' },
 			'magma_furnace': { imgSrc: 'Magma Furnace.png', solid: true, miningHardness: 750, drops: [{item: 'magma_furnace', chance: 1, min: 1, max: 1}], color: '#FF4500' },
             'power_forge': { imgSrc: 'Power Forge.png', solid: true, miningHardness: 750, drops: [{item: 'power_forge', chance: 1, min: 1, max: 1}], color: '#FFD700' },
@@ -2517,7 +2993,7 @@
             'compacting_stone': { imgSrc: 'Compacting Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#696969' },
             'glass_block': { imgSrc: 'Glass Block.png', solid: true, miningHardness: 40, drops: [{item: 'glass_block', chance: 1, min: 1, max: 1}], color: '#AFEEEE' },
 			'compacted_stone': { imgSrc: 'Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#565656', requiredMiningPower: 0.2 },
-			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#262626' },
+			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#262626', requiredMiningPower: 0.3 },
 			'void_stone': { imgSrc: 'Void Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_stone', chance: 1, min: 1, max: 1}], color: '#5b6160', requiredMiningPower: 0.3 },
 			'void_dust_block': { imgSrc: 'Void Dust Block.png', solid: true, miningHardness: 100, drops: [{item: 'void_dust', chance: 1, min: 1, max: 16}], color: '#6b8683' },
 			'void_crystal': { imgSrc: 'Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_crystal', chance: 1, min: 1, max: 1}], color: '#de65b7', requiredMiningPower: 0.2 },
@@ -2555,14 +3031,14 @@
             // Ores And Minerals
 			'coal_stone': { imgSrc: 'Coal Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F' },
 			'coal_compacted_stone': { imgSrc: 'Coal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.2 },
-            'coal_compressed_stone': { imgSrc: 'Coal Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.8 },
+            'coal_compressed_stone': { imgSrc: 'Coal Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.5 },
 			'copper_compacted_stone': { imgSrc: 'Copper Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'copper_nugget', chance: 1, min: 1, max: 1}], color: '#B87333', requiredMiningPower: 0.2 },
             'tin_compacted_stone': { imgSrc: 'Tin Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tin_nugget', chance: 1, min: 1, max: 1}], color: '#C0C0C0', requiredMiningPower: 0.2 },
 			'zinc_compacted_stone': { imgSrc: 'Zinc Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'zinc_nugget', chance: 1, min: 1, max: 1}], color: '#B0C4DE', requiredMiningPower: 0.2 },
 			'iron_stone': { imgSrc: 'Iron Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
             'iron_compacted_stone': { imgSrc: 'Iron Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
 			'iron_granite': { imgSrc: 'Iron Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.8 },
-			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
+			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.5 },
 			'tungsten_compacted_stone': { imgSrc: 'Tungsten Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tungsten_nugget', chance: 1, min: 1, max: 1}], color: '#8B8B83', requiredMiningPower: 0.2 },
             'gold_compacted_stone': { imgSrc: 'Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'gold_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
             'ruby_compacted_stone': { imgSrc: 'Ruby Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ruby_nugget', chance: 1, min: 1, max: 1}], color: '#E0115F', requiredMiningPower: 0.2 },
@@ -2574,12 +3050,14 @@
             'opal_compacted_stone': { imgSrc: 'Opal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'opal_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7', requiredMiningPower: 0.2 },
 			'jade_compacted_stone': { imgSrc: 'Jade Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'jade_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
             'aluminum_granite': { imgSrc: 'Aluminum Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3' },
-			'aluminum_compressed_stone': { imgSrc: 'Aluminum Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.8 },
-			'palladium_compressed_stone': { imgSrc: 'Palladium Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'palladium_nugget', chance: 1, min: 1, max: 1}], color: '#E6E8FA', requiredMiningPower: 0.8 },
+			'aluminum_compressed_stone': { imgSrc: 'Aluminum Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.5 },
+			'palladium_compressed_stone': { imgSrc: 'Palladium Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'palladium_nugget', chance: 1, min: 1, max: 1}], color: '#E6E8FA', requiredMiningPower: 0.5 },
 			'nitro_compacted_stone': { imgSrc: 'Nitro Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'nitro_powder', chance: 1, min: 1, max: 5}], color: '#FFFF00', requiredMiningPower: 0.2 },
 			'crude_oil_compacted_stone': { imgSrc: 'Crude Oil Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'crude_oil_chunk', chance: 1, min: 1, max: 1}], color: '#000000', requiredMiningPower: 0.2 },
 			'any_plank': { imgSrc: 'Any Plank.png', solid: false, miningHardness: 0, drops: [], color: '#654321' },
 			'any_gilded': { imgSrc: 'Any Gilded.png', solid: false, miningHardness: 0, drops: [], color: '#FFD700' },
+			'raw_deadwood': { imgSrc: 'Raw Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'raw_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
+			'planked_deadwood': { imgSrc: 'Planked Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'planked_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
 			'raw_oak': { imgSrc: 'Raw Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
             'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22' },
             'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
@@ -2629,7 +3107,8 @@
 			'green_flower': { imgSrc: 'Green Flower.png', solid: false, miningHardness: 10, drops: [{item: 'green_flower', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
 			'pinecone_pile': { imgSrc: 'Pinecone Pile.png', solid: false, miningHardness: 10, drops: [{item: 'pinecone', chance: 1, min: 1, max: 3}], color: '#8B4513' },
 			'pine_needle_pile': { imgSrc: 'Pine Needle Pile.png', solid: false, miningHardness: 10, drops: [{item: 'pine_needle_living', chance: 0.5, min: 1, max: 2}, {item: 'pine_needle_dying', chance: 0.5, min: 1, max: 2}, {item: 'pine_needle_dead', chance: 0.5, min: 1, max: 2}], color: '#2E8B57' },
-            'mossy_root': { imgSrc: 'Mossy Root.png', solid: false, miningHardness: 10, drops: [{item: 'mossy_root', chance: 1, min: 1, max: 1}], color: '#6B8E23' },
+            'milkweed': { imgSrc: 'Milkweed.png', solid: false, miningHardness: 10, drops: [{item: 'milkweed', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
+			'mossy_root': { imgSrc: 'Mossy Root.png', solid: false, miningHardness: 10, drops: [{item: 'mossy_root', chance: 1, min: 1, max: 1}], color: '#6B8E23' },
 			'leaf_pile': { imgSrc: 'Leaf Pile.png', solid: false, miningHardness: 10, drops: [{item: 'leaf', chance: 1, min: 1, max: 5}], color: '#228B22' },
 			'fern': { imgSrc: 'Fern.png', solid: false, miningHardness: 10, drops: [{item: 'chili_pepper_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
 			'fern_stalk': { imgSrc: 'Fern Stalk.png', solid: false, miningHardness: 10, drops: [{item: 'chili_pepper_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
@@ -2644,6 +3123,7 @@
             'anthill_sand_block': { imgSrc: 'Anthill Sand Block.png', solid: true, miningHardness: 45, drops: [{item: 'anthill_sand_block', chance: 1, min: 1, max: 1}], color: '#C19A6B' },
             'colony_heart_sand_block': { imgSrc: 'Colony Heart Sand Block.png', solid: true, miningHardness: 500, drops: [{item: 'colony_heart', chance: 1, min: 1, max: 1}], color: '#FF4444' },
             'anthill_sand_mound': { imgSrc: 'Anthill Sand Mound.png', solid: false, miningHardness: 10, drops: [], color: '#D2B48C' },
+			'guano': { imgSrc: 'Guano.png', solid: false, miningHardness: 10, drops: [{item: 'guano', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
             'slate': { imgSrc: 'Slate Block.png', solid: true, miningHardness: 600, drops: [{item: 'slate', chance: 1, min: 1, max: 1}], color: '#708090' },
             'schist': { imgSrc: 'Schist Block.png', solid: true, miningHardness: 600, drops: [{item: 'schist', chance: 1, min: 1, max: 1}], color: '#848482' },
             'granite': { imgSrc: 'Granite Block.png', solid: true, miningHardness: 700, drops: [{item: 'granite', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
@@ -2818,6 +3298,7 @@
              'asphalt_fragment': { imgSrc: 'Asphalt Fragment.png', color: '#36454F' },
 			 'void_dust': { imgSrc: 'Void Dust.png', color: '#6b8683' },
 			 'nitro_powder': { imgSrc: 'Nitro Powder.png', color: '#FFFF00' },
+			 'saltpeter': { imgSrc: 'Saltpeter.png', color: '#FFFF00' },
 			 'crude_oil_chunk': { imgSrc: 'Crude Oil Chunk.png', color: '#000000' },
              'snow_ball': { imgSrc: 'Snow Ball.png', color: '#FFFAFA' },
              'prickly_pear_fruit': { imgSrc: 'Prickly Pear Fruit.png', color: '#FF00FF', isFood: true, healAmount: 3 },
@@ -2977,7 +3458,7 @@
 			 'infinitungsten_pickaxe': { imgSrc: 'Infinitungsten Pickaxe.png', color: '#8B8B83', isTool: true, miningPower: 10.0, maxDurability: 400000 },
              'anthill_infinitungsten_pickaxe': { imgSrc: 'Anthill Infinitungsten Pickaxe.png', color: '#8B8B83', isTool: true, miningPower: 20.0, maxDurability: 320000 },
              'void_infinitungsten_pickaxe': { imgSrc: 'Void Infinitungsten Pickaxe.png', color: '#8B8B83', isTool: true, miningPower: 8.0, maxDurability: 600000 },
-			 'mythicalithium_pickaxe': { imgSrc: 'Mythicalithium Pickaxe.png', color: '#8A2BE2', isTool: true, miningPower: 20.0, maxDurability: 600000 },
+			 'mythicalithium_pickaxe': { imgSrc: 'Mythicalithium Pickaxe.png', color: '#8A2BE2', isTool: true, miningPower: 22.0, maxDurability: 700000 },
 			 'pest': { imgSrc: 'Pest.png', color: '#6B8E23' },
 			 // ---SHOVEL SECTION---
 			 'wooden_shovel': { imgSrc: 'Wooden Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.2, maxDurability: 7500 },
@@ -2997,6 +3478,14 @@
 			 'tungsten_axe': { imgSrc: 'Tungsten Axe.png', color: '#8B8B83', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 32000 },
 			 'bronze_axe': { imgSrc: 'Bronze Axe.png', color: '#CD7F32', isTool: true, miningPower: 0.1, axePower: 0.8, maxDurability: 35000 },
 			 'steel_axe': { imgSrc: 'Steel Axe.png', color: '#43464B', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 100000 },
+			 // ---GUN SECTION---
+			 'wood_bullet': { imgSrc: 'Wood Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 1 },
+             'brass_bullet': { imgSrc: 'Brass Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 5 },
+             'steel_bullet': { imgSrc: 'Steel Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 10 },
+             'mythicalithium_bullet': { imgSrc: 'Mythicalithium Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 235 },
+			 'pistol': { imgSrc: 'Pistol.png', color: '#43464B', isTool: true, isGun: true, gunPower: 15, fireRate: 0.6, fireLoss: {min: 30, max: 50}, maxDurability: 20000 },
+			 'machine_gun': { imgSrc: 'Machine Gun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 21, fireRate: 0.1, fireLoss: {min: 30, max: 80}, maxDurability: 30000 },
+			 'minigun': { imgSrc: 'Minigun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 66, fireRate: 0.05, fireLoss: {min: 30, max: 150}, maxDurability: 35000 },
 			 // Currently Useless Item
 			 'bucket': { imgSrc: 'Bucket.png', color: '#A9A9A9' },
 			 'test_axe': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.5, maxDurability: 10000 },
@@ -3241,43 +3730,9 @@
                     // --- NEW: Check ID ---
                     if (thisLoadID !== currentLoadID) return; // Abort if this is an old load
 
-                    /*// --- NEW: Get dominant color from sprite ---
-                    let computedColor = null;
-                    try {
-                        // Create a tiny in-memory canvas to sample the color
-                        const tempCanvas = document.createElement('canvas');
-                        const tempCtx = tempCanvas.getContext('2d');
-                        tempCanvas.width = 5;
-                        tempCanvas.height = 5;
-                        // Draw the loaded image scaled down onto the tiny canvas
-                        tempCtx.drawImage(img, 0, 0, 5, 5);
-                        // Get the pixel data from the center of the tiny canvas
-                        const data = tempCtx.getImageData(2, 2, 1, 1).data; // Sample pixel at (2,2)
-                        if (data[3] > 128) { // Only use if not transparent
-                            // Convert the R,G,B values to a hex string
-                            const r = data[0].toString(16).padStart(2, '0');
-                            const g = data[1].toString(16).padStart(2, '0');
-                            const b = data[2].toString(16).padStart(2, '0');
-                            computedColor = `#${r}${g}${b}`;
-                        }
-                    } catch (e) {
-                        //console.warn(`Could not compute color for ${src}:`, e);
-                        computedColor = null; // Fallback
-                    }*/
-                    // --- END OF NEW COLOR LOGIC ---
-
 					// assign the same Image object to all type keys that reference this src
 					(srcToKeys[src] || []).forEach(typeKey => {
 						assets[typeKey] = img;
-
-                        /*// --- NEW: Find the matching block/item prop and store the color ---
-                        for (const group of getAssetGroups()) {
-                            if (group && group[typeKey]) {
-                                group[typeKey].computedColor = computedColor;
-                                break;
-                            }
-                        }
-                        // --- END OF ADDITION ---*/
 					});
 					assetsLoaded++;
 					idx++;
@@ -3315,7 +3770,7 @@
 			loadNext();
 		}
 		
-		let skinTriggerSequence
+		let skinTriggerSequence = "";
 		
 		const playerReach = 5 * tileSize; // For example, 5 tiles
 
@@ -3364,14 +3819,6 @@
         let isGamePaused = false; 
         let maintainBlockDurability = true;
 		let animateDrops = false;
-
-        function isTreeBlock(type) {
-            return type === 'raw_oak' || type === 'oak_bush' ||
-                   type === 'raw_birch' || type === 'birch_bush' ||
-                   type === 'raw_spruce' || type === 'spruce_bush' ||
-                   type === 'raw_darkwood' || type === 'darkwood_bush' ||
-                   type === 'raw_gilded_wood' || type === 'gilded_tree_bush';
-        }
 
         // REVISED: Dedicated function for generating cacti
         function generateCactus(col, surfaceRow) {
@@ -3425,6 +3872,9 @@
 			} else if (treeType === 'hell') {
 				trunkBlockType = 'raw_hell_wood'; bushBlockType = 'hell_wood_bush'; minTrunkHeight = 6; maxTrunkHeight = 8;
 				minCanopyRadius = 2; maxCanopyRadius = 4; horizontalSpreadFactorMin = 0.6; horizontalSpreadFactorMax = 1;
+			} else if (treeType === 'dead_tree') {
+				trunkBlockType = 'raw_deadwood'; bushBlockType = 'raw_deadwood'; minTrunkHeight = 5; maxTrunkHeight = 8;
+				minCanopyRadius = 0.5; maxCanopyRadius = 1; horizontalSpreadFactorMin = 0.3; horizontalSpreadFactorMax = 0.8;
 			} else if (treeType === 'gilded') {
 				trunkBlockType = 'raw_gilded_wood'; bushBlockType = 'gilded_tree_bush'; minTrunkHeight = 6; maxTrunkHeight = 8;
 				minCanopyRadius = 2; maxCanopyRadius = 3; horizontalSpreadFactorMin = 0.7; horizontalSpreadFactorMax = 1;
@@ -3448,7 +3898,6 @@
 				trunkBlockType = 'dirt'; minTrunkHeight = 45; maxTrunkHeight = 47;
 			}
 			else if (treeType === 'apple' || treeType === 'orange') {
-				// ... (Your existing apple tree logic is fine, no changes needed here) ...
 				if (treeType === 'apple') {
 					baseBushBlockType = 'apple_bush';
 					fruitBushBlockType = 'apple_bush_fruit';
@@ -3567,8 +4016,7 @@
 
 			const topOfTrunkRow = surfaceRow - trunkHeight;
 
-			if (treeType === 'oak' || treeType === 'birch' || treeType === 'darkwood' || treeType === 'mahogany' || treeType === 'cinnamon' || treeType === 'rubber' || treeType === 'hell' || treeType === 'meat' || treeType === 'spoiled_meat' || treeType === 'gilded' || treeType === 'blueglow' || treeType === 'meat' || treeType === 'spoiled meat'|| treeType === 'ash') {
-				// ... (original canopy logic for these trees, no changes needed) ...
+			if (treeType === 'oak' || treeType === 'birch' || treeType === 'darkwood' || treeType === 'mahogany' || treeType === 'cinnamon' || treeType === 'rubber' || treeType === 'hell' || treeType === 'meat' || treeType === 'spoiled_meat' || treeType === 'gilded' || treeType === 'blueglow' || treeType === 'meat' || treeType === 'spoiled meat'|| treeType === 'ash' || treeType === 'dead_tree') {
 				const canopyRadius = minCanopyRadius + Math.floor(random() * (maxCanopyRadius - minCanopyRadius + 1));
 				for (let yOffset = 0; yOffset <= canopyRadius + 2; yOffset++) {
 					let currentLayerRadius = Math.max(0, canopyRadius - Math.floor(yOffset / 1.5));
@@ -4003,7 +4451,7 @@
 				if (biomeRoll < 0.15) return 'lush_grasslands';
 				if (biomeRoll < 0.23) return 'grass_field';
 				if (biomeRoll < 0.25) return 'salt_flats';
-				if (biomeRoll < 0.30) return 'rainforest';
+				if (biomeRoll < 0.31) return 'rainforest';
 				if (biomeRoll < 0.34) return 'muddy_swamp';
 				if (biomeRoll < 0.54) return 'deciduous_forest';
 				if (biomeRoll < 0.68) return 'coniferous_forest';
@@ -5129,6 +5577,23 @@
                             }
                         }
                     }
+                } else if (biome === 'muddy_swamp') {
+                    if (getBlockType(col, row - 1) === '') {
+						let rand = random(); // This is ideal rather than reusing random()
+						if (rand < 0.3) worldBlocks[`${col},${row - 1}`] = { type: 'milkweed', mineProg: 0 };
+						else if (rand < 0.4) worldBlocks[`${col},${row - 1}`] = { type: 'tall_grass', mineProg: 0 };
+						else if (rand < 0.5) generateTree(col, row, 'dead_tree');
+						else if (rand < 0.55) generateTree(col, row, 'sugarcane');
+                    }
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                        if (placeTraderAt(col, row - 1)) {
+                            console.log("Naturally spawned a Trader at", col);
+                            // Mark a buffer zone around the trader to prevent clumping
+                            for(let i = -15; i <= 15; i++) {
+                                traderColumns.add(col + i);
+                            }
+                        }
+                    }
                 } else if (biome === 'salt_flats') {
                     if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
@@ -5294,7 +5759,7 @@
 			const caveSize = 100 + Math.floor(random() * 101); // 100-200 blocks
             let blocksCarved = 0;
             const toCarve = new Set([`${startX},${startY}`]);
-            const carved = new Set();
+            const carved = new Set(); // This will store all 'x,y' keys of carved AIR blocks
 
             while (blocksCarved < caveSize && toCarve.size > 0) {
                 // Get a random block from the list of blocks to be carved
@@ -5325,7 +5790,7 @@
                         if (dx === 0 && dy === 0) {
                              worldBlocks[key] = { type: '', mineProg: 0 };
                              caveBlocks.add(key); // Add to the set for ore checking
-                             carved.add(key);
+                             carved.add(key); // --- Store the AIR block's key ---
                              blocksCarved++;
                         }
                     }
@@ -5348,6 +5813,26 @@
                     }
                 }
             }
+
+            // --- ADD THIS NEW FOLIAGE PASS ---
+            // Second pass: Add foliage to the floor
+            const guanoProbability = 0.12; // 12% chance for guano
+            
+            carved.forEach(airKey => {
+                const [col, row] = airKey.split(',').map(Number);
+                const floorKey = `${col},${row + 1}`;
+                const floorBlock = worldBlocks[floorKey];
+
+                // Check if the block below is a solid cave floor block ('vine_stone')
+                if (floorBlock && floorBlock.type === 'vine_stone') {
+                    // Roll for guano
+                    if (random() < guanoProbability) {
+                        // Place guano in the AIR block (airKey)
+                        worldBlocks[airKey] = { type: 'guano', mineProg: 0 };
+                    }
+                }
+            });
+            // --- END OF ADDITION ---
         }
         
         // --- MINESHAFT GENERATION (REVISED) ---
@@ -7302,6 +7787,9 @@
 				player.dy = currentJumpStrength;
 				player.onGround = false;
 			}
+			if (player.y < -150 * tileSize) {
+				unlockAchievement('SKY_CHASER');
+			}
 			// World border safety check
 			if (worldLimitEnabled) {
 				if (player.x < worldMinX * tileSize) {
@@ -7332,6 +7820,10 @@
         function handleMiningDrops(blockProps, targetKey) {
             const [col, row] = targetKey.split(',').map(Number); // Get coords for spawning
 			const blockData = worldBlocks[targetKey];
+			
+			if (blockData && blockData.type === 'void_crystal' && player.y > 600 * tileSize) {
+				unlockAchievement('REALM_NOTHINGNESS');
+			}
             
 			// If the block was a World Mover, drop its fuel first
             if (blockData && blockData.type === 'world_mover' && blockData.inventory) {
@@ -7589,14 +8081,22 @@
 
         function updateMining(dt) {
 			if (!isGameActive || isGamePaused) return;
-
+			
 			const worldMouseX = mouse.x + camera.x;
 			const worldMouseY = mouse.y + camera.y;
 			const targetCol = Math.floor(worldMouseX / tileSize);
 			const targetRow = Math.floor(worldMouseY / tileSize);
 			const targetKey = `${targetCol},${targetRow}`;
 			let blockData = worldBlocks[targetKey] || getBlockData(targetCol, targetRow);
+			
+			const equippedItemObject = getSelectedItem();
+            const equippedItemProps = equippedItemObject ? itemTypes[equippedItemObject.type] : null;
 
+            if (mouse.down && equippedItemProps && equippedItemProps.isGun) {
+                handleShooting(dt);
+                return; // Don't run mining logic
+            }
+			
 			// Determine the effective block type and its properties
 			// --- NEW: Prioritize Overlay for Mining ---
 			let effectiveBlockType;
@@ -7614,8 +8114,6 @@
 			const blockPropsForMining = blockTypes[effectiveBlockType];
 
 			// Determine player's current mining capabilities
-			const equippedItemObject = getSelectedItem();
-			const equippedItemProps = equippedItemObject ? itemTypes[equippedItemObject.type] : null;
 			const equippedItemType = equippedItemObject ? equippedItemObject.type : null;
 			let currentMiningPower;
 
@@ -7631,12 +8129,18 @@
                 } else if (isAxeBlock && equippedItemProps.axePower) {
 					// Correct tool (axe) for wood blocks
 					currentMiningPower = equippedItemProps.axePower;
+					unlockAchievement('TIMBER');
 				} else if (isShovelBlock && equippedItemProps.shovelPower) {
 					// Correct tool (shovel) for shovelable blocks
 					currentMiningPower = equippedItemProps.shovelPower;
+					unlockAchievement('POOP_SCOOP');
 				} else {
 					// It's a tool, but not the right one for this special block, or it's a generic block. Use its base mining power.
                     currentMiningPower = equippedItemProps.miningPower;
+					// Check for Terraformer (Pickaxe on a non-special block)
+					if (isPickaxe && blockPropsForMining && blockPropsForMining.solid && !isAxeBlock && !isShovelBlock) {
+						unlockAchievement('TERRAFORMER');
+					}
 				}
 			} else {
 				// Player is using their hand
@@ -7853,8 +8357,6 @@
                     }
 
                     // Break all foliage blocks stacked above the mined block
-                    const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane'];
-                    
                     let currentRow = targetRow - 1; // Start with the block directly above
                     
                     while (true) {
@@ -8079,89 +8581,141 @@
 		function updateHeldItemAnimation(dt) {
             const heldItem = getSelectedItem();
             const heldItemType = heldItem ? heldItem.type : null; // Get the type
+            const itemProps = heldItem ? (itemTypes[heldItemType] || blockTypes[heldItemType]) : null; // Get full props
             const now = performance.now();
         
-            // Determine if a swing action is happening
+            // Determine item type
+            const isGun = itemProps && itemProps.isGun;
+
+            // Determine actions
             const isPlacing = mouse.rightDown && heldItem && blockTypes[heldItem.type];
-            const isMining = mouse.down && miningTarget;
-        
-            if (isPlacing || isMining) {
-                if (!heldItemState.isSwinging) {
-                    // Start a new swing
-                    heldItemState.isSwinging = true;
-                    heldItemState.swingTimer = 0; // Start the swing from the beginning
+            // 'miningTarget' is only set in updateMining() if the item is NOT a gun.
+            const isMining = mouse.down && miningTarget; 
+            
+            // --- START/STOP SWING LOGIC (THE FIX) ---
+            if (!isGun) {
+                // Logic for regular tools/blocks
+                if (isPlacing || isMining) {
+                    if (!heldItemState.isSwinging) {
+                        // Start a new swing
+                        heldItemState.isSwinging = true;
+                        heldItemState.swingTimer = 0;
+                    }
+                } else {
+                    // If not placing or mining, stop swinging
+                    heldItemState.isSwinging = false;
                 }
-            } else {
-                heldItemState.isSwinging = false;
             }
+            // For guns, 'isSwinging' is used to mean "is recoiling".
+            // It's set to 'true' in handleShooting().
+            // It's set to 'false' inside the recoil animation itself when it finishes.
+            // This logic now correctly leaves gun recoil alone.
+            // --- END OF FIX ---
         
             // --- Calculate animation based on state ---
-            if (heldItemState.isSwinging) {
-        
-                // --- NEW: Tool-specific swing animations ---
-        
-                if (heldItemType && heldItemType.includes('_axe')) {
+            if (heldItemState.isSwinging) { // This now means "is swinging" OR "is recoiling"
+    
+                // --- NEW: GUN LOGIC ---
+                if (isGun) {
+                    // Point at mouse
+                    heldItemState.angle = heldItemState.gunAngle;
+
+                    // Recoil animation
+                    const recoilSpeed = 50; 
+                    heldItemState.swingTimer += dt / 1000 * recoilSpeed;
+                    const recoilProgress = Math.sin(heldItemState.swingTimer);
+
+                    if (recoilProgress < 0 || heldItemState.swingTimer > Math.PI) {
+                        // Animation finished
+                        heldItemState.isSwinging = false;
+                        heldItemState.swingTimer = 0;
+                        heldItemState.offsetX = 0;
+                        heldItemState.offsetY = 0;
+                    } else {
+                        // Play animation
+                        heldItemState.offsetX = -recoilProgress * 10; // Kick back
+                        heldItemState.offsetY = -recoilProgress * 5;  // Kick up
+                    }
+                // --- END GUN LOGIC ---
+
+                } else if (heldItemType && heldItemType.includes('_axe')) {
                     // AXE: Hefty, forceful, slightly erratic swing
-                    const swingSpeed = 20; // A bit slower for a "hefty" feel
+                    const swingSpeed = 20;
                     heldItemState.swingTimer += dt / 1000 * swingSpeed;
-        
-                    // A large main swing arc (2.2 rad) + a fast, small wobble (0.2 rad)
                     heldItemState.angle = Math.sin(heldItemState.swingTimer) * 2.2 + Math.sin(heldItemState.swingTimer * 3) * 0.2;
                     heldItemState.offsetX = Math.sin(heldItemState.swingTimer) * 25;
-                    // A larger vertical motion to feel more forceful
                     heldItemState.offsetY = (Math.cos(heldItemState.swingTimer) * 15) - 15;
         
                 } else if (heldItemType && heldItemType.includes('_shovel')) {
                     // SHOVEL: A vertical "scooping" motion
                     const swingSpeed = 25;
                     heldItemState.swingTimer += dt / 1000 * swingSpeed;
-        
-                    // Angle changes from pointing slightly down to slightly up
-                    // 0.25 (start) -> -0.75 (peak) -> 0.25 (mid) -> 1.25 (trough) -> 0.25 (end)
                     heldItemState.angle = 0.25 - Math.sin(heldItemState.swingTimer) * 1.0;
-                    // Small horizontal push
                     heldItemState.offsetX = 5 + Math.sin(heldItemState.swingTimer) * 10;
-                    // Vertical motion: Starts high, "scoops" low, ends high
-                    // cos goes 1 -> 0 -> -1 -> 0 -> 1, so offset goes +15 -> 0 -> -15 -> 0 -> +15
                     heldItemState.offsetY = Math.cos(heldItemState.swingTimer) * 15;
         
                 } else {
-                    // DEFAULT / PICKAXE: Original swing animation
+                    // DEFAULT / PICKAXE / BLOCK: Original swing animation
                     const swingSpeed = 25;
                     heldItemState.swingTimer += dt / 1000 * swingSpeed;
-        
-                    // Use Math.sin for a smooth back-and-forth arc
                     heldItemState.angle = Math.sin(heldItemState.swingTimer) * 1.8;
                     heldItemState.offsetX = Math.sin(heldItemState.swingTimer) * 20;
                     heldItemState.offsetY = (Math.cos(heldItemState.swingTimer) * 10) - 10;
                 }
-                // --- End of new logic ---
-        
+    
             } else {
-                // IDLE / MOVING ANIMATION (No changes here)
-                const returnSpeed = 0.15;
-                const defaultAngle = 0.5; 
-        
-                heldItemState.angle += (defaultAngle - heldItemState.angle) * returnSpeed;
-                heldItemState.offsetX += (0 - heldItemState.offsetX) * returnSpeed;
-        
-                let bobOffsetY = 0;
-                if (player.onGround && player.dx !== 0) {
-                    const bobSpeed = 15;
-                    const bobAmount = 3;
-                    heldItemState.bobTimer += dt / 1000 * bobSpeed;
-                    bobOffsetY = Math.sin(heldItemState.bobTimer) * bobAmount;
+                // IDLE / MOVING ANIMATION
+                
+                // --- NEW: Gun idle pointing ---
+                if (isGun) {
+                    heldItemState.angle = heldItemState.gunAngle; // Always point at mouse
+                    
+                    // Add idle bob
+                    const returnSpeed = 0.15;
+                    heldItemState.offsetX += (0 - heldItemState.offsetX) * returnSpeed; // Recoil reset
+                    let bobOffsetY = 0;
+                    if (player.onGround && player.dx !== 0) {
+                        const bobSpeed = 15;
+                        const bobAmount = 3;
+                        heldItemState.bobTimer += dt / 1000 * bobSpeed;
+                        bobOffsetY = Math.sin(heldItemState.bobTimer) * bobAmount;
+                    } else {
+                        heldItemState.bobTimer = 0;
+                    }
+                    let jumpOffsetY = 0;
+                    if (!player.onGround) {
+                        jumpOffsetY = player.dy * 0.8;
+                    }
+                    const targetY = bobOffsetY + jumpOffsetY;
+                    heldItemState.offsetY += (targetY - heldItemState.offsetY) * returnSpeed;
+
+                // --- END GUN IDLE ---
                 } else {
-                    heldItemState.bobTimer = 0;
+                    // Original idle logic for tools
+                    const returnSpeed = 0.15;
+                    const defaultAngle = 0.5; 
+            
+                    heldItemState.angle += (defaultAngle - heldItemState.angle) * returnSpeed;
+                    heldItemState.offsetX += (0 - heldItemState.offsetX) * returnSpeed;
+            
+                    let bobOffsetY = 0;
+                    if (player.onGround && player.dx !== 0) {
+                        const bobSpeed = 15;
+                        const bobAmount = 3;
+                        heldItemState.bobTimer += dt / 1000 * bobSpeed;
+                        bobOffsetY = Math.sin(heldItemState.bobTimer) * bobAmount;
+                    } else {
+                        heldItemState.bobTimer = 0;
+                    }
+            
+                    let jumpOffsetY = 0;
+                    if (!player.onGround) {
+                        jumpOffsetY = player.dy * 0.8;
+                    }
+            
+                    const targetY = bobOffsetY + jumpOffsetY;
+                    heldItemState.offsetY += (targetY - heldItemState.offsetY) * returnSpeed;
                 }
-        
-                let jumpOffsetY = 0;
-                if (!player.onGround) {
-                    jumpOffsetY = player.dy * 0.8;
-                }
-        
-                const targetY = bobOffsetY + jumpOffsetY;
-                heldItemState.offsetY += (targetY - heldItemState.offsetY) * returnSpeed;
             }
         }
 
@@ -8213,6 +8767,9 @@
 						const blockProps = blockTypes[blockData.type];
 						// Skip indestructible or non-mineable blocks
 						if (!blockProps || blockProps.miningHardness === 0 || blockProps.miningHardness > 250000) continue;
+                        if (blockProps.requiredTool) continue; // --- ADD THIS FIX ---
+						
+						// Apply damage based on the distance layer
 
 						// Apply damage based on the distance layer
 						const damageMultiplier = damageLayers[distance] || 0;
@@ -8449,6 +9006,10 @@
 				if ( selectedItemObject && selectedItemObject.count > 0 && itemTypes[selectedItemType]?.isFood && blockAtTarget.type !== 'item_frame' ) {
 				  const props = itemTypes[selectedItemType];
                   let actualHealAmount = 0;
+				  
+				  if (selectedItemType === 'chili_pepper') {
+					  unlockAchievement('IT_BURNS');
+				  }
 
 				  // 1) If item increases maxHealth, apply it first (so heal can fill the new max)
 				  if (typeof props.addsMaxHealth === 'number' && props.addsMaxHealth !== 0) {
@@ -8524,7 +9085,13 @@
 				  mouse.rightDown = false;
 				  return; // Stop block placement
 				}
-				
+			const blockProps = blockTypes[blockAtTarget.type];
+            if (blockProps && blockProps.anvilPower > 0) {
+                toggleAnvilMenu(targetCol, targetRow, blockAtTarget.type, blockProps.anvilPower);
+                mouse.rightDown = false;
+                return;
+            }
+			
             // --- FIX 1: Cleaned up the interaction logic into a proper if/else if chain ---
             // Check for chest/bed interaction first
             if (blockAtTarget.type === 'chest' || blockAtTarget.type === 'dead_body_chest' || blockAtTarget.type === 'refrigerator' || blockAtTarget.type === 'magical_chest') {
@@ -8692,7 +9259,7 @@
 						const placed = placeTraderAt(targetCol, targetRow);
 						if (placed) removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 					}
-				} else if (selectedItemType.endsWith('_flower')) {
+				} else if (selectedItemType.endsWith('_flower') || selectedItemType === 'milkweed') {
 					let seedUsed = false;
 					const blockAtTarget = getBlockData(targetCol, targetRow);
 					const blockAboveKey = `${targetCol},${targetRow - 1}`;
@@ -8708,7 +9275,7 @@
 					
 					// Case 1: Target is PROPER
 					if (blockAboveType === '') {
-						if (blockAtTarget.type === 'grass_dirt' || blockAtTarget.type === 'dark_grass_dirt' || blockAtTarget.type === 'grass_soil' || blockAtTarget.type === 'dark_grass_soil' || blockAtTarget.type === 'grass_mud') {
+						if (blockAtTarget.type === 'grass_dirt' || blockAtTarget.type === 'dark_grass_dirt' || blockAtTarget.type === 'grass_soil' || blockAtTarget.type === 'dark_grass_soil' || blockAtTarget.type === 'mud' || blockAtTarget.type === 'thick_mud' || blockAtTarget.type === 'grass_mud') {
 							worldBlocks[blockAboveKey] = { type: selectedItemType, mineProg: 0 };
 							seedUsed = true;
 						}
@@ -8988,7 +9555,10 @@
 					}
 				} else if (selectedItemIsSeeds) {
                     if (['dirt', 'soil', 'fertilizer'].includes(currentBlockAtTarget)) {
-                        worldBlocks[targetKey] = { type: `planted_${selectedItemType}`, mineProg: 0, plantTime: gameTime, baseBlockType: currentBlockAtTarget };
+                        if (currentBlockAtTarget === 'fertilizer') {
+							unlockAchievement('FRANTIC_FARMER');
+						}
+						worldBlocks[targetKey] = { type: `planted_${selectedItemType}`, mineProg: 0, plantTime: gameTime, baseBlockType: currentBlockAtTarget };
                         activePlants.add(targetKey);
 						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
                     }
@@ -9676,18 +10246,33 @@
 			// Base position relative to the player's center. This is our pivot point.
 			let pivotX = player.x - camera.x + playerWidth / 2;
 			let pivotY = player.y - camera.y + playerHeight / 2.5; // Changed for closer centering
-            //let pivotY = player.y - camera.y + playerHeight / 2; // Slightly lower than center
-
+            
 			ctx.save(); // Save the current state of the canvas (important!)
 
 			// 1. Move the canvas origin to our pivot point
 			ctx.translate(pivotX, pivotY);
 
-			// 2. Flip the canvas horizontally if facing left
-			ctx.scale(player.facingDirection, 1);
+            // --- NEW GUN AIMING LOGIC ---
+            const itemProps = itemTypes[heldItem.type] || blockTypes[heldItem.type];
+            if (itemProps && itemProps.isGun) {
+                // For guns:
+                // 1. Rotate the canvas to the absolute gun angle
+                ctx.rotate(heldItemState.angle); // This is already set to gunAngle by updateHeldItemAnimation
 
-			// 3. Rotate the canvas
-			ctx.rotate(heldItemState.angle);
+                // 2. Check if we are aiming left (angle is > 90 or < -90)
+                const isAimingLeft = Math.abs(heldItemState.angle) > (Math.PI / 2);
+                if (isAimingLeft) {
+                    // Flip the sprite vertically (which mirrors it horizontally after rotation)
+                    ctx.scale(1, -1);
+                }
+            } else {
+                // For all other tools:
+                // 1. Flip based on player direction
+			    ctx.scale(player.facingDirection, 1);
+                // 2. Rotate by the swing animation angle
+			    ctx.rotate(heldItemState.angle);
+            }
+            // --- END NEW LOGIC ---
 
 			// 4. Draw the item image.
 			// We draw it relative to the new, transformed origin.
@@ -9773,6 +10358,30 @@
 				
 				healthBarDiv.appendChild(img);
 			}
+        }
+		
+		function drawBlockOutline() {
+            if (!showBlockOutline || isGamePaused) return;
+
+            const worldMouseX = mouse.x + camera.x;
+			const worldMouseY = mouse.y + camera.y;
+			const targetCol = Math.floor(worldMouseX / tileSize);
+			const targetRow = Math.floor(worldMouseY / tileSize);
+
+            const blockType = getBlockType(targetCol, targetRow);
+            const blockProps = blockTypes[blockType];
+
+            // Don't draw outline on air or non-solid foliage
+            if (blockType === '' || (blockProps && !blockProps.solid && !foliageTypes.includes(blockType))) {
+                return;
+            }
+
+            const screenX = targetCol * tileSize - camera.x;
+            const screenY = targetRow * tileSize - camera.y;
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; // White, 70% opacity
+            ctx.lineWidth = 2;
+            ctx.strokeRect(screenX, screenY, tileSize, tileSize);
         }
 		
 		function drawFire() {
@@ -9935,7 +10544,9 @@
             if (e.code === 'Escape') {
 				if (isGamePaused && skinUploadOverlay.style.display === 'flex') {
                     closeSkinUploader();
-                } else if (isConsoleOpen) {
+                } else if (isGamePaused && xpMenuOverlay.style.display === 'flex') {
+					toggleXPMenu();
+				} else if (isConsoleOpen) {
 					toggleDevConsole();
                 } else if (isGamePaused && bookReaderOverlay.style.display === 'flex') {
                     closeBookReader();
@@ -9953,6 +10564,8 @@
                     toggleWorldMoverMenu();
                 } else if (isGamePaused && worldMoverTeleportOverlay.style.display === 'flex') {
                     toggleTeleportMenu();
+                } else if (isGamePaused && anvilOverlay.style.display === 'flex') { // ADD THIS
+                    toggleAnvilMenu();
                 } else if (isGamePaused && voidChestOverlay.style.display === 'flex') {
 					toggleVoidChestMenu();
 				} else if (isGamePaused && isTraderMenuOpen === true) {
@@ -10117,6 +10730,22 @@
                 input: { 0: { type: 'magma_furnace', count: 1 }, 1: { type: 'forge_hammer', count: 1 }, 2: { type: 'any_plank', count: 1 } },
                 output: 'power_forge', outputCount: 1,
             },
+			{ name: "Rock Anvil",
+				input: { 0: { type: 'rock_block', count: 1 }, 1: { type: 'rock_block', count: 1 }, 2: { type: 'rock_block', count: 1 }, 3: { type: 'rock_block', count: 1 }, 6: { type: 'rock_block', count: 1 }, 10: { type: 'rock_block', count: 1 }, 14: { type: 'rock_block', count: 1 }, 15: { type: 'rock_block', count: 1 } },
+				output: 'rock_anvil', outputCount: 1
+			},
+			{ name: "Brass Anvil",
+				input: { 0: { type: 'brass_nugget', count: 1 }, 1: { type: 'brass_nugget', count: 1 }, 2: { type: 'brass_nugget', count: 1 }, 3: { type: 'brass_nugget', count: 1 }, 6: { type: 'brass_nugget', count: 1 }, 10: { type: 'brass_nugget', count: 1 }, 14: { type: 'brass_nugget', count: 1 }, 15: { type: 'brass_nugget', count: 1 } },
+				output: 'brass_anvil', outputCount: 1
+			},
+			{ name: "Iron Anvil",
+				input: { 0: { type: 'iron_nugget', count: 1 }, 1: { type: 'iron_nugget', count: 1 }, 2: { type: 'iron_nugget', count: 1 }, 3: { type: 'iron_nugget', count: 1 }, 6: { type: 'iron_nugget', count: 1 }, 10: { type: 'iron_nugget', count: 1 }, 14: { type: 'iron_nugget', count: 1 }, 15: { type: 'iron_nugget', count: 1 } },
+				output: 'iron_anvil', outputCount: 1
+			},
+			{ name: "Tungsten Anvil",
+				input: { 0: { type: 'tungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 3: { type: 'tungsten_nugget', count: 1 }, 6: { type: 'tungsten_nugget', count: 1 }, 10: { type: 'tungsten_nugget', count: 1 }, 14: { type: 'tungsten_nugget', count: 1 }, 15: { type: 'tungsten_nugget', count: 1 } },
+				output: 'tungsten_anvil', outputCount: 1
+			},
             { name: "Pumpkin Seeds",
 				input: { 0: { type: 'pumpkin', count: 1 } },
 				output: 'pumpkin_seeds', outputCount: 2
@@ -10388,6 +11017,7 @@
             { name: "Darkwood Planks", input: { 0: { type: 'raw_darkwood', count: 1 } }, output: 'planked_darkwood', outputCount: 3 },
             { name: "Gilded Wood Planks", input: { 0: { type: 'raw_gilded_wood', count: 1 } }, output: 'planked_gilded_wood', outputCount: 3 },
 			{ name: "Blueglow Wood Planks", input: { 0: { type: 'raw_blueglow_wood', count: 1 } }, output: 'planked_blueglow_wood', outputCount: 3 },
+			{ name: "Deadwood Planks", input: { 0: { type: 'raw_deadwood', count: 1 } }, output: 'planked_deadwood', outputCount: 3 },
             { name: "Cinnamon", input: { 0: { type: 'raw_cinnamon', count: 1 }, 4: { type: 'raw_cinnamon', count: 1 }, 8: { type: 'raw_cinnamon', count: 1 }, 12: { type: 'raw_cinnamon', count: 1 } }, output: 'cinnamon', outputCount: 10 },
 			{ name: "Hay Bale",
                 input: { 0: { type: 'wheat_item', count: 1 }, 1: { type: 'barley_item', count: 1 }, 4: { type: 'barley_item', count: 1 }, 5: { type: 'wheat_item', count: 1 } },
@@ -10400,6 +11030,10 @@
 			{ name: "Iodized Salt",
                 input: { 0: { type: 'rock_salt', count: 1 } },
                 output: 'iodized_salt', outputCount: 2
+            },
+			{ name: "Saltpeter",
+                input: { 0: { type: 'guano', count: 1 } },
+                output: 'saltpeter', outputCount: 1
             },
             { name: "Tomato Sandwich",
                 input: { 1: { type: 'wheat_bread', count: 1 }, 5: { type: 'tomato', count: 1 }, 6: { type: 'tomato', count: 1 }, 7: { type: 'tomato', count: 1 }, 9: { type: 'wheat_bread', count: 1 } },
@@ -10597,7 +11231,79 @@
                 input: { 0: { type: 'weak_nuclear_bomb', count: 1 }, 1: { type: 'compressed_stone', count: 1 } },
                 output: 'trap_compressed_stone', outputCount: 1,
             },
+			{ name: "Machine Gun",
+                input: { 0: { type: 'steel_nugget', count: 1 }, 1: { type: 'steel_nugget', count: 1 }, 2: { type: 'nitro_powder', count: 1 }, 4: { type: 'steel_nugget', count: 1 }, 5: { type: 'steel_nugget', count: 1 }, 6: { type: 'steel_nugget', count: 1 }, 7: { type: 'steel_nugget', count: 1 }, 8: { type: 'steel_nugget', count: 1 }, 9: { type: 'vulcanized_rubber', count: 1 } },
+                output: 'machine_gun', outputCount: 1,
+            },
         ];
+		const anvilRecipes = [
+			{ name: "Rock Block",
+                input: { 0: { type: 'stone', count: 1 }, 1: { type: 'magma_stone_block', count: 1 } },
+				anvilPower: 1,
+                output: 'rock_block', outputCount: 1,
+            },
+			{
+				name: "Sandstone",
+				input: { 0: { type: 'sand', count: 4 } },
+				anvilPower: 1,
+				output: 'sandstone', outputCount: 1
+			},
+			{
+				name: "Red Sandstone",
+				input: { 0: { type: 'red_sand_block', count: 4 } },
+				anvilPower: 1,
+				output: 'red_sandstone_block', outputCount: 1
+			},
+			{ name: "Compacted Stone Block",
+                input: { 0: { type: 'stone', count: 1 }, 1: { type: 'stone', count: 1 }, 2: { type: 'stone', count: 1 }, 3: { type: 'stone', count: 1 }, 5: { type: 'stone', count: 1 }, 6: { type: 'stone', count: 1 } },
+				anvilPower: 1,
+                output: 'compacted_stone', outputCount: 1,
+            },
+			{ name: "Compacted Stone Block",
+                input: { 0: { type: 'compressed_stone', count: 1 } },
+				anvilPower: 1,
+                output: 'compacted_stone', outputCount: 4,
+            },
+			{
+				name: "Wood Bullets (x25)",
+				input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'saltpeter', count: 1 }, 2: { type: 'saltpeter', count: 1 } },
+				anvilPower: 1,
+				output: 'wood_bullet', outputCount: 25
+			},
+            {
+				name: "Brass Bullets (x25)",
+				input: { 0: { type: 'brass_nugget', count: 1 }, 1: { type: 'saltpeter', count: 1 }, 2: { type: 'saltpeter', count: 1 } },
+				anvilPower: 1,
+				output: 'brass_bullet', outputCount: 25
+			},
+            {
+				name: "Steel Bullets (x25)",
+				input: { 0: { type: 'steel_nugget', count: 1 }, 1: { type: 'saltpeter', count: 1 }, 2: { type: 'saltpeter', count: 1 } },
+				anvilPower: 1,
+				output: 'steel_bullet', outputCount: 25
+			},
+            {
+				name: "Mythicalithium Bullets (x25)",
+				input: { 0: { type: 'mythicalithium_nugget', count: 1 }, 1: { type: 'saltpeter', count: 1 }, 2: { type: 'saltpeter', count: 1 } },
+				anvilPower: 1,
+				output: 'mythicalithium_bullet', outputCount: 25
+			},
+			{ name: "Compressed Stone Block",
+                input: { 0: { type: 'compacted_stone', count: 1 }, 1: { type: 'compacted_stone', count: 1 }, 2: { type: 'compacted_stone', count: 1 }, 3: { type: 'compacted_stone', count: 1 }, 5: { type: 'compacted_stone', count: 1 }, 6: { type: 'compacted_stone', count: 1 } },
+				anvilPower: 2,
+                output: 'compressed_stone', outputCount: 1,
+            },
+			{ name: "Compressed Stone Block",
+                input: { 0: { type: 'bedrock_stone', count: 1 } },
+				anvilPower: 2,
+                output: 'compressed_stone', outputCount: 4,
+            },
+			{ name: "Compressed Stone Block",
+                input: { 0: { type: 'compressed_stone', count: 1 }, 1: { type: 'compressed_stone', count: 1 }, 2: { type: 'compressed_stone', count: 1 }, 3: { type: 'compressed_stone', count: 1 }, 5: { type: 'compressed_stone', count: 1 }, 6: { type: 'compressed_stone', count: 1 } },
+				anvilPower: 3,
+                output: 'bedrock_stone', outputCount: 1,
+            },
+		];
 		const ovenRecipes = [
             { name: "Wheat Bread",
                 input: { 0: { type: 'wheat_item', count: 1 }, 1: { type: 'wheat_item', count: 1 }, 2: { type: 'wheat_item', count: 1 } },
@@ -10655,6 +11361,12 @@
                 input: { 0: { type: 'cup_of_urine', count: 1 } },
                 fuel: 1,
 				output: 'cup_of_water', outputCount: 1,
+            },
+			{ name: "Saltpeter",
+                input: { 0: { type: 'cup_of_urine', count: 5 } },
+                fuel: 1,
+				output: 'saltpeter', outputCount: 1,
+				byproduct: 'glass_cup', byproductCount: 5,
             },
 			{ name: "Cup Of Coffee",
                 input: { 0: { type: 'cup_of_water', count: 1 }, 1: { type: 'coffee_bean', count: 1 }, 2: { type: 'coffee_bean', count: 1 }, 3: { type: 'coffee_bean', count: 1 }, 4: { type: 'coffee_bean', count: 1 }, 5: { type: 'coffee_bean', count: 1 } },
@@ -11208,70 +11920,69 @@
             // --- NEW: Right-click to Equip/De-equip ---
             if (event.button === 2) { // Right-click
                 if (sourceType === 'inventory') {
-                    const itemToEquip = inventorySlots[slotIndex];
-                    if (!itemToEquip) return;
-                    
-                    const itemProps = itemTypes[itemToEquip.type];
-                    if (itemProps && itemProps.armorType) {
-                        const targetSlotKey = itemProps.armorType; // e.g., 'helmet'
-                        
-                        // Swap item in armor slot with item in inventory
-                        const previouslyEquipped = player.armor[targetSlotKey];
-                        player.armor[targetSlotKey] = itemToEquip;
-                        inventorySlots[slotIndex] = previouslyEquipped; // Put old item back
-                        
-                        if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
-                        syncHotbarIndices();
-                    }
-                    // --- Handle right-click splitting (from your original code) ---
-                    else if (heldItem === null) {
-                        // pick up half
-                        if (itemToEquip && itemToEquip.count > 1) {
-                            const halfCount = Math.ceil(itemToEquip.count / 2);
-                            // build heldItem as a shallow copy, taking timestamps if present
-                            const timestamps = itemTypes[itemToEquip.type]?.spoilable ? _takeTimestamps(itemToEquip, halfCount) : null;
-                            heldItem = {
-                                type: itemToEquip.type,
-                                count: halfCount,
-                                durability: itemToEquip.durability,
-                                maxDurability: itemToEquip.maxDurability,
-                                acquiredTimes: timestamps
-                            };
-                            itemToEquip.count -= halfCount;
-                            if (itemToEquip.count <= 0) inventorySlots[slotIndex] = null;
-                            heldItemSource = { type: sourceType, index: slotIndex };
-                        }
-                    } else { // place one from heldItem
-                        if (heldItem.count > 0) {
-                            if (!itemToEquip) {
-                                // create a single-unit slot
-                                const timestamps = (itemTypes[heldItem.type]?.spoilable && Array.isArray(heldItem.acquiredTimes)) ? [heldItem.acquiredTimes.shift()] : (itemTypes[heldItem.type]?.spoilable ? [gameTime] : null);
-                                inventorySlots[slotIndex] = { type: heldItem.type, count: 1 };
-                                if (itemTypes[heldItem.type]?.isTool) {
-                                    inventorySlots[slotIndex].durability = heldItem.durability ?? (itemTypes[heldItem.type]?.maxDurability ?? null);
-                                    inventorySlots[slotIndex].maxDurability = heldItem.maxDurability ?? (itemTypes[heldItem.type]?.maxDurability ?? null);
-                                } else if (timestamps) {
-                                    inventorySlots[slotIndex].acquiredTimes = timestamps.slice();
-                                }
-                                heldItem.count--;
-                            } else if (itemToEquip.type === heldItem.type && !(itemTypes[heldItem.type] || blockTypes[heldItem.type])?.isTool && itemToEquip.count < maxStackSize) {
-                                // merge one into existing stack
-                                const ts = (itemTypes[heldItem.type]?.spoilable && Array.isArray(heldItem.acquiredTimes)) ? heldItem.acquiredTimes.shift() : (itemTypes[heldItem.type]?.spoilable ? gameTime : null);
-                                itemToEquip.count++;
-                                if (ts) {
-                                    if (!Array.isArray(itemToEquip.acquiredTimes)) _ensureAcquiredTimes(itemToEquip, gameTime);
-                                    itemToEquip.acquiredTimes.push(ts);
-                                }
-                                heldItem.count--;
-                            }
-                            if (heldItem.count <= 0) {
-                                heldItem = null; heldItemSource = { type: null, index: -1 };
-                            }
-                        }
-                    }
-                    // --- End of right-click splitting ---
-
-                } else if (sourceType === 'armor') {
+					const itemToEquip = inventorySlots[slotIndex]; // Get item in slot (or null)
+					
+					// --- FIX: Logic is re-ordered ---
+					
+					// 1. CHECK FOR PLACING AN ITEM (if we are holding one)
+					if (heldItem !== null) {
+						if (heldItem.count > 0) {
+							if (!itemToEquip) {
+								// Placing into an EMPTY slot
+								const timestamps = (itemTypes[heldItem.type]?.spoilable && Array.isArray(heldItem.acquiredTimes)) ? [heldItem.acquiredTimes.shift()] : (itemTypes[heldItem.type]?.spoilable ? [gameTime] : null);
+								inventorySlots[slotIndex] = { type: heldItem.type, count: 1 };
+								if (itemTypes[heldItem.type]?.isTool) {
+									inventorySlots[slotIndex].durability = heldItem.durability ?? (itemTypes[heldItem.type]?.maxDurability ?? null);
+									inventorySlots[slotIndex].maxDurability = heldItem.maxDurability ?? (itemTypes[heldItem.type]?.maxDurability ?? null);
+								} else if (timestamps) {
+									inventorySlots[slotIndex].acquiredTimes = timestamps.slice();
+								}
+								heldItem.count--;
+							} else if (itemToEquip.type === heldItem.type && !(itemTypes[heldItem.type] || blockTypes[heldItem.type])?.isTool && itemToEquip.count < maxStackSize) {
+								// Merging one into an existing stack
+								const ts = (itemTypes[heldItem.type]?.spoilable && Array.isArray(heldItem.acquiredTimes)) ? heldItem.acquiredTimes.shift() : (itemTypes[heldItem.type]?.spoilable ? gameTime : null);
+								itemToEquip.count++;
+								if (ts) {
+									if (!Array.isArray(itemToEquip.acquiredTimes)) _ensureAcquiredTimes(itemToEquip, gameTime);
+									itemToEquip.acquiredTimes.push(ts);
+								}
+								heldItem.count--;
+							}
+							if (heldItem.count <= 0) {
+								heldItem = null; heldItemSource = { type: null, index: -1 };
+							}
+						}
+					} 
+					// 2. CHECK FOR EQUIPPING ARMOR (if we are NOT holding an item)
+					else if (itemToEquip && itemTypes[itemToEquip.type] && itemTypes[itemToEquip.type].armorType) {
+						const itemProps = itemTypes[itemToEquip.type];
+						const targetSlotKey = itemProps.armorType;
+						
+						// Swap item in armor slot with item in inventory
+						const previouslyEquipped = player.armor[targetSlotKey];
+						player.armor[targetSlotKey] = itemToEquip;
+						inventorySlots[slotIndex] = previouslyEquipped; // Put old item back
+						
+						if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
+						syncHotbarIndices();
+					}
+					// 3. CHECK FOR PICKING UP HALF (if we are NOT holding an item)
+					else if (itemToEquip && itemToEquip.count > 1) {
+						// Pick up half
+						const halfCount = Math.ceil(itemToEquip.count / 2);
+						const timestamps = itemTypes[itemToEquip.type]?.spoilable ? _takeTimestamps(itemToEquip, halfCount) : null;
+						heldItem = {
+							type: itemToEquip.type,
+							count: halfCount,
+							durability: itemToEquip.durability,
+							maxDurability: itemToEquip.maxDurability,
+							acquiredTimes: timestamps
+						};
+						itemToEquip.count -= halfCount;
+						if (itemToEquip.count <= 0) inventorySlots[slotIndex] = null;
+						heldItemSource = { type: sourceType, index: slotIndex };
+					}
+				} else if (sourceType === 'armor') {
                     // Right-click to de-equip
                     const itemToDequip = player.armor[slotIndex];
                     if (!itemToDequip) return;
@@ -11282,10 +11993,11 @@
                          if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
                          syncHotbarIndices();
                     }
-                } else if (sourceType === 'crafting' || sourceType === 'chest' || sourceType === 'oven' || sourceType === 'magma_furnace' || sourceType === 'power_forge' || sourceType === 'world_mover_fuel') {
+                } else if (sourceType === 'crafting' || sourceType === 'chest' || sourceType === 'oven' || sourceType === 'magma_furnace' || sourceType === 'power_forge' || sourceType === 'world_mover_fuel' || sourceType === 'anvil') {
                     // --- Handle right-click splitting for other containers ---
                     let sourceArray;
                     if (sourceType === 'crafting') sourceArray = craftingGridSlots;
+                    else if (sourceType === 'anvil') sourceArray = anvilGridSlots; // ADD THIS
                     else if (sourceType === 'chest') sourceArray = worldBlocks[`${currentlyOpenChest.col},${currentlyOpenChest.row}`]?.inventory;
                     else if (sourceType === 'oven' || sourceType === 'magma_furnace' || sourceType === 'power_forge') sourceArray = worldBlocks[`${currentlyOpenFurnace.col},${currentlyOpenFurnace.row}`]?.inventory;
                     else if (sourceType === 'world_mover_fuel') sourceArray = worldBlocks[`${currentlyOpenWorldMover.col},${currentlyOpenWorldMover.row}`]?.inventory;
@@ -11352,6 +12064,7 @@
                 if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
                 if (chestOverlay.style.display === 'flex') updateChestMenu();
                 if (ovenOverlay.style.display === 'flex') updateFurnaceMenu();
+				if (anvilOverlay.style.display === 'flex') updateAnvilMenu();
                 if (voidChestOverlay.style.display === 'flex') updateVoidChestMenu();
                 if (worldMoverConfigOverlay.style.display === 'flex') updateWorldMoverMenu();
                 syncHotbarIndices();
@@ -11373,6 +12086,9 @@
                     sourceItem = sourceArray ? sourceArray[sourceSlotNumericIndex] : null;
                 } else if (sourceType === 'oven' || sourceType === 'magma_furnace' || sourceType === 'power_forge') {
                     sourceArray = worldBlocks[`${currentlyOpenFurnace.col},${currentlyOpenFurnace.row}`]?.inventory;
+                } else if (sourceType === 'anvil') { // ADD THIS
+                    sourceArray = anvilGridSlots;
+                } else if (sourceType === 'armor') {
                     sourceSlotNumericIndex = parseInt(slotIndex);
                     sourceItem = sourceArray ? sourceArray[sourceSlotNumericIndex] : null;
                 } else if (sourceType === 'armor') {
@@ -11400,6 +12116,13 @@
                             moved = true;
                         }
                         // Note: We don't handle swapping with shift-click, just equipping to empty slot.
+                    } else if (currentlyOpenAnvil) { // ADD THIS BLOCK
+                        // Move between player inventory and anvil grid
+                        const destinationArray = (sourceType === 'inventory') ? anvilGridSlots : inventorySlots;
+                        if (addToInventory(sourceItem.type, sourceItem.count, sourceItem.durability, sourceItem.acquiredTimes, destinationArray)) {
+                             sourceArray[sourceSlotNumericIndex] = null;
+                             moved = true;
+                        }
                     } else if (currentlyOpenChest) {
                         // Standard shift-click logic for chests
                         const destinationArray = (sourceType === 'inventory') ? worldBlocks[`${currentlyOpenChest.col},${currentlyOpenChest.row}`].inventory : inventorySlots;
@@ -11481,6 +12204,7 @@
                 if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
                 if (chestOverlay.style.display === 'flex') updateChestMenu();
                 if (ovenOverlay.style.display === 'flex') updateFurnaceMenu();
+				if (anvilOverlay.style.display === 'flex') updateAnvilMenu();
 				if (voidChestOverlay.style.display === 'flex') updateVoidChestMenu();
                 syncHotbarIndices();
                 return; // End the function here for shift-clicks
@@ -11498,6 +12222,7 @@
                 if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
                 if (chestOverlay.style.display === 'flex') updateChestMenu();
                 if (ovenOverlay.style.display === 'flex') updateFurnaceMenu();
+				if (anvilOverlay.style.display === 'flex') updateAnvilMenu();
                 if (voidChestOverlay.style.display === 'flex') updateVoidChestMenu();
                 if (worldMoverConfigOverlay.style.display === 'flex') updateWorldMoverMenu();
 				return;
@@ -11520,6 +12245,8 @@
             } else if (sourceType === 'crafting') {
                 sourceArray = craftingGridSlots;
                 sourceItem = sourceArray[slotIndex];
+            } else if (sourceType === 'anvil') {
+                sourceArray = anvilGridSlots;
             } else if (sourceType === 'armor') {
                 sourceArray = player.armor;
                 sourceItem = sourceArray[slotIndex]; // slotIndex is 'helmet', etc.
@@ -11643,6 +12370,7 @@
 			if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
 			if (chestOverlay.style.display === 'flex') updateChestMenu();
 			if (ovenOverlay.style.display === 'flex') updateFurnaceMenu();
+			if (anvilOverlay.style.display === 'flex') updateAnvilMenu();
 			if (voidChestOverlay.style.display === 'flex') updateVoidChestMenu();
 			if (worldMoverConfigOverlay.style.display === 'flex') updateWorldMoverMenu();
 			
@@ -11753,6 +12481,10 @@
             
             if (maxCrafts <= 0) return;
         
+			if (recipe.output === 'steel_brick_block') {
+				unlockAchievement('DEDICATED_ONE');
+			}
+		
             // 3. Perform the craft loop
             for (let i = 0; i < maxCrafts; i++) {
                 // Consume ingredients for one craft
@@ -12181,7 +12913,6 @@
                 }
                 // --- END OF NEW LOGIC ---
         
-                resolvePlayerVerticalCollision();
                 lastTime = performance.now();
             }
         }
@@ -12546,6 +13277,8 @@
 						
 						// Add output to player inventory
 						addToInventory(trade.output.type, trade.output.count);
+						
+						unlockAchievement('BARTERIN_TIME');
 						
 						// Refresh the menu UI
 						updateTraderMenu();
@@ -13017,7 +13750,325 @@
             // 5. Refresh UI
             updateFurnaceMenu();
         }
+		
+		function toggleAnvilMenu(col, row, type, power) {
+            if (gameMenuOverlay.style.display === 'flex' && !isGamePaused) return;
+            isGamePaused = !isGamePaused;
+            if (isGamePaused) {
+                currentlyOpenAnvil = { col, row, type, power };
+                anvilOverlay.style.display = 'flex';
+                updateAnvilMenu();
+            } else {
+                anvilOverlay.style.display = 'none';
+                // Return crafting items to inventory
+                for(let i = 0; i < anvilGridSlots.length; i++) {
+                    const slot = anvilGridSlots[i];
+                    if (slot && slot.type && slot.count > 0) {
+                        addToInventory(slot.type, slot.count, slot.durability);
+                        anvilGridSlots[i] = null;
+                    }
+                }
+                // Return held item to inventory
+                if (heldItem) {
+                    addToInventory(heldItem.type, heldItem.count, heldItem.durability);
+                    heldItem = null;
+                    heldItemSource = { type: null, index: -1 };
+                }
+                currentlyOpenAnvil = null;
+                lastTime = performance.now();
+            }
+        }
 
+        function updateAnvilMenu() {
+            if (!currentlyOpenAnvil) return;
+
+            // Get all the specific anvil elements
+            const playerGrid = document.getElementById('anvilPlayerInventoryGrid');
+            const hotbarGrid = document.getElementById('anvilHotbarGrid');
+            const gridDiv = document.getElementById('anvilGrid');
+
+            playerGrid.innerHTML = '';
+            hotbarGrid.innerHTML = '';
+            gridDiv.innerHTML = '';
+            //armorGrid.innerHTML = '';
+            //paperDollDiv.innerHTML = ''; // Clear paper doll
+            
+            // Hotbar
+            for (let i = 0; i < hotbarSize; i++) {
+                const slotDiv = createInventorySlot(inventorySlots[i], i, 'inventory');
+                slotDiv.classList.add('hotbar-slot');
+                hotbarGrid.appendChild(slotDiv);
+            }
+            // Main inventory
+            for (let i = hotbarSize; i < totalInventorySlots; i++) {
+                const slotDiv = createInventorySlot(inventorySlots[i], i, 'inventory');
+                playerGrid.appendChild(slotDiv);
+            }
+            
+            // Anvil 4x4 Grid
+            for (let i = 0; i < 16; i++) {
+                const slotDiv = createInventorySlot(anvilGridSlots[i], i, 'anvil');
+                gridDiv.appendChild(slotDiv);
+            }
+
+            // Armor Slots & Paper Doll
+            const armorSlotOrder = ['helmet', 'chestGear', 'legGear', 'boots'];
+            let totalProtection = 0;
+            for (const slotKey of armorSlotOrder) {
+                const armorItem = player.armor[slotKey];
+                const slotDiv = createInventorySlot(armorItem, slotKey, 'armor');
+                slotDiv.style.opacity = '0.7'; // Placeholder opacity
+
+                if (armorItem) {
+                    const itemProps = itemTypes[armorItem.type];
+                    if (itemProps && itemProps.protectionFactor) {
+                        totalProtection += itemProps.protectionFactor;
+                    }
+                    slotDiv.style.opacity = '1.0';
+                    const equippedAssetKey = `${armorItem.type}_equipped`;
+                    const armorImgAsset = assets[equippedAssetKey];
+                    if (armorImgAsset && !failedAssets[equippedAssetKey]) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = armorImgAsset.src;
+                        imgElement.classList.add('paper-doll-armor');
+                        paperDollDiv.appendChild(imgElement);
+                    }
+                }
+                armorGrid.appendChild(slotDiv);
+            }
+            //protectionDisplay.textContent = `${(totalProtection * 100).toFixed(0)}%`;
+
+            // Delete Slot
+            //deleteSlot.innerHTML = 'X'; // Re-create content in case it was cleared
+            //deleteSlot.onclick = (e) => handleSlotClick(e); // Ensure listener is attached
+
+            // Setup Recipe Listeners
+            const recipeSearch = document.getElementById('anvilRecipeSearchInput');
+            const recipeList = document.getElementById('anvilRecipeListContainer');
+            const recipeIcons = document.getElementById('anvilRecipeIconContainer');
+            const listToggle = document.getElementById('anvilRecipeViewToggleList');
+            const iconToggle = document.getElementById('anvilRecipeViewToggleIcons');
+
+            recipeSearch.oninput = () => {
+                renderAnvilRecipes(recipeSearch.value);
+                const isIconView = recipeIcons.style.display === 'grid';
+                recipeList.style.display = isIconView ? 'none' : 'block';
+                recipeIcons.style.display = isIconView ? 'grid' : 'none';
+            };
+            recipeSearch.onkeydown = (e) => e.stopPropagation();
+            
+            listToggle.onclick = () => {
+                recipeList.style.display = 'block';
+                recipeIcons.style.display = 'none';
+                listToggle.classList.add('active');
+                iconToggle.classList.remove('active');
+            };
+            iconToggle.onclick = () => {
+                recipeList.style.display = 'none';
+                recipeIcons.style.display = 'grid';
+                listToggle.classList.remove('active');
+                iconToggle.classList.add('active');
+            };
+            
+            if (recipeIcons.style.display !== 'grid') {
+                listToggle.click();
+            }
+
+            renderAnvilRecipes();
+            checkAnvilRecipe();
+        }
+
+        function renderAnvilRecipes(filterText = '') {
+            const recipeListDiv = document.getElementById('anvilRecipeListContainer');
+            const iconContainer = document.getElementById('anvilRecipeIconContainer');
+            recipeListDiv.innerHTML = '';
+            iconContainer.innerHTML = '';
+            
+            if (!currentlyOpenAnvil) return;
+            const currentPower = currentlyOpenAnvil.power;
+            const filterNormalized = normalizeForSearch(filterText);
+
+            const filteredRecipes = anvilRecipes.filter(r => {
+                // Filter by anvil power
+                if (r.anvilPower > currentPower) {
+                    return false;
+                }
+                
+                // Filter by search text
+                if (filterNormalized === '') return true;
+
+                const nameCandidate = normalizeForSearch(r.name || '');
+				const outputCandidate = normalizeForSearch(r.output || '');
+				if ((nameCandidate && nameCandidate.includes(filterNormalized)) || (outputCandidate && outputCandidate.includes(filterNormalized))) {
+					return true;
+				}
+				for (const key in r.input) {
+					const inputItem = r.input[key];
+					if (!inputItem) continue;
+					const inputTypeNorm = normalizeForSearch(inputItem.type || '');
+					if (inputTypeNorm.includes(filterNormalized)) return true;
+				}
+				return false;
+			});
+
+            // Render List View
+            for (const recipe of filteredRecipes) {
+                const recipeItemDiv = document.createElement('div');
+                recipeItemDiv.classList.add('recipe-item');
+                const inputGridDiv = document.createElement('div');
+                inputGridDiv.classList.add('recipe-input-grid');
+                for (let i = 0; i < 16; i++) {
+                    const inputItem = recipe.input[i];
+                    const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
+                    inputGridDiv.appendChild(slot);
+                }
+                recipeItemDiv.appendChild(inputGridDiv);
+                const arrowSpan = document.createElement('span');
+                arrowSpan.classList.add('crafting-arrow');
+                arrowSpan.textContent = '→';
+                recipeItemDiv.appendChild(arrowSpan);
+                const outputDiv = document.createElement('div');
+                outputDiv.classList.add('recipe-output');
+                const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
+                const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount, durability: outputItemProps?.isTool ? outputItemProps.maxDurability : null }, -1, 'recipe');
+                outputDiv.appendChild(outputSlot);
+                const outputNameSpan = document.createElement('span');
+                outputNameSpan.textContent = recipe.name || recipe.output.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                outputDiv.appendChild(outputNameSpan);
+                recipeItemDiv.appendChild(outputDiv);
+                recipeListDiv.appendChild(recipeItemDiv);
+				if (cheatItems === true) {
+					recipeItemDiv.addEventListener('click', () => {
+						anvilGridSlots.fill(null);
+						for (const key in recipe.input) {
+							const required = recipe.input[key];
+							anvilGridSlots[key] = { type: required.type, count: required.count };
+						}
+						updateAnvilMenu();
+					});
+				}
+            }
+            
+            // Render Icon View
+			for (const recipe of filteredRecipes) {
+                // We re-use createRecipeIconSlot, which is generic enough
+                const iconSlot = createRecipeIconSlot(recipe); 
+                iconContainer.appendChild(iconSlot);
+            }
+        }
+
+        function checkAnvilRecipe() {
+            anvilOutputSlot.innerHTML = '';
+            anvilCraftButton.disabled = true;
+            anvilCraftButton.onclick = null;
+            if (!currentlyOpenAnvil) return;
+
+            const currentPower = currentlyOpenAnvil.power;
+
+            for (const recipe of anvilRecipes) {
+                // Check if this anvil is powerful enough
+                if (recipe.anvilPower > currentPower) {
+                    continue;
+                }
+
+                const requiredInput = recipe.input;
+                const requiredKeys = Object.keys(requiredInput);
+                const currentGridItems = {};
+                let gridItemCount = 0;
+                for(let i=0; i<16; i++) {
+                    if(anvilGridSlots[i]) {
+                        currentGridItems[i] = anvilGridSlots[i];
+                        gridItemCount++;
+                    }
+                }
+
+                if (requiredKeys.length !== gridItemCount) continue;
+
+                let allMatch = true;
+				for (const key of requiredKeys) {
+					const required = requiredInput[key];
+					const current = currentGridItems[key];
+					if (!current || current.count < required.count) {
+						allMatch = false;
+						break;
+					}
+					if (required.type === 'any_plank') {
+						if (!current.type.startsWith('planked_')) {
+							allMatch = false; break;
+						}
+					} else if (required.type === 'any_gilded') {
+						if (!current.type.startsWith('gilded_') && !current.type.startsWith('raw_gilded_') && !current.type.startsWith('planked_gilded_')) {
+							allMatch = false; break;
+						}
+					} else if (current.type !== required.type) {
+						allMatch = false;
+						break;
+					}
+				}
+
+                if (allMatch) {
+                    const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
+                    const outputSlotContent = createInventorySlot({ type: recipe.output, count: recipe.outputCount, durability: outputItemProps?.isTool ? outputItemProps.maxDurability : null, maxDurability: outputItemProps?.isTool ? outputItemProps.maxDurability : null }, -1, 'output');
+                    anvilOutputSlot.appendChild(outputSlotContent);
+                    anvilCraftButton.disabled = false;
+                    anvilCraftButton.onclick = (event) => executeAnvilCraft(recipe, event.shiftKey);
+                    return;
+                }
+            }
+        }
+
+        function executeAnvilCraft(recipe, isShiftClick = false) {
+            let maxCrafts = 1;
+        
+            if (isShiftClick) {
+                let maxFromMaterials = Infinity;
+                for (const key in recipe.input) {
+                    const required = recipe.input[key];
+                    const current = anvilGridSlots[key];
+                    const possible = Math.floor(current.count / required.count);
+                    if (possible < maxFromMaterials) {
+                        maxFromMaterials = possible;
+                    }
+                }
+        
+                let spaceAvailable = 0;
+                const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
+                if (outputItemProps.isTool) {
+                     spaceAvailable = inventorySlots.filter(slot => !slot).length;
+                } else {
+                    inventorySlots.forEach(slot => {
+                        if (!slot) {
+                            spaceAvailable += maxStackSize;
+                        } else if (slot.type === recipe.output) {
+                            spaceAvailable += maxStackSize - slot.count;
+                        }
+                    });
+                }
+                const maxFromSpace = Math.floor(spaceAvailable / recipe.outputCount);
+                maxCrafts = Math.min(maxFromMaterials, maxFromSpace);
+            }
+            
+            if (maxCrafts <= 0) return;
+        
+            for (let i = 0; i < maxCrafts; i++) {
+                for (const key in recipe.input) {
+                    const required = recipe.input[key];
+                    const current = anvilGridSlots[key];
+                    if(current) {
+                         current.count -= required.count;
+                         if (current.count <= 0) anvilGridSlots[key] = null;
+                    } else {
+                        updateAnvilMenu();
+                        return;
+                    }
+                }
+                const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
+                addToInventory(recipe.output, recipe.outputCount, outputItemProps?.isTool ? outputItemProps.maxDurability : null);
+            }
+        
+            updateAnvilMenu();
+        }
+		
         function renderFurnaceRecipes(filterText = '') {
             const ovenRecipeListContainer = document.getElementById('ovenRecipeListContainer'); // Find new container ID
             const iconContainer = document.getElementById('ovenRecipeIconContainer');
@@ -13179,6 +14230,9 @@
             player.armor = { helmet: null, chestGear: null, legGear: null, boots: null };
             deathCount = 0;
 			
+			playerXP = 0;
+			earnedAchievements = [];
+			
 			isPlayerOnHellfire = false;
             hellfireLevel = 1.0;
             isPlayerInHellfireZone = false;
@@ -13216,22 +14270,6 @@
         });
 
         resumeButton.addEventListener('click', toggleGameMenu);
-
-        function resolvePlayerVerticalCollision() {
-            const playerCol = Math.floor(player.x / tileSize);
-            const playerRow = Math.floor(player.y / tileSize);
-            player.onGround = false;
-            for (let r = playerRow; r < playerRow + playerHeightBlocks + 2; r++) {
-                for (let c = playerCol; c < playerCol + playerWidthBlocks; c++) {
-                    if (isSolid(c, r)) {
-                        player.y = r * tileSize - playerHeight;
-                        player.dy = 0;
-                        player.onGround = true;
-                        return;
-                    }
-                }
-            }
-        }
 
         let lastTime = performance.now();
         let accumulator = 0.0;
@@ -13283,10 +14321,24 @@
         }
         
         let waiterGo = 0
+		let waiterGone = 0
         
         function update(dt) {
             // Note: The 'dt' here is now a fixed value
 			gameTime += dt;
+
+            // --- ADD GUN ANGLE CALCULATION ---
+            const equippedItemObject = getSelectedItem();
+            const equippedItemProps = equippedItemObject ? itemTypes[equippedItemObject.type] : null;
+            if (equippedItemProps && equippedItemProps.isGun) {
+                const playerCenterX = player.x + playerWidth / 2;
+                const playerCenterY = player.y + playerHeight / 2.5; // Hand position
+                const worldMouseX = mouse.x + camera.x;
+                const worldMouseY = mouse.y + camera.y;
+                // Calculate and store the angle to the mouse
+                heldItemState.gunAngle = Math.atan2(worldMouseY - playerCenterY, worldMouseX - playerCenterX);
+            }
+
 			if (player.bloodAlcohol > 0) {
                 player.bloodAlcohol = Math.max(0, player.bloodAlcohol - 1.2 * (dt / 1000)); // Decays 1.2 per second
             }
@@ -13321,6 +14373,7 @@
             handleBlockPlacement();
 			updateAnimatedDrops(dt);
 			updateFire(dt);
+			updateBullets(dt);
             plantSpoilageAccumulator += dt;
 			if (plantSpoilageAccumulator >= PLANT_SPOILAGE_INTERVAL) {
 			  updatePlantGrowth();
@@ -13328,19 +14381,23 @@
 			  plantSpoilageAccumulator = 0;
 			}
             waiterGo += 1
+			waiterGone += 1
             if (waiterGo === 3) {
                 waiterGo = 0
                 updateParticles(dt);
-                updateDebugStats();
                 updateHeldItemAnimation(dt); // Possibly Optimizeable
                 updateHotbar();
-                generateOffscreenChunks();
             }
             if (waiterGo === 1) {
                 updateHeldItemAnimation(dt);
                 updateParticles(dt);
             }
-            
+            if (waiterGone >= 60) { // 60 frames = 1 second
+                waiterGone = 0;
+                
+                generateOffscreenChunks(); // <-- MOVED: Now runs 1/sec, not 20/sec
+                updateDebugStats(); // <-- MOVED: Only needs to update 1/sec
+            }
 
             const playerGridCoords = worldToGrid(player.x + playerWidth / 2, player.y + playerHeight / 2);
             coordsDisplay.textContent = `Coords: (${playerGridCoords.col}, ${playerGridCoords.row})`;
@@ -13353,6 +14410,7 @@
                 icon.style.display = 'block';
                 // Update the saturation filter
                 icon.style.filter = `saturate(${hellfireLevel * 100}%)`;
+				unlockAchievement('DEATH_CATALYST');
             } else {
                 icon.style.display = 'none';
             }
@@ -13571,10 +14629,220 @@
             });
         }
 		
+		function findAndConsumeAmmo() {
+            // 1. Check hotbar first
+            for (let i = 0; i < hotbarSize; i++) {
+                const inventoryIndex = hotbarIndices[i];
+                if (inventoryIndex === null) continue;
+                const item = inventorySlots[inventoryIndex];
+                if (item && itemTypes[item.type]?.isAmmo) {
+                    lastAmmoTypeFired = item.type;  // <--- NEW
+					const ammoPower = itemTypes[item.type].ammoPower || 0;
+					removeItemFromInventory(i, 1);
+					return ammoPower;
+                }
+            }
+            // 2. Check main inventory
+            for (let i = hotbarSize; i < totalInventorySlots; i++) {
+                const item = inventorySlots[i];
+                if (item && itemTypes[item.type]?.isAmmo) {
+                    lastAmmoTypeFired = item.type;  // <--- NEW
+					const ammoPower = itemTypes[item.type].ammoPower || 0;
+					removeItemFromInventory(i, 1);
+					return ammoPower;
+                }
+            }
+            return null; // No ammo found
+        }
+
+        function handleShooting(dt) {
+            if (gunCooldown > 0) {
+                gunCooldown -= dt;
+                return;
+            }
+
+            const equippedItemObject = getSelectedItem();
+            const equippedItemProps = equippedItemObject ? itemTypes[equippedItemObject.type] : null;
+            if (!equippedItemObject || !equippedItemProps || !equippedItemProps.isGun) {
+                return;
+            }
+
+            // Find and consume ammo
+            const bulletPower = findAndConsumeAmmo();
+            if (bulletPower === null) {
+                // No ammo, maybe play a "click" sound
+                gunCooldown = 200; // Cooldown even on a dry fire
+                return;
+            }
+
+            // Set cooldown based on gun's fireRate
+            gunCooldown = equippedItemProps.fireRate * 1000;
+
+            // Consume durability
+            const fireLoss = equippedItemProps.fireLoss || {min: 1, max: 1};
+            const durabilityLoss = fireLoss.min + random() * (fireLoss.max - fireLoss.min);
+            equippedItemObject.durability -= durabilityLoss;
+
+            if (equippedItemObject.durability <= 0) {
+                removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+                updateHotbar();
+                return; // Gun broke
+            }
+            
+            // Trigger recoil animation
+            heldItemState.isSwinging = true;
+            heldItemState.swingTimer = 0;
+
+            // Calculate trajectory
+            const startX = player.x + playerWidth / 2;
+            const startY = player.y + playerHeight / 2.5; // Match hand position
+            const worldMouseX = mouse.x + camera.x;
+            const worldMouseY = mouse.y + camera.y;
+
+            const angle = Math.atan2(worldMouseY - startY, worldMouseX - startX);
+            const dx = Math.cos(angle);
+            const dy = Math.sin(angle);
+            const totalDamage = (equippedItemProps.gunPower || 0) + bulletPower;
+
+            // Create bullet entity
+            bullets.push({
+				x: startX,
+				y: startY,
+				dx: dx,
+				dy: dy,
+				damage: totalDamage,
+				life: 1000,
+				angle: angle,
+				ammoType: lastAmmoTypeFired // <-- NEW
+			});
+        }
+
+        function updateBullets(dt) {
+            const timeFactor = dt / (1000 / 60); // Scale speed by dt
+
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                
+                bullet.life -= dt;
+                if (bullet.life <= 0) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Update position
+                bullet.x += bullet.dx * BULLET_SPEED * timeFactor;
+                bullet.y += bullet.dy * BULLET_SPEED * timeFactor;
+
+                const gridCol = Math.floor(bullet.x / tileSize);
+                const gridRow = Math.floor(bullet.y / tileSize);
+                const key = `${gridCol},${gridRow}`;
+
+                if (isSolid(gridCol, gridRow)) {
+                    unlockAchievement('PEW_PEW');
+					const blockData = worldBlocks[key];
+                    const blockProps = blockTypes[blockData.type];
+
+                    // Check if block can be damaged
+                    if (blockProps && blockProps.miningHardness > 0 && !blockProps.requiredTool) {
+                        blockData.mineProg = (blockData.mineProg || 0) + bullet.damage;
+                        
+                        // Create impact particles
+                        const originalParticleCount = particleCount;
+                        particleCount = 3; // Small puff
+                        createBlockBreakParticles(gridCol, gridRow, blockData.type);
+                        particleCount = originalParticleCount;
+
+                        // Check if block broke
+                        if (blockData.mineProg >= blockProps.miningHardness) {
+                            handleMiningDrops(blockProps, key);
+                            createBlockBreakParticles(gridCol, gridRow, blockData.type); // Full break particles
+                            worldBlocks[key] = { type: '', mineProg: 0 };
+                            exploredMap[key] = '#000000';
+
+                            // --- ADDED: Break foliage above logic ---
+                            let currentRow = gridRow - 1; // Start with the block directly above
+                            
+                            while (true) {
+                                const blockAboveKey = `${gridCol},${currentRow}`;
+                                const blockAboveData = worldBlocks[blockAboveKey];
+                            
+                                if (blockAboveData && foliageTypes.includes(blockAboveData.type)) {
+                                    const blockAboveProps = blockTypes[blockAboveData.type];
+                            
+                                    if (canInventoryAcceptDrops(blockAboveProps.drops)) {
+                                        worldBlocks[blockAboveKey] = { type: '', mineProg: 0 };
+                                        handleMiningDrops(blockAboveProps, blockAboveKey);
+                                        currentRow--; 
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                            // --- END OF FOLIAGE LOGIC ---
+                        }
+                    }
+                    bullets.splice(i, 1); // Remove bullet on impact
+                }
+            }
+        }
+
+        function drawBullets() {
+            if (bullets.length === 0) return;
+            
+            for (const bullet of bullets) {
+				const ammoImgKey = bullet.ammoType ? bullet.ammoType : 'brass_bullet';
+				const bulletImg = assets[ammoImgKey];
+
+				if (!bulletImg || failedAssets['brass_bullet']) {
+					// Fallback to yellow square if asset fails
+					ctx.fillStyle = '#FFFF00';
+					for (const bullet of bullets) {
+						const screenX = bullet.x - camera.x;
+						const screenY = bullet.y - camera.y;
+						if (screenX < 0 || screenX > canvas.width || screenY < 0 || screenY > canvas.height) continue;
+						ctx.fillRect(screenX - (BULLET_SIZE/2), screenY - (BULLET_SIZE/2), BULLET_SIZE, BULLET_SIZE);
+					}
+					return;
+				}
+
+				// Draw with rotated image
+				for (const bullet of bullets) {
+					const screenX = bullet.x - camera.x;
+					const screenY = bullet.y - camera.y;
+
+					// Culling (check a bit outside the screen)
+					if (screenX < -BULLET_SIZE || screenX > canvas.width + BULLET_SIZE || screenY < -BULLET_SIZE || screenY > canvas.height + BULLET_SIZE) {
+						continue;
+					}
+					
+					ctx.save();
+					// Translate to the bullet's center
+					ctx.translate(screenX, screenY);
+					// Rotate by the angle calculated during firing
+					ctx.rotate(bullet.angle); 
+					
+					// --- ADD THIS FLIP LOGIC ---
+					const isAimingLeft = Math.abs(bullet.angle) > (Math.PI / 2);
+					if (isAimingLeft) {
+						ctx.scale(1, -1); // Flip sprite vertically
+					}
+					// --- END OF ADDITION ---
+					
+					// Draw the image centered on the new (0,0) origin
+					ctx.drawImage(bulletImg, -BULLET_SIZE / 2, -BULLET_SIZE / 2, BULLET_SIZE, BULLET_SIZE);
+					
+					ctx.restore();
+				}
+			}
+        }
+		
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawWorld();
 			drawAnimatedDrops();
+			drawBullets();
 			drawParticles();
             drawPlayer();
 			drawHeldItem();
@@ -13585,7 +14853,97 @@
 			drawHellfireIcon();
             drawDrunkEffect();
 			drawMinimap();
+			drawBlockOutline();
         }
+		
+		function unlockAchievement(id) {
+			if (!id || !achievements[id] || earnedAchievements.includes(id)) {
+				return; // Invalid ID or already earned
+			}
+
+			// 1. Mark as earned and add XP
+			earnedAchievements.push(id);
+			const achievement = achievements[id];
+			playerXP += achievement.xp;
+
+			console.log(`Achievement Unlocked: ${achievement.name}! +${achievement.xp} XP`);
+
+			// 2. Create the visual toast pop-up
+			const toastContainer = document.getElementById('achievementToastContainer');
+			
+			const toast = document.createElement('div');
+			toast.className = 'achievement-toast';
+
+			// Find the icon image source
+			// We check both itemTypes and blockTypes to find the icon
+			const itemIconProps = itemTypes[achievement.icon.replace('.png', '')] || blockTypes[achievement.icon.replace('.png', '')];
+			const iconSrc = itemIconProps ? itemIconProps.imgSrc : achievement.icon; // Use the direct filename as a fallback
+
+			toast.innerHTML = `
+				<img src="${iconSrc}" class="achievement-toast-icon" alt="">
+				<div class="achievement-toast-text">
+					<h4>${achievement.name}</h4>
+					<p>${achievement.desc}</p>
+					<span class="xp-gain">+${achievement.xp} XP</span>
+				</div>
+			`;
+
+			toastContainer.appendChild(toast);
+
+			// 3. Set timer to remove the toast
+			setTimeout(() => {
+				toast.remove();
+			}, 5000); // Stays on screen for 5 seconds
+		}
+		
+		function toggleXPMenu() {
+			if (isGamePaused && xpMenuOverlay.style.display !== 'flex') {
+				return; // Another menu is open, don't open this one
+			}
+
+			isGamePaused = !isGamePaused;
+
+			if (isGamePaused) {
+				xpMenuOverlay.style.display = 'flex';
+				updateXPMenu();
+			} else {
+				xpMenuOverlay.style.display = 'none';
+				lastTime = performance.now();
+			}
+		}
+
+		function updateXPMenu() {
+			const grid = document.getElementById('achievementGrid');
+			const totalDisplay = document.getElementById('xpTotalDisplay');
+			
+			grid.innerHTML = '';
+			totalDisplay.textContent = `${playerXP} XP`;
+
+			// Iterate over the achievement definitions object
+			for (const id in achievements) {
+				const ach = achievements[id];
+				const isEarned = earnedAchievements.includes(id);
+
+				const slot = document.createElement('div');
+				slot.className = 'achievement-slot';
+				if (!isEarned) {
+					slot.classList.add('unearned');
+				}
+
+				// Find icon source from assets
+				const itemIconProps = itemTypes[ach.icon.replace('.png', '')] || blockTypes[ach.icon.replace('.png', '')];
+				const iconSrc = itemIconProps ? itemIconProps.imgSrc : ach.icon;
+
+				slot.innerHTML = `
+					<img src="${iconSrc}" class="achievement-slot-icon" alt="${ach.name}">
+					<span class="achievement-slot-name">${ach.name}</span>
+					<span class="achievement-slot-xp">${ach.xp} XP</span>
+					<p class="achievement-slot-desc">${ach.desc}</p>
+					`;
+
+				grid.appendChild(slot);
+			}
+		}
 
         function init() {
             resizeCanvas();
@@ -13608,12 +14966,25 @@
             }
             player.y = (actualSurfaceRowAtStart - playerHeightBlocks) * tileSize;
             player.spawnPoint = { x: player.x, y: player.y }; // Set initial spawn point
-            resolvePlayerVerticalCollision();
             updateHotbar();
             lastTime = performance.now();
             if (!gameLoopId) {
                 gameLoopId = requestAnimationFrame(gameLoop);
             }
+			// Listener for the new "Achievements" button in the game menu
+			achievementsButton.addEventListener('click', () => {
+				// Close the game menu, then open the XP menu
+				toggleGameMenu();
+				toggleXPMenu();
+			});
+
+			// Listener for the mobile close button on the XP menu
+			document.querySelector('#xpMenuOverlay .mobile-close-button').addEventListener('click', toggleXPMenu);
+			document.querySelector('#xpMenuOverlay .mobile-close-button').addEventListener('touchstart', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				toggleXPMenu();
+			});
         }
 		
 		loadSavedSkin();
@@ -13672,6 +15043,9 @@
 				void: voidStorage,
 				trade: currentVoidTrade,
 				death: deathCount,
+				xp: playerXP,
+				achievements: earnedAchievements,
+				consoleHistory: commandHistory
             };
 
             const json = JSON.stringify(worldData);
@@ -13779,6 +15153,14 @@
             (data.towers || []).forEach(key => watchtowerColumns.add(key));
 			voidStorage = data.void || []; // Load void data, or initialize as empty array if not present
 			currentVoidTrade = data.trade || null;
+			
+			// Load XP & Achievements
+			playerXP = data.xp || 0;
+			earnedAchievements = data.achievements || [];
+
+			// Load Console History
+			commandHistory = data.consoleHistory || [];
+			historyIndex = commandHistory.length; // Reset history navigation
 
             // Load Player Data
             if (data.player) {
@@ -13806,7 +15188,7 @@
                     hotbarIndices[i] = data.hotbar[i];
                 }
             }
-
+			
             updateHotbar();
             if(gameMenuOverlay.style.display === 'flex') toggleGameMenu();
             lastTime = performance.now(); // Reset time to prevent large dt jump
@@ -14025,6 +15407,9 @@
 			  void: voidStorage,
 			  trade: currentVoidTrade,
 			  death: deathCount,
+			  xp: playerXP,
+			  achievements: earnedAchievements,
+			  consoleHistory: commandHistory
             };
         
             const json = JSON.stringify(worldData);
@@ -14659,6 +16044,7 @@
                         // ADDED THESE TWO
                         case 'gameMenuOverlay': toggleGameMenu(); break;
                         case 'devConsoleOverlay': toggleDevConsole(); break;
+						case 'anvilOverlay': toggleAnvilMenu(); break;
 
                         // EXISTING
                         case 'inventoryCraftingOverlay': toggleInventoryMenu(); break;
