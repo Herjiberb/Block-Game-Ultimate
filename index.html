@@ -464,6 +464,153 @@
         height: 1.5rem;
         display: block;
     }
+	.patch-notes-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: block;
+        }
+
+        /* === PASTE NEW MOBILE CSS HERE === */
+        /* NEW: This query now applies styles if the screen is NARROW (portrait) OR SHORT (landscape) */
+        @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+            /* Adjust main container for small screens */
+            main {
+                padding: 0.5rem;
+                background-color: rgba(0, 0, 0, 0.4); /* Slightly more background for contrast */
+            }
+
+            /* Make logo smaller */
+            .main-logo-image {
+                max-width: 300px;
+                margin-bottom: 0rem;
+            }
+
+            /* Make splash text smaller and reposition */
+            .splash-text {
+                font-size: 1rem;
+                bottom: 0.5rem;
+                right: -0.5rem;
+            }
+
+            .title-container {
+                margin-bottom: 1rem; /* Reduced margin to fit on short landscape screens */
+            }
+            
+            /* Make top corner controls smaller and give them space */
+            #top-right-controls,
+            #top-left-controls {
+                gap: 0.25rem;
+            }
+            #version-name {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+            .block-icon {
+                width: 2rem;
+                height: 2rem;
+            }
+
+            /* --- Mobile Button Styles --- */
+            .launcher-button {
+                font-size: 1.1rem;
+                padding: 0.8rem 1rem;
+                /* Make buttons more rectangular (less rounded) */
+                border-radius: 0.25rem; 
+            }
+
+            .play-button {
+                font-size: 1.3rem;
+                /* New Mobile Color: Bright Green */
+                background: linear-gradient(to bottom, #28a745, #1e7e34);
+            }
+            .play-button:hover {
+                background: linear-gradient(to bottom, #218838, #155724);
+            }
+
+            .snapshots-button {
+                /* New Mobile Color: Bright Orange */
+                background: linear-gradient(to bottom, #fd7e14, #d35400);
+            }
+            .snapshots-button:hover {
+                background: linear-gradient(to bottom, #e67e22, #a04000);
+            }
+            /* --- End Mobile Button Styles --- */
+
+            /* Make modals fit better */
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+            .modal-title {
+                font-size: 1.5rem;
+            }
+            .snapshot-list {
+                max-height: 250px;
+            }
+            .snapshot-item span {
+                font-size: 1rem;
+            }
+        }
+		/* 1. Theme overlay (for triple-click) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 50% darken */
+            z-index: -1; /* Behind content, over background */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        body.theme-active::before {
+            opacity: 1; /* Show the overlay */
+            z-index: -1;
+        }
+
+        /* 2. "Reset Theme" button style */
+        #reset-theme-button {
+            position: relative;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            background-color: #78350f; /* Brown */
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        #reset-theme-button:hover {
+            background-color: #9a3412;
+        }
+        
+        /* 3. "HACK" Easter Egg Theme */
+        body.matrix-theme {
+            background: #000 !important; /* Force black background */
+        }
+        .matrix-theme main {
+            background-color: rgba(0, 20, 0, 0.3);
+            border: 1px solid #00ff00;
+        }
+        .matrix-theme #launcher-ui * {
+            color: #00ff00 !important; /* Green text everywhere */
+            font-family: 'Courier New', monospace; /* Hacker font */
+            text-shadow: 0 0 5px #00ff00, 0 0 2px #000;
+        }
+        .matrix-theme .launcher-button {
+            background: linear-gradient(to bottom, #003300, #001100) !important;
+            border: 1px solid #00ff00;
+        }
+        .matrix-theme .main-logo-image {
+            /* Green-ify the logo */
+            filter: hue-rotate(120deg) brightness(1.5) drop-shadow(0 0 10px #00ff00);
+        }
+        .matrix-theme .block-icon,
+        .matrix-theme .bottom-right-logo,
+        .matrix-theme .bottom-left-logo {
+            filter: hue-rotate(120deg) brightness(1.2) drop-shadow(0 0 5px #00ff00);
+        }
 </style>
 </head>
 <body>
@@ -510,14 +657,17 @@
     </div>
 	<!-- NEW: Top Right Controls Container for Block Game Artist -->
     <div id="top-left-controls">
-        <!-- Button to launch Block Artist, now opens the modal -->
         <button id="gallery-button" onclick="openArtistModal()">
             <img src="Paper.png" alt="Block Artist Icon" class="block-icon"/>
         </button>
 		<button id="music-button" onclick="openMusicModal()">
             <img src="Book.png" alt="Block Music Icon" class="block-icon"/>
         </button>
-    </div>
+        
+        <!--<button id="reset-theme-button" title="Reset Launcher Theme">
+            <img src="Dirt Block.png" alt="Reset Theme" class="block-icon"/>
+        </button>-->
+        </div>
 </div>
 
 <!-- This is the iframe that will load the game/gallery/snapshot in the same tab -->
@@ -693,8 +843,9 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game."
-        },
+            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps.",
+			specialSplash: "Mine with machine guns! And, yes, it's lots of fun!"
+		},
         { 
             name: "Geobotanical Combustion Thesis (Version ###)", 
             path: "Snapshot - Geobotanical Combustion Thesis.html",
@@ -846,6 +997,7 @@
      * @param {string} contentPath - The filename to load (e.g., "Block Game Ultimate.html").
      */
     function launchContent(contentPath) {
+		resetLauncherTheme();
         const gameIframe = document.getElementById('game-iframe');
         const launcherUI = document.getElementById('launcher-ui');
         const exitButton = document.getElementById('exit-button');
@@ -898,7 +1050,8 @@
         gameIframe.style.display = 'none';
         gameIframe.src = 'about:blank'; // Clear the content
         exitButton.style.display = 'none';
-
+		
+		resetLauncherTheme();
         // Show the launcher UI
         launcherUI.style.display = 'flex';
         launcherUI.focus(); // Focus the launcher UI
@@ -924,26 +1077,66 @@
 
         SNAPSHOT_DATA.forEach(snapshot => {
             const listItem = document.createElement('li');
-            // Clicks on the list item *itself* launch the content
             listItem.className = 'snapshot-item';
-            listItem.onclick = () => launchContent(snapshot.path);
+            
+            // --- NEW: Triple-click logic ---
+            let clickTimer = null;
+            let clickCount = 0;
+            const tripleClickDelay = 500; // 500ms window for 3 clicks
+
+            const clickHandler = (event) => {
+				if (event.target.closest('.patch-notes-button')) {
+                    if (clickTimer) {
+                        clearTimeout(clickTimer);
+                    }
+                    clickCount = 0;
+                    return; // Stop processing the click for the li (game launch)
+                }
+                clickCount++;
+
+                if (clickTimer) {
+                    clearTimeout(clickTimer);
+                }
+
+                clickTimer = setTimeout(() => {
+                    clickCount = 0; // Reset after delay
+                }, tripleClickDelay);
+
+                if (clickCount === 1) {
+                    // On the first click, set a timer to launch the game
+                    // This creates a small delay, but allows triple-click to cancel it.
+                    clickTimer = setTimeout(() => {
+                        launchContent(snapshot.path);
+                        clickCount = 0;
+                    }, tripleClickDelay);
+                } else if (clickCount === 3) {
+                    // TRIPLE CLICK!
+                    event.stopPropagation();
+                    event.preventDefault();
+                    clearTimeout(clickTimer); // Cancel the game launch
+                    clickCount = 0;
+                    applyLauncherTheme(snapshot); // Apply theme instead
+                }
+            };
+
+            listItem.addEventListener('mousedown', clickHandler);
+            listItem.addEventListener('touchstart', clickHandler);
+            // --- END of Triple-click logic ---
 
             // Structure includes the new Patch Notes button
             listItem.innerHTML = `
-                <div style="flex-grow: 1;">
-                    <span>${snapshot.name}</span><br>
-                    <span class="snapshot-path">Path: ${snapshot.path}</span>
-                </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <!-- Patch Notes Button -->
-                    <button class="patch-notes-button" 
-                            onclick="event.stopPropagation(); openPatchNotesModal('${snapshot.name}')" 
-                            title="View Patch Notes">
-                        <img src="Planked Oak Block.png" alt="Notes Icon" class="patch-notes-icon"/>
-                    </button>
-                    <!-- Clicking the list item itself serves as the launch button -->
-                </div>
-            `;
+				<div style="flex-grow: 1;">
+					<span>${snapshot.name}</span><br>
+					<span class="snapshot-path">Path: ${snapshot.path}</span>
+				</div>
+				<div style="display: flex; gap: 0.5rem; align-items: center;">
+					<button class="patch-notes-button" 
+							onclick="event.stopPropagation(); openPatchNotesModal('${snapshot.name}')" 
+							title="View Patch Notes">
+						<img src="Planked Oak Block.png" alt="Notes Icon" class="patch-notes-icon"/>
+					</button>
+					</div>
+			`;
             listElement.appendChild(listItem);
         });
     }
@@ -1170,6 +1363,9 @@
     // --- Konami Code Easter Egg ---
     const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a', 'Enter'];
     let konamiIndex = 0;
+	
+	const hackCode = ['h', 'a', 'c', 'k'];
+    let hackIndex = 0;
 
     document.addEventListener('keydown', (event) => {
         // Ignore key presses when a modal is open
@@ -1191,6 +1387,17 @@
             // Reset if the wrong key is pressed
             konamiIndex = 0;
         }
+		
+		const requiredHackKey = hackCode[hackIndex];
+        if (event.key.toLowerCase() === requiredHackKey) {
+            hackIndex++;
+            if (hackIndex === hackCode.length) {
+                activateHackTheme();
+                hackIndex = 0;
+            }
+        } else {
+            hackIndex = 0;
+        }
     });
 
     function activateKonami() {
@@ -1201,7 +1408,6 @@
             splashElement.textContent = "Everything Has Changed...";
             splashElement.style.color = "#00ff00"; // Hacker green
             splashElement.style.transform = "rotate(0deg) scale(1.1)";
-            splashElement.style.animation = 'none'; // Stop the wobbly animation
         }
         
         if (logoElement) {
@@ -1209,11 +1415,53 @@
         }
         console.log("KONAMI CODE ACTIVATED!");
     }
+	
+	/**
+     * Resets all launcher themes and splash text.
+     */
+    function resetLauncherTheme() {
+        document.body.classList.remove('theme-active');
+        document.body.classList.remove('matrix-theme');
+        document.body.style.backgroundImage = "url('Background.png')"; // Reset to default
+        setRandomSplash(); // Get a new random splash
+        setRandomLogo();   // Get a new random logo
+    }
 
+    /**
+     * Applies the "HACK" easter egg theme.
+     */
+    function activateHackTheme() {
+        resetLauncherTheme(); // Clear other themes first
+        document.body.classList.add('matrix-theme');
+        const splashElement = document.getElementById('splash-text');
+        if (splashElement) {
+            splashElement.textContent = "SYSTEM BREACHED";
+            splashElement.style.animation = 'none';
+        }
+    }
+
+    /**
+     * Applies a theme based on a snapshot.
+     * @param {object} snapshot - The snapshot data object.
+     */
+    function applyLauncherTheme(snapshot) {
+        closeAllModals(); // Close the snapshots window
+        resetLauncherTheme(); // Clear any existing theme
+
+        const bgPath = getBackgroundPath(snapshot.name);
+        document.body.style.backgroundImage = `url('${bgPath}')`;
+        document.body.classList.add('theme-active'); // This adds the 50% darken overlay
+
+        if (snapshot.specialSplash) {
+            const splashElement = document.getElementById('splash-text');
+            splashElement.textContent = snapshot.specialSplash;
+        }
+    }
     
     // Run the initial setup when the page loads
     window.onload = () => {
         setRandomSplash();
+		document.getElementById('reset-theme-button').onclick = resetLauncherTheme;
     };
 </script>
 
