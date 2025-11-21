@@ -1743,7 +1743,8 @@
 
     </div>
 	
-	<div id="achievementToastContainer"></div>
+	
+    <div id="achievementToastContainer"></div>
 
     <!-- Game Menu Overlay -->
     <div id="gameMenuOverlay" oncontextmenu="return false;">
@@ -2220,8 +2221,12 @@
 		let handMiningPower = 0.1 //Non constant to enable console cheats
 		let cloakingEnabled = true //Non constant to enable console cheats
 		let displayType = 'stone';
-		let deathCount = 0;
-		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane'];
+		// START ACHIEVEMENT VARIABLES
+        let deathCount = 0;
+        let insomnia = 0;
+        let guanoMined = 0;
+        // END ACHIEVEMENT VARIABLES
+		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
 		let portals = []; // Will store all portal locations and links
@@ -2504,6 +2509,118 @@
 				icon: 'Chili Pepper.png',
 				xp: 5
 			},
+            'HELLFIRE_FORGED': {
+                id: 'HELLFIRE_FORGED',
+                name: 'Hellfire Forged',
+                desc: 'Craft a tool from Hellsteel.',
+                icon: 'Hellsteel Pickaxe.png',
+                xp: 10
+            },
+            'HEAVEN_SENT': {
+                id: 'HEAVEN_SENT',
+                name: 'Heaven Sent',
+                desc: 'Craft a tool from Heavensteel.',
+                icon: 'Heavensteel Pickaxe.png',
+                xp: 10
+            },
+            'MYTHICAL_MINER': {
+                id: 'MYTHICAL_MINER',
+                name: 'Mythical Miner',
+                desc: 'Craft a tool from Mythicalithium.',
+                icon: 'Mythicalithium Pickaxe.png',
+                xp: 15
+            },
+            'SPELUNKER': {
+                id: 'SPELUNKER',
+                name: 'Spelunker',
+                desc: 'Collect 25 Guano from caves underground.',
+                icon: 'Guano.png',
+                xp: 10
+            },
+            'ALCHEMIST': {
+                id: 'ALCHEMIST',
+                name: 'Alchemist',
+                desc: 'Craft a Power Orb.',
+                icon: 'Power Orb.png',
+                xp: 10
+            },
+            'MAD_SCIENTIST': {
+                id: 'MAD_SCIENTIST',
+                name: 'Mad Scientist',
+                desc: 'Craft an Impotent Orb.',
+                icon: 'Impotent Orb.png',
+                xp: 10
+            },
+            'ROCK_BOTTOM': {
+				id: 'ROCK_BOTTOM',
+				name: 'Rock Bottom',
+				desc: 'Drink a nice, refreshing glass of your own pee.', // It's sterile and I like the taste
+				icon: 'Cup Of Urine.png',
+				xp: 5
+			},
+            'IS_THIS_ME': {
+                id: 'IS_THIS_ME',
+                name: 'Is This Me!?',
+                desc: 'Gag and take a slimy bite of raw human flesh.',
+                icon: 'Human Flesh.png',
+                xp: 5
+            },
+            'HOME_SWEET_HOME': {
+                id: 'HOME_SWEET_HOME',
+                name: 'Home Sweet Home',
+                desc: 'Place a bed.',
+                icon: 'Bed.png',
+                xp: 5
+            },
+            'KABOOM': {
+                id: 'KABOOM',
+                name: 'KABOOM!',
+                desc: 'Detonate a Nuclear Bomb.',
+                icon: 'Nuclear Bomb.png',
+                xp: 10
+            },
+            'GLOBETROTTER': {
+                id: 'GLOBETROTTER',
+                name: 'Globetrotter',
+                desc: 'Use a World Mover to teleport.',
+                icon: 'World Mover.png',
+                xp: 10
+            },
+            'BOOKWORM': {
+                id: 'BOOKWORM',
+                name: 'Bookworm',
+                desc: 'Write and publish a book.',
+                icon: 'Book.png',
+                xp: 5
+            },
+            'CHEERS': {
+                id: 'CHEERS',
+                name: 'Cheers!',
+                desc: 'Drink a Cup of Beer.',
+                icon: 'Cup Of Beer.png',
+                xp: 5
+            },
+            'INSOMNIAC': {
+                id: 'INSOMNIAC',
+                name: 'Insomniac',
+                desc: 'Drink 10 Cups of Coffee.',
+                icon: 'Cup Of Coffee.png',
+                xp: 5
+            },
+            'COOL_IT': {
+                id: 'COOL_IT',
+                name: 'Cool It On The Drinks',
+                desc: 'Get your Blood Alcohol level over 100.',
+                icon: 'Drunk Mask Icon.png',
+                xp: 10
+            },
+            'PERSISTENT': {
+                id: 'PERSISTENT',
+                name: 'Persistent',
+                desc: 'Die 100 times. Ouch.',
+                icon: 'Dead Body Chest.png',
+                xp: 5
+            }
 		};
 
 		const xpMenuOverlay = document.getElementById('xpMenuOverlay');
@@ -2538,6 +2655,136 @@
 				watchtowerProbability = 0.01
 			}
 		}
+
+        /**
+         * A hack function to find the nearest instance of a block to the player.
+         * @param {string} findType - The block type to search for (e.g., 'diamond_compacted_stone').
+         */
+        function find(findType) {
+            let minDistSq = Infinity;
+            let nearestKey = null;
+            
+            // Get player's current grid position
+            const pCol = Math.floor(player.x / tileSize);
+            const pRow = Math.floor(player.y / tileSize);
+
+            // Iterate through all loaded blocks
+            for (const key in worldBlocks) {
+                const block = worldBlocks[key];
+                
+                // Check if it's the block we want
+                if (block && block.type === findType) {
+                    const [bCol, bRow] = key.split(',').map(Number);
+                    
+                    // Use squared distance to avoid slow Math.sqrt()
+                    const distSq = (pCol - bCol)**2 + (pRow - bRow)**2;
+                    
+                    if (distSq < minDistSq) {
+                        minDistSq = distSq;
+                        nearestKey = key;
+                    }
+                }
+            }
+
+            let message;
+            if (nearestKey === null) {
+                message = `NONE FOUND for type '${findType}'.`;
+            } else {
+                // Get coords from the nearest key found
+                const [bCol, bRow] = nearestKey.split(',').map(Number);
+                message = `LOCATED NEAREST '${findType}' AT (${bCol}, ${bRow}).`;
+            }
+            
+            logToConsole(message, 'log-output'); // Log to in-game console
+            return message; // Return the message for the JS console
+        }
+
+        /**
+         * A hack function to find and replace blocks in the world.
+         * Can replace 'all' blocks or a specific 'findType'.
+         * Includes exceptions and a safe zone around the player.
+         * @param {string} findType - The block type to search for (e.g., 'dirt') or 'all'.
+         * @param {string} replaceType - The block type to replace with (e.g., 'mud').
+         * @param {...string} exceptions - A list of block types to NOT replace.
+         */
+        function findAndReplace(findType, replaceType, ...exceptions) {
+            let replaceCount = 0;
+            if (!findType && findType !== '' || !replaceType && replaceType !== '') {
+                const msg = "Error: findAndReplace requires at least a findType and replaceType.";
+                logToConsole(msg, 'log-error');
+                return msg;
+            }
+
+            // 1. Create the exception set for fast lookup
+            const exceptionSet = new Set(exceptions);
+            exceptionSet.add(replaceType); // Always avoid replacing the block with itself
+            exceptionSet.add('invisible_barrier'); // Protect world borders
+            //exceptionSet.add(''); // Always ignore air
+            //exceptionSet.add('sky'); // Always ignore sky
+
+            // 2. Define the "safe zone" around the player (3 wide x 5 tall)
+            const playerCol = Math.floor(player.x / tileSize);
+            const playerRowMin = Math.floor(player.y / tileSize);
+            const playerRowMax = Math.floor((player.y + playerHeight) / tileSize);
+            const safeRadius = 1; // 1-block buffer on each side (total 3 wide)
+            
+            const safeZone = new Set();
+            for (let c = playerCol - safeRadius; c <= playerCol + safeRadius; c++) {
+                // 2 blocks above player's head, 2 blocks below player's feet
+                for (let r = playerRowMin - 2; r <= playerRowMax + 2; r++) {
+                    safeZone.add(`${c},${r}`);
+                }
+            }
+
+            // 3. Iterate through all loaded blocks
+            for (const key in worldBlocks) {
+                const block = worldBlocks[key];
+                if (!block) continue; // Skip if block is null/undefined
+
+                const currentType = block.type;
+
+                // 4. Check if this block should be replaced
+                const isMatch = (findType === 'all') || (currentType === findType);
+                if (!isMatch) {
+                    continue;
+                }
+
+                // 5. Check if it's in the exception list or safe zone
+                if (exceptionSet.has(currentType) || safeZone.has(key)) {
+                    continue;
+                }
+
+                // 6. Create the new block, respecting special container properties
+                const newBlock = { type: replaceType, mineProg: 0 };
+
+                if (replaceType === 'chest') {
+                    newBlock.inventory = new Array(chestInventorySize).fill(null);
+                    newBlock.label = 'Replaced Chest';
+                } else if (replaceType === 'magical_chest') {
+                    newBlock.inventory = new Array(50).fill(null);
+                    newBlock.label = 'Replaced M-Chest';
+                } else if (replaceType === 'dead_body_chest') {
+                    newBlock.inventory = new Array(50).fill(null);
+                    newBlock.label = 'Replaced Body';
+                } else if (replaceType === 'refrigerator') {
+                    newBlock.inventory = new Array(18).fill(null);
+                    newBlock.label = 'Replaced Fridge';
+                } else if (replaceType === 'oven' || replaceType === 'magma_furnace' || replaceType === 'power_forge') {
+                    newBlock.inventory = new Array(12).fill(null); // 9 input, 1 fuel, 1 output, 1 byproduct
+                } else if (replaceType === 'world_mover') {
+                    newBlock.inventory = new Array(1).fill(null); // 1 fuel slot
+                }
+                // (Add other special container types like anvils if they get inventories)
+
+                // 7. Perform the replacement
+                worldBlocks[key] = newBlock;
+                replaceCount++;
+            }
+
+            const message = `Replaced ${replaceCount} blocks.`;
+            logToConsole(message, 'log-output');
+            return message;
+        }
 
 		function syncHotbarIndices() {
 			// Ensure hotbarIndices always points to the inventorySlots that should appear in the hotbar
@@ -3107,7 +3354,9 @@
 			'green_flower': { imgSrc: 'Green Flower.png', solid: false, miningHardness: 10, drops: [{item: 'green_flower', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
 			'pinecone_pile': { imgSrc: 'Pinecone Pile.png', solid: false, miningHardness: 10, drops: [{item: 'pinecone', chance: 1, min: 1, max: 3}], color: '#8B4513' },
 			'pine_needle_pile': { imgSrc: 'Pine Needle Pile.png', solid: false, miningHardness: 10, drops: [{item: 'pine_needle_living', chance: 0.5, min: 1, max: 2}, {item: 'pine_needle_dying', chance: 0.5, min: 1, max: 2}, {item: 'pine_needle_dead', chance: 0.5, min: 1, max: 2}], color: '#2E8B57' },
-            'milkweed': { imgSrc: 'Milkweed.png', solid: false, miningHardness: 10, drops: [{item: 'milkweed', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
+            'sunflower_top': { imgSrc: 'Sunflower Top.png', solid: false, miningHardness: 10, drops: [], color: '#FFFF00' },
+			'sunflower_stem': { imgSrc: 'Sunflower Stem.png', solid: false, miningHardness: 10, drops: [], color: '#FFFF00' },
+			'milkweed': { imgSrc: 'Milkweed.png', solid: false, miningHardness: 10, drops: [{item: 'milkweed', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
 			'mossy_root': { imgSrc: 'Mossy Root.png', solid: false, miningHardness: 10, drops: [{item: 'mossy_root', chance: 1, min: 1, max: 1}], color: '#6B8E23' },
 			'leaf_pile': { imgSrc: 'Leaf Pile.png', solid: false, miningHardness: 10, drops: [{item: 'leaf', chance: 1, min: 1, max: 5}], color: '#228B22' },
 			'fern': { imgSrc: 'Fern.png', solid: false, miningHardness: 10, drops: [{item: 'chili_pepper_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
@@ -3333,6 +3582,7 @@
 			 'mythicalithium_nugget': { imgSrc: 'Mythicalithium Nugget.png', color: '#8A2BE2' },
              'nuclear_core': { imgSrc: 'Nuclear Core.png', color: '#ADFF2F' },
 			 'power_orb': { imgSrc: 'Power Orb.png', color: '#00BFFF' },
+             'impotent_orb': { imgSrc: 'Impotent Orb.png', color: '#00BFFF' },
 			 'nickel_nugget': { imgSrc: 'Nickel Nugget.png', color: '#BEBEBE' },
 			 'lead_nugget': { imgSrc: 'Lead Nugget.png', color: '#778899' },
 			 'aluminum_nugget': { imgSrc: 'Aluminum Nugget.png', color: '#D3D3D3' },
@@ -3481,7 +3731,7 @@
 			 // ---GUN SECTION---
 			 'wood_bullet': { imgSrc: 'Wood Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 1 },
              'brass_bullet': { imgSrc: 'Brass Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 5 },
-             'steel_bullet': { imgSrc: 'Steel Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 10 },
+             'steel_bullet': { imgSrc: 'Steel Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 12 },
              'mythicalithium_bullet': { imgSrc: 'Mythicalithium Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 235 },
 			 'pistol': { imgSrc: 'Pistol.png', color: '#43464B', isTool: true, isGun: true, gunPower: 15, fireRate: 0.6, fireLoss: {min: 30, max: 50}, maxDurability: 20000 },
 			 'machine_gun': { imgSrc: 'Machine Gun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 21, fireRate: 0.1, fireLoss: {min: 30, max: 80}, maxDurability: 30000 },
@@ -4100,6 +4350,40 @@
 				}
 			}
 		}
+
+        /**
+         * Generates tall, multi-block foliage like sunflowers.
+         * Checks for obstructions before placing.
+         * @param {number} col - The column to plant the foliage on.
+         * @param {number} surfaceRow - The row of the ground block (e.g., grass_dirt).
+         * @param {string} foliageType - The type of foliage to generate (e.g., "sunflower").
+         */
+        function generateTallFoliage(col, surfaceRow, foliageType) {
+            
+            if (foliageType === 'sunflower') {
+                const stemHeight = 2 + Math.floor(random() * 2); // 2 or 3 blocks tall
+                const topRow = surfaceRow - stemHeight - 1; // Row for the flower top
+                
+                // 1. Check if there is enough empty space for the whole plant
+                for (let i = 1; i <= stemHeight + 1; i++) {
+                    if (getBlockType(col, surfaceRow - i) !== '') {
+                        return; // Obstructed, cannot plant here
+                    }
+                }
+                
+                // 2. Place the stem blocks
+                for (let i = 1; i <= stemHeight; i++) {
+                    const stemRow = surfaceRow - i;
+                    worldBlocks[`${col},${stemRow}`] = { type: 'sunflower_stem', mineProg: 0 };
+                }
+                
+                // 3. Place the top block
+                worldBlocks[`${col},${topRow}`] = { type: 'sunflower_top', mineProg: 0 };
+            }
+            
+            // You can add more foliage types here in the future
+            // else if (foliageType === 'corn_stalk') { ... }
+        }
 		
 		// --- VOID REALM ISLAND GENERATION ---
 
@@ -4451,7 +4735,7 @@
 				if (biomeRoll < 0.15) return 'lush_grasslands';
 				if (biomeRoll < 0.23) return 'grass_field';
 				if (biomeRoll < 0.25) return 'salt_flats';
-				if (biomeRoll < 0.31) return 'rainforest';
+				if (biomeRoll < 0.30) return 'rainforest';
 				if (biomeRoll < 0.34) return 'muddy_swamp';
 				if (biomeRoll < 0.54) return 'deciduous_forest';
 				if (biomeRoll < 0.68) return 'coniferous_forest';
@@ -5450,6 +5734,7 @@
 						else if (rand < 0.14) worldBlocks[`${col},${row - 1}`] = { type: 'orange_flower', mineProg: 0 };
 						else if (rand < 0.16) worldBlocks[`${col},${row - 1}`] = { type: 'green_flower', mineProg: 0 };
 						else if (rand < 0.2) worldBlocks[`${col},${row - 1}`] = { type: 'purple_flower', mineProg: 0 };
+                        else if (rand < 0.23 && getBlockType(col, row - 1) === '') generateTallFoliage(col, row, 'sunflower');
                         else if (rand < 0.5) worldBlocks[`${col},${row - 1}`] = { type: 'tall_grass', mineProg: 0 };
 						else if (rand < 0.65) worldBlocks[`${col},${row - 1}`] = { type: 'grass_sprouts', mineProg: 0 };
                         else worldBlocks[`${col},${row - 1}`] = { type: 'grass', mineProg: 0 };
@@ -7552,6 +7837,8 @@
             if (blockBelow === 'magma_stone_block') {
                 // Apply damage over time. The '50' means 50 health per second.
                 // You can adjust this value to make the damage faster or slower.
+                player.onFire = true;
+				player.fireDuration = PLAYER_FIRE_DURATION;
                 if (applyDamage(50 * (dt / 1000))) return;
             } else if (blockBelow === 'chasm_magma_stone_block') {
                 // Apply damage over time. The '50' means 50 health per second.
@@ -7823,6 +8110,10 @@
 			
 			if (blockData && blockData.type === 'void_crystal' && player.y > 600 * tileSize) {
 				unlockAchievement('REALM_NOTHINGNESS');
+			}
+            if (blockData && blockData.type === 'guano') {
+				guanoMined += 1;
+                if (guanoMined >= 25) unlockAchievement('SPELUNKER')
 			}
             
 			// If the block was a World Mover, drop its fuel first
@@ -8737,6 +9028,7 @@
 				console.error(`Bomb properties not found for type: ${bombType}`);
 				return;
 			}
+            if (bombType === 'nuclear_bomb') unlockAchievement('KABOOM');
 
 			const radius = bombProps.bombRadius;
 			const bombDamage = bombProps.bombDamage;
@@ -9010,6 +9302,21 @@
 				  if (selectedItemType === 'chili_pepper') {
 					  unlockAchievement('IT_BURNS');
 				  }
+                  if (selectedItemType === 'human_flesh') {
+					  unlockAchievement('IS_THIS_ME');
+				  }
+                  if (selectedItemType === 'cup_of_urine') {
+					  unlockAchievement('ROCK_BOTTOM');
+				  }
+                  if (selectedItemType === 'cup_of_beer') {
+					  unlockAchievement('CHEERS');
+				  }
+                  if (selectedItemType === 'cup_of_coffee') {
+					  insomnia += 1;
+                      if (insomnia >= 10) {
+    					  unlockAchievement('INSOMNIAC');
+    				  }
+				  }
 
 				  // 1) If item increases maxHealth, apply it first (so heal can fill the new max)
 				  if (typeof props.addsMaxHealth === 'number' && props.addsMaxHealth !== 0) {
@@ -9024,6 +9331,9 @@
 					player.health = player.maxHealth;
                     if (props.alcoholicPower) {
                         player.bloodAlcohol += props.alcoholicPower;
+                        if (player.bloodAlcohol > 100) {
+                            unlockAchievement('COOL_IT');
+                        }
                     }
                     if (props.effect) {
                           // Add a new effect object to the player's active list
@@ -9044,6 +9354,9 @@
 							// remove one consumed item and stop placement
                             if (props.alcoholicPower) {
                                 player.bloodAlcohol += props.alcoholicPower;
+                                if (player.bloodAlcohol > 100) {
+                                    unlockAchievement('COOL_IT');
+                                }
                             }
                             if (props.effect) {
                                   // Add a new effect object to the player's active list
@@ -9060,6 +9373,9 @@
 						// remove one consumed item and stop placement
                         if (props.alcoholicPower) {
                             player.bloodAlcohol += props.alcoholicPower;
+                            if (player.bloodAlcohol > 100) {
+                                unlockAchievement('COOL_IT');
+                            }
                         }
                         if (props.effect) {
                               // Add a new effect object to the player's active list
@@ -9153,8 +9469,8 @@
                 return; // <-- ADD THIS LINE
             } else if (blockAtTarget.type === 'bed') {
                 player.bedSpawnPoint = { x: (targetCol - 1) * tileSize, y: (targetRow - playerHeightBlocks) * tileSize };
-                showMessageBox("Bed point set! Press the ; key to teleport to bed as long as your health is above 50! It will cost you 10 health points though!", 'alert');
                 mouse.rightDown = false;
+                showMessageBox("Bed point set! Press the ; key to teleport to bed as long as your health is above 50! It will cost you 10 health points though!", 'alert');
                 return;
             } else if (blockAtTarget.type === 'lever_off' || blockAtTarget.type === 'lever_on') {
                 // Toggle the lever's state
@@ -9240,6 +9556,7 @@
                         worldBlocks[`${targetCol - 1},${targetRow}`] = { type: 'bed', part: 'left' };
                         worldBlocks[`${targetCol},${targetRow}`] = { type: 'bed', part: 'middle' };
                         worldBlocks[`${targetCol + 1},${targetRow}`] = { type: 'bed', part: 'right' };
+                        unlockAchievement('HOME_SWEET_HOME');
                         removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
                     }
 				} else if (itemIsWallPlacer && targetIsWall && !blockAtTarget.overlay) {
@@ -11163,6 +11480,10 @@
                 input: { 0: { type: 'diamond_nugget', count: 1 }, 1: { type: 'topaz_nugget', count: 1 }, 2: { type: 'sapphire_nugget', count: 1 }, 3: { type: 'ruby_nugget', count: 1 }, 4: { type: 'emerald_nugget', count: 1 }, 5: { type: 'opal_nugget', count: 1 }, 6: { type: 'amethyst_nugget', count: 1 }, 7: { type: 'jade_nugget', count: 1 }, 8: { type: 'gold_nugget', count: 1 }, 9: { type: 'tin_nugget', count: 1 }, 10: { type: 'aluminum_nugget', count: 1 }, 11: { type: 'iron_nugget', count: 1 }, 12: { type: 'copper_nugget', count: 1 }, 13: { type: 'zinc_nugget', count: 1 }, 14: { type: 'palladium_nugget', count: 1}, 15: { type: 'tungsten_nugget', count: 1 } },
                 output: 'power_orb', outputCount: 1
             },
+            { name: "Impotent Orb",
+                input: { 0: { type: 'power_orb', count: 1 }, 1: { type: 'nuclear_core', count: 1 } },
+                output: 'impotent_orb', outputCount: 3
+            },
 			{ name: "Power Soup",
                 input: { 0: { type: 'wooden_bowl', count: 2 }, 1: { type: 'power_orb', count: 1 } },
                 output: 'power_soup', outputCount: 2
@@ -11965,6 +12286,23 @@
 						
 						if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
 						syncHotbarIndices();
+
+                        const a = player.armor;
+                        if (a.helmet && a.chestGear && a.legGear && a.boots) {
+                            unlockAchievement('FULL_SET');
+                            if (a.helmet.type.startsWith('steel_') &&
+                                a.chestGear.type.startsWith('steel_') &&
+                                a.legGear.type.startsWith('steel_') &&
+                                a.boots.type.startsWith('steel_')) {
+                                unlockAchievement('STEEL_PLATED');
+                            }
+                            if (a.helmet.type.startsWith('diviniron_') &&
+                                a.chestGear.type.startsWith('diviniron_') &&
+                                a.legGear.type.startsWith('diviniron_') &&
+                                a.boots.type.startsWith('diviniron_')) {
+                                unlockAchievement('DIVINE_PROTECTION');
+                            }
+                        }
 					}
 					// 3. CHECK FOR PICKING UP HALF (if we are NOT holding an item)
 					else if (itemToEquip && itemToEquip.count > 1) {
@@ -12484,6 +12822,24 @@
 			if (recipe.output === 'steel_brick_block') {
 				unlockAchievement('DEDICATED_ONE');
 			}
+            if (recipe.output === 'hellsteel_pickaxe') {
+				unlockAchievement('HELLFIRE_FORGED');
+			}
+            if (recipe.output === 'heavensteel_pickaxe') {
+				unlockAchievement('HEAVEN_SENT');
+			}
+            if (recipe.output === 'mythicalithium_pickaxe') {
+				unlockAchievement('MYTHICAL_MINER');
+			}
+            if (recipe.output === 'power_orb') {
+    			unlockAchievement('ALCHEMIST');
+    		}
+            if (recipe.output === 'impotent_orb') {
+    			unlockAchievement('MAD_SCIENTIST');
+    		}
+            if (recipe.output === 'book') {
+    			unlockAchievement('BOOKWORM');
+    		}
 		
             // 3. Perform the craft loop
             for (let i = 0; i < maxCrafts; i++) {
@@ -13089,6 +13445,7 @@
 
             showMessageBox(`Teleported to Mover ${code}!`, 'alert');
             toggleTeleportMenu(); // Close the menu
+            unlockAchievement('GLOBETROTTER');
         }
 
         // --- END OF WORLD MOVER FEATURE FUNCTIONS ---
@@ -14229,6 +14586,8 @@
             player.maxHealth = 100; player.health = player.maxHealth; player.bedSpawnPoint = null;
             player.armor = { helmet: null, chestGear: null, legGear: null, boots: null };
             deathCount = 0;
+            insomnia = 0;
+            guanoMined = 0;
 			
 			playerXP = 0;
 			earnedAchievements = [];
@@ -14342,6 +14701,7 @@
 			if (player.bloodAlcohol > 0) {
                 player.bloodAlcohol = Math.max(0, player.bloodAlcohol - 1.2 * (dt / 1000)); // Decays 1.2 per second
             }
+            if (deathCount >= 100) unlockAchievement('PERSISTENT');
             updatePlayerEffects(dt);
 			if (hellfireOn && !isPlayerOnHellfire) { // Don't update if already on permanent fire
                 if (isPlayerInHellfireZone) {
@@ -15043,6 +15403,8 @@
 				void: voidStorage,
 				trade: currentVoidTrade,
 				death: deathCount,
+                insomnia: insomnia,
+                guanoMined: guanoMined,
 				xp: playerXP,
 				achievements: earnedAchievements,
 				consoleHistory: commandHistory
@@ -15156,6 +15518,8 @@
 			
 			// Load XP & Achievements
 			playerXP = data.xp || 0;
+            insomnia = data.insomnia || 0;
+            guanoMined = data.guanoMined || 0;
 			earnedAchievements = data.achievements || [];
 
 			// Load Console History
@@ -15407,6 +15771,8 @@
 			  void: voidStorage,
 			  trade: currentVoidTrade,
 			  death: deathCount,
+              insomnia: insomnia,
+              guanoMined: guanoMined,
 			  xp: playerXP,
 			  achievements: earnedAchievements,
 			  consoleHistory: commandHistory
