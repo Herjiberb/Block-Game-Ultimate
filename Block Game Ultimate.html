@@ -1766,6 +1766,9 @@
 			<label style="margin-top: 10px; display: flex; align-items: center; justify-content: center;">
 				<input type="checkbox" id="animateDropsCheckbox" style="margin-right: 8px;"> Animate Item Drops
 			</label>
+            <label style="margin-top: 10px; display: flex; align-items: center; justify-content: center;">
+				<input type="checkbox" id="autosaveCheckbox" style="margin-right: 8px;"> Autosave World
+			</label>
 			<div id="deathDisplay">Coords: (0, 0)</div>
             <div id="gameMenuTipText"></div>
         </div>
@@ -2253,6 +2256,7 @@
         const newGameButton = document.getElementById('newGameButton');
         const resumeButton = document.getElementById('resumeButton');
         const maintainDurabilityCheckbox = document.getElementById('maintainDurabilityCheckbox');
+        const autosaveCheckbox = document.getElementById('autosaveCheckbox');
 
         // Inventory/Crafting Menu
         const inventoryCraftingOverlay = document.getElementById('inventoryCraftingOverlay');
@@ -2654,6 +2658,45 @@
 			} else if (opMax === 'watchtower') {
 				watchtowerProbability = 0.01
 			}
+		}
+		
+		function getConcrete() {
+			addToInventory('concrete',120);
+			addToInventory('light_concrete',120);
+			addToInventory('dark_concrete',120);
+			addToInventory('blue_concrete',120);
+			addToInventory('blue_dark_concrete',120);
+			addToInventory('blue_light_concrete',120);
+			addToInventory('purple_concrete',120);
+			addToInventory('purple_dark_concrete',120);
+			addToInventory('purple_light_concrete',120);
+			addToInventory('pink_concrete',120);
+			addToInventory('pink_dark_concrete',120);
+			addToInventory('pink_light_concrete',120);
+			addToInventory('red_concrete',120);
+			addToInventory('red_dark_concrete',120);
+			addToInventory('red_light_concrete',120);
+			addToInventory('orange_concrete',120);
+			addToInventory('orange_dark_concrete',120);
+			addToInventory('orange_light_concrete',120);
+			addToInventory('yellow_concrete',120);
+			addToInventory('yellow_dark_concrete',120);
+			addToInventory('yellow_light_concrete',120);
+			addToInventory('green_concrete',120);
+			addToInventory('green_dark_concrete',120);
+			addToInventory('green_light_concrete',120);
+			addToInventory('cyan_concrete',120);
+			addToInventory('cyan_dark_concrete',120);
+			addToInventory('cyan_light_concrete',120);
+		}
+		
+		function clearInventory() {
+			inventorySlots.fill(null); 
+            hotbarIndices.fill(null); 
+            selectedHotbarSlot = 0;
+            craftingGridSlots.fill(null); 
+            heldItem = null; 
+            heldItemSource = { type: null, index: -1 };
 		}
 
         /**
@@ -3099,6 +3142,8 @@
 		const graniteMountainColumns = new Set();
 		const icyHillColumns = new Set();
 		const jungleTempleColumns = new Set();
+		let ruinedPortalProbability = 0.005; // 0.5% chance per column
+		const ruinedPortalColumns = new Set(); // Tracks where portals have spawned
 
         // --- OG Seeded PRNG Implementation ---
         function mulberry32(a) {
@@ -3176,6 +3221,7 @@
 			'magical_chest': { imgSrc: 'Magical Chest.png', solid: true, miningHardness: 150, drops: [{item: 'magical_chest', chance: 1, min: 1, max: 1}], color: '#9400D3' },
             'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#483D8B' },
 			'refrigerator': { imgSrc: 'Refrigerator.png', solid: true, miningHardness: 150, drops: [{item: 'refrigerator', chance: 1, min: 1, max: 1}], color: '#E6E8FA' },
+			'enchanter': { imgSrc: 'Enchanter.png', solid: true, miningHardness: 300, drops: [{item: 'enchanter', chance: 1, min: 1, max: 1}], color: '#696969', isEnchanter: true, shovelBlock: true },
 			'rock_anvil': { imgSrc: 'Rock Anvil.png', solid: true, miningHardness: 1000, drops: [{item: 'rock_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 1 },
 			'iron_anvil': { imgSrc: 'Iron Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'iron_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
 			'tungsten_anvil': { imgSrc: 'Tungsten Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'tungsten_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
@@ -3242,7 +3288,7 @@
 			'compacted_stone': { imgSrc: 'Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#565656', requiredMiningPower: 0.2 },
 			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#262626', requiredMiningPower: 0.3 },
 			'void_stone': { imgSrc: 'Void Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_stone', chance: 1, min: 1, max: 1}], color: '#5b6160', requiredMiningPower: 0.3 },
-			'void_dust_block': { imgSrc: 'Void Dust Block.png', solid: true, miningHardness: 100, drops: [{item: 'void_dust', chance: 1, min: 1, max: 16}], color: '#6b8683' },
+			'void_dust_block': { imgSrc: 'Void Dust Block.png', solid: true, miningHardness: 100, drops: [{item: 'void_dust', chance: 1, min: 1, max: 4}], color: '#6b8683' },
 			'void_crystal': { imgSrc: 'Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_crystal', chance: 1, min: 1, max: 1}], color: '#de65b7', requiredMiningPower: 0.2 },
 			'red_void_crystal': { imgSrc: 'Red Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'red_void_crystal', chance: 1, min: 1, max: 1}], color: '#DC143C', requiredMiningPower: 0.2 },
 			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#191919', requiredMiningPower: 2.5 },
@@ -3378,6 +3424,32 @@
             'granite': { imgSrc: 'Granite Block.png', solid: true, miningHardness: 700, drops: [{item: 'granite', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
 			'asphalt': { imgSrc: 'Asphalt Block.png', solid: true, miningHardness: 600, drops: [{item: 'asphalt_fragment', chance: 1, min: 1, max: 4}], color: '#36454F' },
 			'concrete': { imgSrc: 'Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'concrete', chance: 1, min: 1, max: 1}], color: '#BEBEBE' },
+			'light_concrete': { imgSrc: 'Light Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'light_concrete', chance: 1, min: 1, max: 1}], color: '#BEBEBE' },
+			'dark_concrete': { imgSrc: 'Dark Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'dark_concrete', chance: 1, min: 1, max: 1}], color: '#BEBEBE' },
+			'blue_concrete': { imgSrc: 'Blue Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'blue_concrete', chance: 1, min: 1, max: 1}], color: '#0000FF' },
+			'purple_concrete': { imgSrc: 'Purple Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'purple_concrete', chance: 1, min: 1, max: 1}], color: '#800080' },
+			'pink_concrete': { imgSrc: 'Pink Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'pink_concrete', chance: 1, min: 1, max: 1}], color: '#FFC0CB' },
+			'red_concrete': { imgSrc: 'Red Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'red_concrete', chance: 1, min: 1, max: 1}], color: '#FF0000' },
+			'orange_concrete': { imgSrc: 'Orange Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'orange_concrete', chance: 1, min: 1, max: 1}], color: '#FFA500' },
+			'yellow_concrete': { imgSrc: 'Yellow Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'yellow_concrete', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
+			'green_concrete': { imgSrc: 'Green Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'green_concrete', chance: 1, min: 1, max: 1}], color: '#008000' },
+			'cyan_concrete': { imgSrc: 'Cyan Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'cyan_concrete', chance: 1, min: 1, max: 1}], color: '#00FFFF' },
+			'blue_dark_concrete': { imgSrc: 'Dark Blue Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'blue_dark_concrete', chance: 1, min: 1, max: 1}], color: '#0000FF' },
+			'purple_dark_concrete': { imgSrc: 'Dark Purple Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'purple_dark_concrete', chance: 1, min: 1, max: 1}], color: '#800080' },
+			'pink_dark_concrete': { imgSrc: 'Dark Pink Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'pink_dark_concrete', chance: 1, min: 1, max: 1}], color: '#FFC0CB' },
+			'red_dark_concrete': { imgSrc: 'Dark Red Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'red_dark_concrete', chance: 1, min: 1, max: 1}], color: '#FF0000' },
+			'orange_dark_concrete': { imgSrc: 'Dark Orange Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'orange_dark_concrete', chance: 1, min: 1, max: 1}], color: '#FFA500' },
+			'yellow_dark_concrete': { imgSrc: 'Dark Yellow Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'yellow_dark_concrete', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
+			'green_dark_concrete': { imgSrc: 'Dark Green Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'green_dark_concrete', chance: 1, min: 1, max: 1}], color: '#008000' },
+			'cyan_dark_concrete': { imgSrc: 'Dark Cyan Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'cyan_dark_concrete', chance: 1, min: 1, max: 1}], color: '#00FFFF' },
+			'blue_light_concrete': { imgSrc: 'Light Blue Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'blue_light_concrete', chance: 1, min: 1, max: 1}], color: '#0000FF' },
+			'purple_light_concrete': { imgSrc: 'Light Purple Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'purple_light_concrete', chance: 1, min: 1, max: 1}], color: '#800080' },
+			'pink_light_concrete': { imgSrc: 'Light Pink Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'pink_light_concrete', chance: 1, min: 1, max: 1}], color: '#FFC0CB' },
+			'red_light_concrete': { imgSrc: 'Light Red Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'red_light_concrete', chance: 1, min: 1, max: 1}], color: '#FF0000' },
+			'orange_light_concrete': { imgSrc: 'Light Orange Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'orange_light_concrete', chance: 1, min: 1, max: 1}], color: '#FFA500' },
+			'yellow_light_concrete': { imgSrc: 'Light Yellow Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'yellow_light_concrete', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
+			'green_light_concrete': { imgSrc: 'Light Green Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'green_light_concrete', chance: 1, min: 1, max: 1}], color: '#008000' },
+			'cyan_light_concrete': { imgSrc: 'Light Cyan Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'cyan_light_concrete', chance: 1, min: 1, max: 1}], color: '#00FFFF' },
 			'vulcanized_rubber': { imgSrc: 'Vulcanized Rubber Block.png', solid: true, miningHardness: 200, drops: [{item: 'vulcanized_rubber', chance: 1, min: 1, max: 1}], color: '#3A3B3C' },
             'vine_stone': { imgSrc: 'Vine Stone Block.png', solid: true, miningHardness: 550, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#556B2F' },
             'packed_ice': { imgSrc: 'Packed Ice Block.png', solid: true, miningHardness: 80, drops: [{item: 'packed_ice', chance: 1, min: 1, max: 1}], color: '#ADD8E6' },
@@ -3497,10 +3569,14 @@
 			'strong_heaven_debris_block': { imgSrc: 'Strong Heaven Debris Block.png', solid: true, miningHardness: 8000, drops: [{item: 'strong_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#778899' },
 			'pure_heaven_debris_block': { imgSrc: 'Pure Heaven Debris Block.png', solid: true, miningHardness: 25000, drops: [{item: 'pure_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#FDF5E6' },
 			'heaven_gate_brick_block': { imgSrc: 'Heaven Gate Brick Block.png', solid: true, miningHardness: 75000, drops: [{item: 'heaven_gate_brick_block', chance: 1, min: 1, max: 1}], color: '#FFD700' },
+			'ruin_heaven_gate_brick_block': { imgSrc: 'Ruin Heaven Gate Brick Block.png', solid: true, miningHardness: 75000, drops: [{item: 'ruin_heaven_gate_brick_block', chance: 0.9, min: 1, max: 1}, {item: 'corroded_heaven_debris_block', chance: 0.1, min: 1, max: 1}], color: '#FFD700' },
 			'heaven_portal': { imgSrc: 'Heaven Portal.png', solid: false, miningHardness: 75000, drops: [], color: '#00BFFF' },
 			'meat_block': { imgSrc: 'Meat Block.png', solid: true, miningHardness: 200, drops: [{item: 'meat_block', chance: 0.1, min: 1, max: 1}, {item: 'beef', chance: 0.3, min: 1, max: 3}, {item: 'pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#9e6655', shovelBlock: true },
 			'spoiled_meat_block': { imgSrc: 'Spoiled Meat Block.png', solid: true, miningHardness: 200, drops: [{item: 'spoiled_meat_block', chance: 0.1, min: 1, max: 1}, {item: 'spoiled_beef', chance: 0.3, min: 1, max: 3}, {item: 'spoiled_pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#cfd99f', shovelBlock: true },
 			'flesh_block': { imgSrc: 'Flesh Block.png', solid: true, miningHardness: 300, drops: [{item: 'flesh_block', chance: 1, min: 1, max: 1}], color: '#FFC0CB', shovelBlock: true },
+			// Super Heaven
+			'super_mineral': { imgSrc: 'Super Mineral Block.png', solid: true, miningHardness: 1000, drops: [{item: 'super_mineral', chance: 1, min: 1, max: 1}], color: '#D3D3D3', shovelBlock: true },
+			'infinitungsten_super_mineral': { imgSrc: 'Infinitungsten Super Mineral Block.png', solid: true, miningHardness: 1500, drops: [{item: 'impure_infinitungsten_nugget', chance: 0.3, min: 1, max: 3}], color: '#D3D3D3', shovelBlock: true },
 			// IMPLEMENTED
 			'bone_block': { imgSrc: 'Bone Block.png', solid: true, miningHardness: 500, drops: [{item: 'bone_block', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
 			'obsidian_block': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian_block', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
@@ -3521,7 +3597,7 @@
 			// World Creator Blocks
 			'invisible_barrier': { imgSrc: 'Barrier Invisible.png', solid: true, miningHardness: 50, drops: [], color: 'transparent', requiredTool: 'test_axe' },
 			'visible_barrier': { imgSrc: 'Barrier Visible.png', solid: true, miningHardness: 50, drops: [], color: '#FF0000', requiredTool: 'test_axe' },
-			'master_block': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 1000000000, drops: [{item: 'stone', chance: 1, min: 240, max: 240}], color: '#999999' },
+			'master_block': { imgSrc: 'Stone Block.png', solid: true, miningHardness: -1, drops: [{item: 'stone', chance: 1, min: 240, max: 240}], color: '#999999' },
 			'test_block_mine_power': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', requiredMiningPower: 0.5 },
 			'test_block_test_axe': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', requiredTool: 'test_axe' },
             'test_block_shovel': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', shovelBlock: true },
@@ -3719,6 +3795,7 @@
 			 'tungsten_shovel': { imgSrc: 'Tungsten Shovel.png', color: '#8B8B83', isTool: true, miningPower: 0.1, shovelPower: 1.5, maxDurability: 32000 },
 			 'bronze_shovel': { imgSrc: 'Bronze Shovel.png', color: '#CD7F32', isTool: true, miningPower: 0.1, shovelPower: 0.8, maxDurability: 35000 },
 			 'steel_shovel': { imgSrc: 'Steel Shovel.png', color: '#43464B', isTool: true, miningPower: 0.1, shovelPower: 1.5, maxDurability: 100000 },
+			 'infinitungsten_shovel': { imgSrc: 'Infinitungsten Shovel.png', color: '#8B8B83', isTool: true, miningPower: 0.1, shovelPower: 10.0, maxDurability: 400000 },
 			 // ---AXE SECTION---
 			 'wooden_axe': { imgSrc: 'Wooden Axe.png', color: '#A0522D', isTool: true, miningPower: 0.1, axePower: 0.2, maxDurability: 7500 },
              'rock_axe': { imgSrc: 'Rock Axe.png', color: '#888888', isTool: true, miningPower: 0.1, axePower: 0.3, maxDurability: 12000 },
@@ -3728,6 +3805,7 @@
 			 'tungsten_axe': { imgSrc: 'Tungsten Axe.png', color: '#8B8B83', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 32000 },
 			 'bronze_axe': { imgSrc: 'Bronze Axe.png', color: '#CD7F32', isTool: true, miningPower: 0.1, axePower: 0.8, maxDurability: 35000 },
 			 'steel_axe': { imgSrc: 'Steel Axe.png', color: '#43464B', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 100000 },
+			 'infinitungsten_axe': { imgSrc: 'Infinitungsten Axe.png', color: '#8B8B83', isTool: true, miningPower: 0.1, axePower: 10.0, maxDurability: 400000 },
 			 // ---GUN SECTION---
 			 'wood_bullet': { imgSrc: 'Wood Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 1 },
              'brass_bullet': { imgSrc: 'Brass Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 5 },
@@ -3746,33 +3824,33 @@
 			 'speed_snack': { color: '#ADFF2F', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'speed', type: 'add', value: 3 } ] } },
 			 'jump_juice': { color: '#00BFFF', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
 			 // Armor
-			 'happy_face': { imgSrc: 'Happy Face Icon.png', equippedImgSrc: 'Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
-			 'farmer_trader_mask': { imgSrc: 'Farmer Trader Mask Icon.png', equippedImgSrc: 'Farmer Trader Mask.png', color: '#F5DEB3', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
-			 'miner_trader_mask': { imgSrc: 'Miner Trader Mask Icon.png', equippedImgSrc: 'Miner Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
-			 'trader_mask': { imgSrc: 'Trader Mask Icon.png', equippedImgSrc: 'Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
-			 'trader_cloak': { imgSrc: 'Trader Cloak Icon.png', equippedImgSrc: 'Trader Cloak.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.03, maxDurability: 14 },
-			 'trader_pants': { imgSrc: 'Trader Pants Icon.png', equippedImgSrc: 'Trader Pants.png', color: '#00008B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.02, maxDurability: 11 },
-			 'trader_shoes': { imgSrc: 'Trader Shoes Icon.png', equippedImgSrc: 'Trader Shoes.png', color: '#4A3B2F', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 8 },
-			 'dark_helmet': { imgSrc: 'Dark Helmet Icon.png', equippedImgSrc: 'Dark Helmet.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.08, maxDurability: 40 },
-			 'dark_chestplate': { imgSrc: 'Dark Chestplate Icon.png', equippedImgSrc: 'Dark Chestplate.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.15, maxDurability: 70 },
-			 'dark_pants': { imgSrc: 'Dark Pants Icon.png', equippedImgSrc: 'Dark Pants.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.12, maxDurability: 55 },
-			 'dark_boots': { imgSrc: 'Dark Boots Icon.png', equippedImgSrc: 'Dark Boots.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.08, maxDurability: 40 },
-			 'light_helmet': { imgSrc: 'Light Helmet Icon.png', equippedImgSrc: 'Light Helmet.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.08, maxDurability: 40 },
-			 'light_chestplate': { imgSrc: 'Light Chestplate Icon.png', equippedImgSrc: 'Light Chestplate.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.15, maxDurability: 70 },
-			 'light_pants': { imgSrc: 'Light Pants Icon.png', equippedImgSrc: 'Light Pants.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.12, maxDurability: 55 },
-			 'light_boots': { imgSrc: 'Light Boots Icon.png', equippedImgSrc: 'Light Boots.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.08, maxDurability: 40 },
-			 'steel_helmet': { imgSrc: 'Steel Helmet Icon.png', equippedImgSrc: 'Steel Helmet.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.06, maxDurability: 30 },
-			 'steel_chestplate': { imgSrc: 'Steel Chestplate Icon.png', equippedImgSrc: 'Steel Chestplate.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.11, maxDurability: 62 },
-			 'steel_pants': { imgSrc: 'Steel Pants Icon.png', equippedImgSrc: 'Steel Pants.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.09, maxDurability: 42 },
-			 'steel_boots': { imgSrc: 'Steel Boots Icon.png', equippedImgSrc: 'Steel Boots.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.06, maxDurability: 30 },
-			 'evil_helmet': { imgSrc: 'Evil Helmet Icon.png', equippedImgSrc: 'Evil Helmet.png', color: '#8B0000', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.15, maxDurability: 50 },
-			 'diviniron_helmet': { imgSrc: 'Diviniron Helmet Icon.png', equippedImgSrc: 'Diviniron Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.25, maxDurability: 25 },
-             'diviniron_chestplate': { imgSrc: 'Diviniron Chestplate Icon.png', equippedImgSrc: 'Diviniron Chestplate.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.25, maxDurability: 45 },
-			 'diviniron_pants': { imgSrc: 'Diviniron Pants Icon.png', equippedImgSrc: 'Diviniron Pants.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.25, maxDurability: 35 },
-             'diviniron_boots': { imgSrc: 'Diviniron Boots Icon.png', equippedImgSrc: 'Diviniron Boots.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.25, maxDurability: 25 },
-             'sober_mask': { imgSrc: 'Sober Mask Icon.png', equippedImgSrc: 'Sober Mask.png', color: '#D4F0F0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 100 },
-             'drunk_mask': { imgSrc: 'Drunk Mask Icon.png', equippedImgSrc: 'Drunk Mask.png', color: '#E0B0D0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 100 },
-             'feather_boots': { imgSrc: 'Feather Boots Icon.png', equippedImgSrc: 'Feather Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 150, gravityMultiplier: 0.75 },
+			 'happy_face': { imgSrc: 'Armor/Happy Face Icon.png', equippedImgSrc: 'Armor/Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
+			 'farmer_trader_mask': { imgSrc: 'Armor/Farmer Trader Mask Icon.png', equippedImgSrc: 'Armor/Farmer Trader Mask.png', color: '#F5DEB3', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
+			 'miner_trader_mask': { imgSrc: 'Armor/Miner Trader Mask Icon.png', equippedImgSrc: 'Armor/Miner Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
+			 'trader_mask': { imgSrc: 'Armor/Trader Mask Icon.png', equippedImgSrc: 'Armor/Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
+			 'trader_cloak': { imgSrc: 'Armor/Trader Cloak Icon.png', equippedImgSrc: 'Armor/Trader Cloak.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.03, maxDurability: 14 },
+			 'trader_pants': { imgSrc: 'Armor/Trader Pants Icon.png', equippedImgSrc: 'Armor/Trader Pants.png', color: '#00008B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.02, maxDurability: 11 },
+			 'trader_shoes': { imgSrc: 'Armor/Trader Shoes Icon.png', equippedImgSrc: 'Armor/Trader Shoes.png', color: '#4A3B2F', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 8 },
+			 'dark_helmet': { imgSrc: 'Armor/Dark Helmet Icon.png', equippedImgSrc: 'Armor/Dark Helmet.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.08, maxDurability: 40 },
+			 'dark_chestplate': { imgSrc: 'Armor/Dark Chestplate Icon.png', equippedImgSrc: 'Armor/Dark Chestplate.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.15, maxDurability: 70 },
+			 'dark_pants': { imgSrc: 'Armor/Dark Pants Icon.png', equippedImgSrc: 'Armor/Dark Pants.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.12, maxDurability: 55 },
+			 'dark_boots': { imgSrc: 'Armor/Dark Boots Icon.png', equippedImgSrc: 'Armor/Dark Boots.png', color: '#36454F', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.08, maxDurability: 40 },
+			 'light_helmet': { imgSrc: 'Armor/Light Helmet Icon.png', equippedImgSrc: 'Armor/Light Helmet.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.08, maxDurability: 40 },
+			 'light_chestplate': { imgSrc: 'Armor/Light Chestplate Icon.png', equippedImgSrc: 'Armor/Light Chestplate.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.15, maxDurability: 70 },
+			 'light_pants': { imgSrc: 'Armor/Light Pants Icon.png', equippedImgSrc: 'Armor/Light Pants.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.12, maxDurability: 55 },
+			 'light_boots': { imgSrc: 'Armor/Light Boots Icon.png', equippedImgSrc: 'Armor/Light Boots.png', color: '#F0EAD6', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.08, maxDurability: 40 },
+			 'steel_helmet': { imgSrc: 'Armor/Steel Helmet Icon.png', equippedImgSrc: 'Armor/Steel Helmet.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.06, maxDurability: 30 },
+			 'steel_chestplate': { imgSrc: 'Armor/Steel Chestplate Icon.png', equippedImgSrc: 'Armor/Steel Chestplate.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.11, maxDurability: 62 },
+			 'steel_pants': { imgSrc: 'Armor/Steel Pants Icon.png', equippedImgSrc: 'Armor/Steel Pants.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.09, maxDurability: 42 },
+			 'steel_boots': { imgSrc: 'Armor/Steel Boots Icon.png', equippedImgSrc: 'Armor/Steel Boots.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.06, maxDurability: 30 },
+			 'evil_helmet': { imgSrc: 'Armor/Evil Helmet Icon.png', equippedImgSrc: 'Armor/Evil Helmet.png', color: '#8B0000', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.15, maxDurability: 50 },
+			 'diviniron_helmet': { imgSrc: 'Armor/Diviniron Helmet Icon.png', equippedImgSrc: 'Armor/Diviniron Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.25, maxDurability: 25 },
+             'diviniron_chestplate': { imgSrc: 'Armor/Diviniron Chestplate Icon.png', equippedImgSrc: 'Armor/Diviniron Chestplate.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.25, maxDurability: 45 },
+			 'diviniron_pants': { imgSrc: 'Armor/Diviniron Pants Icon.png', equippedImgSrc: 'Armor/Diviniron Pants.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.25, maxDurability: 35 },
+             'diviniron_boots': { imgSrc: 'Armor/Diviniron Boots Icon.png', equippedImgSrc: 'Armor/Diviniron Boots.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.25, maxDurability: 25 },
+             'sober_mask': { imgSrc: 'Armor/Sober Mask Icon.png', equippedImgSrc: 'Armor/Sober Mask.png', color: '#D4F0F0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
+             'drunk_mask': { imgSrc: 'Armor/Drunk Mask Icon.png', equippedImgSrc: 'Armor/Drunk Mask.png', color: '#E0B0D0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
+             'feather_boots': { imgSrc: 'Armor/Feather Boots Icon.png', equippedImgSrc: 'Armor/Feather Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 15, gravityMultiplier: 0.75 },
 			 // Armor Construction
              'armor_tile': { imgSrc: 'Armor Tile.png', color: '#A9A9A9' },
 			 'dark_armor_tile': { imgSrc: 'Dark Armor Tile.png', color: '#36454F' },
@@ -4068,6 +4146,7 @@
         let isGameActive = true; 
         let isGamePaused = false; 
         let maintainBlockDurability = true;
+        let autosave = false;
 		let animateDrops = false;
 
         // REVISED: Dedicated function for generating cacti
@@ -5151,9 +5230,9 @@
                              }
                         }
                         if (random() < 0.00005) {
-                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'hellsteel_nugget', count: 6 }, { type: 'void_dust', count: 7 } ], label: 'Rare Treasure Chest' };
+                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'hellsteel_nugget', count: 6 }, { type: 'void_dust', count: 7 }, { type: 'heaven_gate_brick_block', count: 1 } ], label: 'Rare Treasure Chest' };
 						} else if (random() < 0.0003) {
-                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 } ], label: 'Compact Treasure Chest' };
+                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'heaven_gate_brick_block', count: 1 } ], label: 'Compact Treasure Chest' };
 						} else if (random() < 0.0008) {
                             return (worldBlocks[key] = { type: 'heavensteel_cloud_block', mineProg: 0 });
                         } else if (random() < 0.0033) {
@@ -5210,8 +5289,10 @@
 								return (worldBlocks[key] = { type: '', mineProg: 0 });
 							}
 						}
-						if (random() < 0.3)    return (worldBlocks[key] = { type: 'gold_brick_block', mineProg: 0 });
-						return (worldBlocks[key] = { type: 'cloud_block', mineProg: 0 });
+						let r = random()
+						if (r < 0.05)    return (worldBlocks[key] = { type: 'heaven_gate_brick_block', mineProg: 0 });
+						else if (r < 0.053)    return (worldBlocks[key] = { type: 'infinitungsten_super_mineral', mineProg: 0 });
+						return (worldBlocks[key] = { type: 'super_mineral', mineProg: 0 });
 				}
 			}
 
@@ -5271,6 +5352,9 @@
 					 && !jungleTempleColumns.has(col) ) {
 				  generateJungleTemple(col, surfaceHeight);
 				}
+				if (random() < ruinedPortalProbability && !ruinedPortalColumns.has(col)) {
+                    generateRuinedHeavenPortal(col, surfaceHeight);
+                }
 				const suitableBiomesForMineChamber = ['deciduous_forest', 'grass_field', 'coniferous_forest', 'rocky', 'icy_hills'];
                 if (suitableBiomesForMineChamber.includes(biome) && random() < mineChamberProbability && !mineChamberColumns.has(col)) {
                     generateMineChamber(col, surfaceHeight);
@@ -7032,6 +7116,153 @@
                 }
             });
         }
+		
+		/**
+		 * Helper function to get a portal block, with a chance of it being ruined.
+		 * @param {number} ruinChance - Chance from 0.0 to 1.0 for the block to be ruined.
+		 */
+		function getPortalBlockType(ruinChance) {
+			return (random() < ruinChance) ? 'ruin_heaven_gate_brick_block' : 'heaven_gate_brick_block';
+		}
+
+		/**
+		 * Main function to generate a ruined portal.
+		 * It checks for space and then picks one of the 3 variations.
+		 */
+		function generateRuinedHeavenPortal(col, surfaceRow) {
+			// Check for a 10-wide, 10-high clear space above the surface
+			for (let x = -5; x <= 5; x++) {
+				for (let y = -10; y <= 0; y++) {
+					// If the block isn't air or foliage, it's obstructed
+					const blockType = getBlockType(col + x, surfaceRow + y);
+					if (blockType !== '' && !foliageTypes.includes(blockType)) {
+						return; // Obstructed, don't generate
+					}
+				}
+			}
+			
+			// Mark columns as used to prevent overlap
+			for (let i = -10; i <= 10; i++) {
+				ruinedPortalColumns.add(col + i);
+			}
+			
+			// Pick one of the three variations
+			const roll = random();
+			if (roll < 0.33) {
+				generateMagmaPortal(col, surfaceRow);
+			} else if (roll < 0.66) {
+				generatePleasantPortal(col, surfaceRow);
+			} else {
+				generateRemnantPortal(col, surfaceRow);
+			}
+		}
+
+		/**
+		 * Variation 1: Magma Portal
+		 * Complete frame (25% ruin chance) on a magma pyramid.
+		 */
+		function generateMagmaPortal(col, surfaceRow) {
+			// Build a 5-wide, 3-high pyramid
+			for(let x = -2; x <= 2; x++) worldBlocks[`${col + x},${surfaceRow}`] = { type: 'magma_stone_block', mineProg: 0 };
+			for(let x = -1; x <= 1; x++) worldBlocks[`${col + x},${surfaceRow - 1}`] = { type: 'magma_stone_block', mineProg: 0 };
+			worldBlocks[`${col},${surfaceRow - 2}`] = { type: 'magma_stone_block', mineProg: 0 };
+
+			// Portal frame definition (same as your checkAndCreateHeavenPortal)
+			const portalFrame = [ [0,0], [1,0], [0,-1], [0,-2], [0,-3], [0,-4], [0,-5], [0,-6], [1,-6] ];
+			
+			// Center the 2-wide portal base *around* the 1-block peak
+			const portalBaseCol = col - 1; 
+			const portalBaseRow = surfaceRow - 3; // One block *above* the pyramid's peak
+			
+			for (const pos of portalFrame) {
+				const blockType = getPortalBlockType(0.25); // 25% ruin chance
+				const pCol = portalBaseCol + pos[0];
+				const pRow = portalBaseRow + pos[1];
+				worldBlocks[`${pCol},${pRow}`] = { type: blockType, mineProg: 0 }; // Overwrite air
+			}
+		}
+
+		/**
+		 * Variation 2: Pleasant Portal
+		 * 7 of 9 blocks (35% ruin chance) on a super_mineral base.
+		 */
+		function generatePleasantPortal(col, surfaceRow) {
+			// Base of 5 super mineral blocks
+			for(let x = -2; x <= 2; x++) {
+				worldBlocks[`${col + x},${surfaceRow}`] = { type: 'super_mineral', mineProg: 0 };
+			}
+
+			const portalFrame = [ [0,0], [1,0], [0,-1], [0,-2], [0,-3], [0,-4], [0,-5], [0,-6], [1,-6] ];
+			
+			// Shuffle and pick 7 random blocks from the frame
+			const shuffledFrame = portalFrame.sort(() => random() - 0.5).slice(0, 7);
+			
+			const portalBaseCol = col - 1; // Center the 2-wide base
+			const portalBaseRow = surfaceRow - 1; // Sit on top of the base
+			
+			for (const pos of shuffledFrame) {
+				const blockType = getPortalBlockType(0.35); // 35% ruin chance
+				const pCol = portalBaseCol + pos[0];
+				const pRow = portalBaseRow + pos[1];
+				worldBlocks[`${pCol},${pRow}`] = { type: blockType, mineProg: 0 }; // Overwrite air
+			}
+		}
+
+		/**
+		 * Variation 3: Remnant Portal
+		 * 6 of 9 blocks (20% ruin chance) on a puffy cloud.
+		 */
+		function generateRemnantPortal(col, surfaceRow) {
+			// Generate a "puffy cloud" on the ground (20-40 blocks)
+			const cloudSize = 20 + Math.floor(random() * 21);
+			let blocksPlaced = 0;
+			const toPlace = new Set([`${col},${surfaceRow}`]);
+			const placed = new Set();
+
+			while (blocksPlaced < cloudSize && toPlace.size > 0) {
+				const currentKey = Array.from(toPlace)[Math.floor(random() * toPlace.size)];
+				toPlace.delete(currentKey);
+				if (placed.has(currentKey)) continue;
+
+				const [x, y] = currentKey.split(',').map(Number);
+				
+				// Only place clouds on/above the surface
+				if (y <= surfaceRow) {
+					const existingType = getBlockType(x, y);
+					// Only replace air or foliage
+					if(existingType === '' || foliageTypes.includes(existingType)) {
+						 worldBlocks[currentKey] = { type: 'cloud_block', mineProg: 0 };
+						 placed.add(currentKey);
+						 blocksPlaced++;
+					}
+				}
+
+				// Add neighbors, biased upwards and sideways
+				for (let dx = -1; dx <= 1; dx++) {
+					for (let dy = -1; dy <= 0; dy++) { // Only dy=0 or dy=-1 (up)
+						if (random() < 0.65) {
+							const nextKey = `${x + dx},${y + dy}`;
+							if (!placed.has(nextKey)) toPlace.add(nextKey);
+						}
+					}
+				}
+			}
+
+			const portalFrame = [ [0,0], [1,0], [0,-1], [0,-2], [0,-3], [0,-4], [0,-5], [0,-6], [1,-6] ];
+			
+			// Shuffle and pick 6 random blocks from the frame
+			const shuffledFrame = portalFrame.sort(() => random() - 0.5).slice(0, 6);
+			
+			const portalBaseCol = col - 1; // Center the 2-wide base
+			const portalBaseRow = surfaceRow - 1; // Sit on top of the cloud base
+			
+			for (const pos of shuffledFrame) {
+				const blockType = getPortalBlockType(0.20); // 20% ruin chance
+				const pCol = portalBaseCol + pos[0];
+				const pRow = portalBaseRow + pos[1];
+				worldBlocks[`${pCol},${pRow}`] = { type: blockType, mineProg: 0 }; // Overwrite air
+			}
+		}
 		
 		// --- NEW CHASM GENERATION ---
 		function generateChasm(startCol, surfaceRow) {
@@ -11014,6 +11245,30 @@
             });
         }
 
+        /**
+         * Warns the user before they close the tab or navigate away.
+         * This helps prevent accidental loss of progress.
+         */
+        window.addEventListener('beforeunload', (e) => {
+            // Don't show the prompt if:
+            // 1. We are still on the initial loading screen.
+            // 2. The main game menu is open (implying a "safe" state).
+            if (isLoadingAssets || gameMenuOverlay.style.display === 'flex') {
+                return; // No prompt will be shown
+            }
+            
+            // If the game is active or a game sub-menu (like inventory, console, chest) is open,
+            // then leaving would cause progress loss. Show the confirmation prompt.
+            
+            const confirmationMessage = 'Your progress may not be saved! Don\'t leave!';
+            
+            // For modern browsers
+            e.preventDefault();
+            // For older browsers
+            e.returnValue = confirmationMessage;
+            if (autosave) exportWorldBGU2();
+        });
+
         const recipes = [
             { name: "Bed",
                 input: { 0: { type: 'cotton_item', count: 1 }, 1: { type: 'cotton_item', count: 1 }, 2: { type: 'cotton_item', count: 1 }, 3: { type: 'cotton_item', count: 1 }, 4: { type: 'any_plank', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 7: { type: 'any_plank', count: 1 } },
@@ -11301,6 +11556,14 @@
                 input: { 0: { type: 'infinitungsten_nugget', count: 1 }, 1: { type: 'infinitungsten_nugget', count: 1 }, 2: { type: 'infinitungsten_nugget', count: 1 }, 3: { type: 'infinitungsten_nugget', count: 1 }, 5: { type: 'wield_wooden_stick', count: 1 }, 9: { type: 'wield_wooden_stick', count: 1 }, 13: { type: 'wield_wooden_stick', count: 1 } },
                 output: 'infinitungsten_pickaxe', outputCount: 1
             },
+			{ name: "Infinitungsten Shovel",
+                input: { 0: { type: 'infinitungsten_nugget', count: 1 }, 1: { type: 'infinitungsten_nugget', count: 1 }, 2: { type: 'infinitungsten_nugget', count: 1 }, 5: { type: 'wield_wooden_stick', count: 1 }, 9: { type: 'wield_wooden_stick', count: 1 }, 13: { type: 'wield_wooden_stick', count: 1 } },
+                output: 'infinitungsten_shovel', outputCount: 1
+            },
+			{ name: "Infinitungsten Axe",
+                input: { 0: { type: 'infinitungsten_nugget', count: 1 }, 1: { type: 'infinitungsten_nugget', count: 1 }, 2: { type: 'infinitungsten_nugget', count: 1 }, 6: { type: 'infinitungsten_nugget', count: 1 }, 5: { type: 'wield_wooden_stick', count: 1 }, 9: { type: 'wield_wooden_stick', count: 1 }, 13: { type: 'wield_wooden_stick', count: 1 } },
+                output: 'infinitungsten_axe', outputCount: 1
+            },
             { name: "Anthill Infinitungsten Pickaxe",
                 input: { 0: { type: 'infinitungsten_pickaxe', count: 1 }, 1: { type: 'colony_heart', count: 1 }, 2: { type: 'colony_heart', count: 1 }, 3: { type: 'colony_heart', count: 1 } },
                 output: 'anthill_infinitungsten_pickaxe', outputCount: 1
@@ -11472,6 +11735,14 @@
                 input: { 0: { type: 'pure_heaven_debris_block', count: 1 }, 1: { type: 'pure_heaven_debris_block', count: 1 }, 2: { type: 'pure_heaven_debris_block', count: 1 }, 3: { type: 'pure_heaven_debris_block', count: 1 }, 4: { type: 'pure_heaven_debris_block', count: 1 }, 5: { type: 'pure_heaven_debris_block', count: 1 }, 6: { type: 'pure_heaven_debris_block', count: 1 }, 7: { type: 'pure_heaven_debris_block', count: 1 }, 8: { type: 'pure_heaven_debris_block', count: 1 }, 9: { type: 'pure_heaven_debris_block', count: 1 }, 10: { type: 'pure_heaven_debris_block', count: 1 }, 11: { type: 'pure_heaven_debris_block', count: 1 }, 12: { type: 'pure_heaven_debris_block', count: 1 }, 13: { type: 'pure_heaven_debris_block', count: 1 }, 14: { type: 'pure_heaven_debris_block', count: 1}, 15: { type: 'pure_heaven_debris_block', count: 1 } },
                 output: 'heaven_gate_brick_block', outputCount: 1
             },
+			{ name: "Heaven Gate Brick Block",
+                input: { 0: { type: 'pure_heaven_debris_block', count: 1 }, 1: { type: 'pure_heaven_debris_block', count: 1 }, 2: { type: 'pure_heaven_debris_block', count: 1 }, 3: { type: 'pure_heaven_debris_block', count: 1 }, 4: { type: 'pure_heaven_debris_block', count: 1 }, 5: { type: 'mighterrum_nugget', count: 1 }, 6: { type: 'mighterrum_nugget', count: 1 }, 7: { type: 'pure_heaven_debris_block', count: 1 }, 8: { type: 'pure_heaven_debris_block', count: 1 }, 9: { type: 'mighterrum_nugget', count: 1 }, 10: { type: 'mighterrum_nugget', count: 1 }, 11: { type: 'pure_heaven_debris_block', count: 1 }, 12: { type: 'pure_heaven_debris_block', count: 1 }, 13: { type: 'pure_heaven_debris_block', count: 1 }, 14: { type: 'pure_heaven_debris_block', count: 1}, 15: { type: 'pure_heaven_debris_block', count: 1 } },
+                output: 'heaven_gate_brick_block', outputCount: 1
+            },
+			{ name: "Heaven Gate Brick Block",
+                input: { 0: { type: 'ruin_heaven_gate_brick_block', count: 1 }, 1: { type: 'pure_heaven_debris_block', count: 1 }, 4: { type: 'pure_heaven_debris_block', count: 1 }, 5: { type: 'pure_heaven_debris_block', count: 1 } },
+                output: 'heaven_gate_brick_block', outputCount: 1
+            },
 			{ name: "Impure Infinitungsten Nugget",
                 input: { 0: { type: 'hellsteel_nugget', count: 1 }, 1: { type: 'hellsteel_nugget', count: 1 }, 2: { type: 'heavensteel_nugget', count: 1 }, 3: { type: 'heavensteel_nugget', count: 1 }, 4: { type: 'hellsteel_nugget', count: 1 }, 5: { type: 'hellsteel_nugget', count: 1 }, 6: { type: 'heavensteel_nugget', count: 1 }, 7: { type: 'heavensteel_nugget', count: 1 }, 8: { type: 'hellsteel_nugget', count: 1 }, 9: { type: 'hellsteel_nugget', count: 1 }, 10: { type: 'heavensteel_nugget', count: 1 }, 11: { type: 'heavensteel_nugget', count: 1 }, 12: { type: 'hellsteel_nugget', count: 1 }, 13: { type: 'hellsteel_nugget', count: 1 }, 14: { type: 'heavensteel_nugget', count: 1}, 15: { type: 'heavensteel_nugget', count: 1 } },
                 output: 'impure_infinitungsten_nugget', outputCount: 1
@@ -11556,6 +11827,102 @@
                 input: { 0: { type: 'steel_nugget', count: 1 }, 1: { type: 'steel_nugget', count: 1 }, 2: { type: 'nitro_powder', count: 1 }, 4: { type: 'steel_nugget', count: 1 }, 5: { type: 'steel_nugget', count: 1 }, 6: { type: 'steel_nugget', count: 1 }, 7: { type: 'steel_nugget', count: 1 }, 8: { type: 'steel_nugget', count: 1 }, 9: { type: 'vulcanized_rubber', count: 1 } },
                 output: 'machine_gun', outputCount: 1,
             },
+			{ name: "Blue Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 } },
+                output: 'blue_concrete', outputCount: 3,
+            },
+			{ name: "Purple Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'purple_flower', count: 1 } },
+                output: 'purple_concrete', outputCount: 3,
+            },
+			{ name: "Pink Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'milkweed', count: 1 } },
+                output: 'pink_concrete', outputCount: 3,
+            },
+			{ name: "Red Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'red_flower', count: 1 } },
+                output: 'red_concrete', outputCount: 3,
+            },
+			{ name: "Orange Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'orange_flower', count: 1 } },
+                output: 'orange_concrete', outputCount: 3,
+            },
+			{ name: "Yellow Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'yellow_flower', count: 1 } },
+                output: 'yellow_concrete', outputCount: 3,
+            },
+			{ name: "Green Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'green_flower', count: 1 } },
+                output: 'green_concrete', outputCount: 3,
+            },
+			{ name: "Cyan Concrete Block",
+                input: { 0: { type: 'concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 }, 2: { type: 'green_flower', count: 1 } },
+                output: 'cyan_concrete', outputCount: 3,
+            },
+			{ name: "Blue Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 } },
+                output: 'blue_dark_concrete', outputCount: 3,
+            },
+			{ name: "Purple Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'purple_flower', count: 1 } },
+                output: 'purple_dark_concrete', outputCount: 3,
+            },
+			{ name: "Pink Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'milkweed', count: 1 } },
+                output: 'pink_dark_concrete', outputCount: 3,
+            },
+			{ name: "Red Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'red_flower', count: 1 } },
+                output: 'red_dark_concrete', outputCount: 3,
+            },
+			{ name: "Orange Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'orange_flower', count: 1 } },
+                output: 'orange_dark_concrete', outputCount: 3,
+            },
+			{ name: "Yellow Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'yellow_flower', count: 1 } },
+                output: 'yellow_dark_concrete', outputCount: 3,
+            },
+			{ name: "Green Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'green_flower', count: 1 } },
+                output: 'green_dark_concrete', outputCount: 3,
+            },
+			{ name: "Cyan Dark Concrete Block",
+                input: { 0: { type: 'dark_concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 }, 2: { type: 'green_flower', count: 1 } },
+                output: 'cyan_dark_concrete', outputCount: 3,
+            },
+			{ name: "Blue Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 } },
+                output: 'blue_light_concrete', outputCount: 3,
+            },
+			{ name: "Purple Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'purple_flower', count: 1 } },
+                output: 'purple_light_concrete', outputCount: 3,
+            },
+			{ name: "Pink Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'milkweed', count: 1 } },
+                output: 'pink_light_concrete', outputCount: 3,
+            },
+			{ name: "Red Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'red_flower', count: 1 } },
+                output: 'red_light_concrete', outputCount: 3,
+            },
+			{ name: "Orange Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'orange_flower', count: 1 } },
+                output: 'orange_light_concrete', outputCount: 3,
+            },
+			{ name: "Yellow Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'yellow_flower', count: 1 } },
+                output: 'yellow_light_concrete', outputCount: 3,
+            },
+			{ name: "Green Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'green_flower', count: 1 } },
+                output: 'green_light_concrete', outputCount: 3,
+            },
+			{ name: "Cyan Light Concrete Block",
+                input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 }, 2: { type: 'green_flower', count: 1 } },
+                output: 'cyan_light_concrete', outputCount: 3,
+            },
         ];
 		const anvilRecipes = [
 			{ name: "Rock Block",
@@ -11609,6 +11976,11 @@
 				anvilPower: 1,
 				output: 'mythicalithium_bullet', outputCount: 25
 			},
+			{ name: "Armor Tile",
+                input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'clay', count: 1 } },
+				anvilPower: 2,
+                output: 'armor_tile', outputCount: 1,
+            },
 			{ name: "Compressed Stone Block",
                 input: { 0: { type: 'compacted_stone', count: 1 }, 1: { type: 'compacted_stone', count: 1 }, 2: { type: 'compacted_stone', count: 1 }, 3: { type: 'compacted_stone', count: 1 }, 5: { type: 'compacted_stone', count: 1 }, 6: { type: 'compacted_stone', count: 1 } },
 				anvilPower: 2,
@@ -11739,6 +12111,16 @@
                 input: { 0: { type: 'limestone', count: 1 }, 1: { type: 'gravel', count: 1 }, 2: { type: 'sand', count: 1 }, 3: { type: 'limestone', count: 1 }, 4: { type: 'gravel', count: 1 }, 5: { type: 'sand', count: 1 }, 6: { type: 'limestone', count: 1 }, 7: { type: 'gravel', count: 1 }, 8: { type: 'sand', count: 1 } },
 				fuel: 1,
                 output: 'concrete', outputCount: 6
+            },
+			{ name: "Dark Concrete Block",
+                input: { 0: { type: 'concrete', count: 5 }, 1: { type: 'ash_block', count: 1 } },
+				fuel: 1,
+                output: 'dark_concrete', outputCount: 1
+            },
+			{ name: "Light Concrete Block",
+                input: { 0: { type: 'concrete', count: 5 }, 1: { type: 'bone_block', count: 1 } },
+				fuel: 1,
+                output: 'light_concrete', outputCount: 1
             },
 			{ name: "Infinitungsten Nugget",
                 input: { 0: { type: 'impure_infinitungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 } },
@@ -12031,7 +12413,7 @@
                 const slotDiv = createInventorySlot(armorItem, slotKey, 'armor');
                 
                 // Add a placeholder background
-                slotDiv.style.backgroundImage = 'Dark Boots.png'; // ... (keep all placeholder styles) ...
+                slotDiv.style.backgroundImage = 'Armor/Dark Boots.png'; // ... (keep all placeholder styles) ...
                 slotDiv.style.backgroundSize = '32px 32px';
                 slotDiv.style.backgroundPosition = 'center';
                 slotDiv.style.backgroundRepeat = 'no-repeat';
@@ -13239,6 +13621,7 @@
                 seedInput.value = '';
                 seedInput.placeholder = `Current: ${currentSeed}`;
                 maintainDurabilityCheckbox.checked = maintainBlockDurability;
+                autosaveCheckbox.checked = autosave;
                 animateDropsCheckbox.checked = animateDrops;
         
                 // --- NEW TIP LOGIC STARTS HERE ---
@@ -14528,6 +14911,7 @@
         }
 
         maintainDurabilityCheckbox.addEventListener('change', () => { maintainBlockDurability = maintainDurabilityCheckbox.checked; });
+        autosaveCheckbox.addEventListener('change', () => { autosave = autosaveCheckbox.checked; });
 		animateDropsCheckbox.addEventListener('change', () => { animateDrops = animateDropsCheckbox.checked; });
 		const transferAllButton = document.getElementById('transferAllButton');
         transferAllButton.addEventListener('click', transferAllFromChest);
@@ -14580,6 +14964,7 @@
             icyHillColumns.clear();
             jungleTempleColumns.clear();
             doomShackColumns.clear();
+			ruinedPortalColumns.clear();
 
             // Reset player
             player.x = 0 * tileSize; player.y = 0; player.dx = 0; player.dy = 0; player.onGround = false;
@@ -15477,6 +15862,7 @@
 		    icyHillColumns.clear();
 		    jungleTempleColumns.clear();
             doomShackColumns.clear();
+			ruinedPortalColumns.clear();
 			exploredMap = {};
 
             // Load new data

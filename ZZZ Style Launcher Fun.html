@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Game Ultimate - Launcher</title>
+    <style>
+        /* --- Base & Reset --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            /* Default background */
+            background-image: url('image_a1ebfc.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: background-image 0.5s ease;
+        }
+
+        /* --- Theme Darkening Overlay --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 50% darken */
+            z-index: -1; /* Behind content, over background */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        body.theme-active::before {
+            opacity: 1; /* Show the overlay */
+        }
+
+        /* --- HACK/Matrix Easter Egg Theme --- */
+        body.matrix-theme {
+            background: #000 !important;
+        }
+        body.matrix-theme .launcher-container {
+            background: rgba(0, 20, 0, 0.3);
+            border: 1px solid #00ff00;
+        }
+        body.matrix-theme .launcher-container * {
+            color: #00ff00 !important;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #00ff00, 0 0 2px #000;
+        }
+        body.matrix-theme .launcher-button, 
+        body.matrix-theme .nav-link.active {
+            background: linear-gradient(to bottom, #003300, #001100) !important;
+            border: 1px solid #00ff00;
+        }
+        body.matrix-theme #main-logo,
+        body.matrix-theme .bottom-left-logo,
+        body.matrix-theme .bottom-right-logo {
+            filter: hue-rotate(120deg) brightness(1.5) drop-shadow(0 0 10px #00ff00);
+        }
+        body.matrix-theme .nav-link img {
+            filter: hue-rotate(120deg) brightness(1.5);
+        }
+
+        h1, h2, h3 {
+            color: white;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* --- Launcher Container --- */
+        .launcher-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Corner Logos --- */
+        .bottom-right-logo, .bottom-left-logo {
+            position: fixed;
+            width: 200px;
+            height: auto;
+            opacity: 0.8;
+            z-index: 5;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+        .bottom-right-logo {
+            bottom: 1rem;
+            right: 1rem;
+        }
+        .bottom-left-logo {
+            bottom: 1rem;
+            left: 1rem;
+        }
+
+        /* --- Sidebar (Left Nav) --- */
+        .sidebar {
+            width: 240px;
+            background-color: #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title img {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+        }
+
+        .sidebar-title h1 {
+            font-size: 1.5em;
+        }
+
+        .nav-links {
+            list-style: none;
+            flex-grow: 1;
+        }
+        
+        .nav-links.app-links {
+            flex-grow: 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            color: #c0c0c0;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link img {
+            width: 20px;
+            height: 20px;
+            image-rendering: pixelated;
+        }
+
+        .nav-link:hover {
+            background-color: #3a3a3a;
+        }
+
+        .nav-link.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid #444;
+            padding-top: 15px;
+        }
+
+        .sidebar-footer .nav-links {
+            flex-grow: 0;
+        }
+
+        #username {
+            display: block;
+            text-align: right;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #aaa;
+            padding-right: 10px;
+        }
+
+        /* --- Main Content (Right Area) --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .tab-content {
+            display: none;
+            flex-grow: 1;
+            overflow-y: auto;
+            flex-direction: column;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* --- Play Tab --- */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+            background-image: url('image_a1ebfc.jpg'); 
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        #main-logo {
+            position: relative;
+            z-index: 2;
+            max-width: 45%;
+            min-width: 300px;
+            cursor: pointer;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
+            transition: filter 0.3s ease;
+        }
+
+        @keyframes color-cycle {
+            0%   { filter: hue-rotate(0deg) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7)); }
+            50%  { filter: hue-rotate(180deg) drop-shadow(0 4px 16px rgba(255, 255, 100, 0.9)); }
+            100% { filter: hue-rotate(360deg) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7)); }
+        }
+        #main-logo.konami-active {
+            animation: color-cycle 1s linear infinite;
+        }
+
+        /* --- NEW: Splash Text Styles --- */
+        #splash-text {
+            position: absolute;
+            z-index: 3;
+            top: 55%;
+            left: 65%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            color: #ffd700; /* Yellow text */
+            padding: 5px 12px;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+            animation: splash-pulse 1.5s ease-in-out infinite alternate;
+            transform-origin: center;
+        }
+
+        @keyframes splash-pulse {
+            0% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.0); }
+            50% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.1); }
+            100% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.0); }
+        }
+
+        .play-controls {
+            margin-top: auto;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+        }
+
+        #version-select {
+            padding: 15px;
+            background-color: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            max-width: 50%;
+        }
+
+        #play-button {
+            padding: 15px 50px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        #play-button:hover {
+            background-color: #5cd060;
+        }
+
+        /* --- News/Events/Promos Area --- */
+        .launcher-feed-area {
+            display: flex;
+            width: 100%;
+            height: 300px; /* Fixed height for the entire feed area */
+            flex-shrink: 0;
+            border-top: 1px solid #444;
+            background-color: #252525;
+        }
+        
+        .news-feed {
+            width: 40%;
+            padding: 20px;
+            border-right: 1px solid #444;
+            overflow: hidden; /* Hide scrollbar for this column */
+        }
+
+        .additional-feeds {
+            width: 60%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Make this area scrollable */
+        }
+
+        .additional-feeds h3 {
+            color: #81c784; /* Light green */
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-top: 15px;
+        }
+        .additional-feeds h3:first-child {
+            margin-top: 0;
+        }
+
+        .feed-item {
+            padding: 10px 0;
+            border-bottom: 1px dashed #333;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .feed-item:hover {
+            background-color: #2a2a2a;
+            padding-left: 5px;
+        }
+        .feed-item h4 {
+            font-size: 1em;
+            color: white;
+            margin-bottom: 5px;
+        }
+        .feed-item p {
+            font-size: 0.85em;
+            color: #aaa;
+            line-height: 1.3;
+        }
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+
+        #play-tab-news h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        #play-tab-news p {
+            color: #c0c0c0;
+            line-height: 1.5;
+        }
+        #play-tab-news a {
+            color: #4CAF50;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* --- Other Tabs (Install, Patch, Settings, etc.) --- */
+        #tab-installations, #tab-patch-notes, #tab-settings, #tab-faq, #tab-about {
+            padding: 30px;
+            overflow-y: auto;
+            background: rgba(30, 30, 30, 0.8); /* Dark semi-transparent bg for readability */
+        }
+        
+        /* Make snapshot selection scrollable */
+        #installations-list {
+            overflow-y: auto;
+            height: 100%;
+            padding-right: 15px; /* space for scrollbar */
+        }
+
+        .install-item {
+            background-color: #2a2a2a;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .install-item:hover {
+            background-color: #3a3a3a;
+        }
+
+        .install-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        .install-item p {
+            font-size: 0.95em;
+            color: #c0c0c0;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            /* Truncate long notes in the list */
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        #patch-notes-content {
+            font-size: 1.1em;
+            color: #c0c0c0;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            max-width: 900px;
+        }
+
+        /* --- Settings Tab Styles --- */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #444;
+            max-width: 600px;
+        }
+        .setting-item span {
+            font-size: 1.1em;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* --- FAQ Tab Styles --- */
+        .faq-item {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #444;
+            max-width: 800px;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-item summary {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #81c784; /* Lighter Green */
+            padding: 0.5rem 0;
+            cursor: pointer;
+            list-style: none;
+            position: relative;
+        }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary::before {
+            content: '+';
+            font-weight: bold;
+            position: absolute;
+            right: 5px;
+            color: #4CAF50;
+        }
+        .faq-item[open] summary::before {
+            content: '−';
+        }
+        .faq-item p {
+            font-size: 1rem;
+            color: #ccc;
+            line-height: 1.5;
+            padding: 0.5rem 0 1rem 0;
+            margin: 0;
+        }
+
+        /* --- About Tab Styles --- */
+        #tab-about {
+            align-items: center;
+        }
+        .about-logo {
+            width: 80%;
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+        #tab-about p {
+            max-width: 600px;
+            text-align: center;
+            font-size: 1.1em;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        /* --- Game iFrame View --- */
+        .game-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background-color: #000;
+        }
+
+        #game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* --- New 'X' Close Button Style --- */
+        #back-to-launcher {
+            position: fixed; /* Use fixed so it stays in the corner relative to viewport */
+            top: 10px;
+            right: 10px;
+            z-index: 1001;
+            width: 30px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            line-height: 28px;
+            text-align: center;
+            display: none; /* Hidden by default, shown by JS for non-game snaps */
+            transition: background 0.2s, color 0.2s;
+        }
+        #back-to-launcher:hover {
+            background: rgba(200, 0, 0, 0.8);
+            color: white;
+            border-color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- The main launcher UI -->
+    <div class="launcher-container" id="launcher-container">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-title">
+                <img src="Logo.png" alt="Logo">
+                <h1>Block Game</h1>
+            </div>
+
+            <!-- New Launcher App Links -->
+            <ul class="nav-links app-links" id="app-links-list">
+                <!-- Content injected by JS -->
+            </ul>
+
+            <!-- Game-related Links -->
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-tab="play"><img src="Grass Dirt Block.png" alt="">Play</a></li>
+                <li><a href="#" class="nav-link" data-tab="installations"><img src="Copper Compacted Stone Block.png" alt="">Installations</a></li>
+                <li><a href="#" class="nav-link" data-tab="patch-notes"><img src="Planked Oak Block.png" alt="">Patch Notes</a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link" data-tab="settings"><img src="Settings Icon.png" alt="">Settings</a></li>
+                    <li><a href="#" class="nav-link" data-tab="faq"><img src="FAQ Icon.png" alt="">FAQ</a></li>
+                    <li><a href="#" class="nav-link" data-tab="about"><img src="About Icon.png" alt="">About</a></li>
+                </ul>
+                <span id="username">Reitzelone</span>
+            </div>
+        </nav>
+
+        <!-- Right Main Content Area -->
+        <main class="main-content">
+
+            <!-- Play Tab -->
+            <div class="tab-content active" id="tab-play">
+                <div class="hero-section" id="hero-section">
+                    <!-- Updated to use Logo Full Deep.png -->
+                    <img id="main-logo" src="Logo Full Deep.png" alt="Block Game Ultimate Logo" onclick="setRandomLogo()">
+                    <div id="splash-text"></div>
+                    <div class="play-controls">
+                        <select id="version-select"></select>
+                        <button id="play-button">PLAY</button>
+                    </div>
+                </div>
+                
+                <!-- NEW: Unified Feed Area -->
+                <div class="launcher-feed-area">
+                    <div class="news-feed">
+                        <h2>What's New</h2>
+                        <div id="play-tab-news">
+                            <!-- Content injected by JS (Current Version Patch Notes Summary) -->
+                        </div>
+                    </div>
+
+                    <div class="additional-feeds">
+                        <!-- NEW: News Section -->
+                        <h3>Block Game News</h3>
+                        <div class="feed-item" onclick="alert('Viewing full news item: New Builder Competition!')">
+                            <h4>New Builder Competition!</h4>
+                            <p>Submit your most creative builds by 12/15 for a chance to win exclusive in-game flair!</p>
+                        </div>
+                        <div class="feed-item" onclick="alert('Viewing full news item: The Economic Codex is now stable!')">
+                            <h4>The Economic Codex is now Stable!</h4>
+                            <p>After a rough start, V3.1 fixes all major void chest bugs and trader pathing issues.</p>
+                        </div>
+
+                        <!-- NEW: Events Section -->
+                        <h3>Community Events</h3>
+                        <div class="feed-item" onclick="alert('Viewing full event item: Next Dev Q&A Stream')">
+                            <h4>Next Dev Q&A Stream</h4>
+                            <p>Join the developers on Friday at 5 PM EST to ask questions about the new armor system.</p>
+                        </div>
+
+                        <!-- NEW: Promos Section -->
+                        <h3>Promotions</h3>
+                        <div class="feed-item" onclick="alert('Viewing full promo item: Limited-Time Holiday Texture Pack')">
+                            <h4>Limited-Time Holiday Texture Pack</h4>
+                            <p>Download the festive block pack, available only until January 1st!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Installations Tab -->
+            <div class="tab-content" id="tab-installations">
+                <h2>Installations</h2>
+                <div id="installations-list">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+
+            <!-- Patch Notes Tab -->
+            <div class="tab-content" id="tab-patch-notes">
+                <h2>Patch Notes</h2>
+                <div id="patch-notes-content">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="tab-settings">
+                <h2>Settings</h2>
+                <div class="setting-item">
+                    <span>Disable Splash Text Animation</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-splash-anim" onchange="toggleSplashAnimation(this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <span>Disable Logo Clicking</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-logo-click" onchange="toggleLogoClick(this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <button class="launcher-button" style="background-color: #78350f; max-width: 300px; margin-top: 2rem;" onclick="resetLauncherTheme()">
+                    Reset Launcher Theme
+                </button>
+            </div>
+            
+            <!-- FAQ Tab -->
+            <div class="tab-content" id="tab-faq">
+                <h2>Frequently Asked Questions</h2>
+                
+                <details class="faq-item">
+                    <summary>How do I play a snapshot or older version?</summary>
+                    <p>Click the "Installations" tab on the left. This will show a list of all available versions. Click any version to launch it. Note: some versions are experimental and may be unstable.</p>
+                </details>
+                
+                <details class="faq-item">
+                    <summary>My game is lagging. What can I do?</summary>
+                    <p>This is a browser-based game, so performance can vary. Try closing other browser tabs and applications. The "Current Development Build" often includes lag-reduction features, so make sure you're playing the latest version!</p>
+                </details>
+        
+                <details class="faq-item">
+                    <summary>Are there any secrets?</summary>
+                    <p>...Try typing 'hack' on the main launcher screen. Or, if you remember old video games, try the Konami code (Up, Up, Down, Down, Left, Right, Left, Right, b, a, Enter).</p>
+                </details>
+        
+                <details class="faq-item">
+                    <summary>How do I change the launcher theme?</summary>
+                    <p>Go to the "Installations" tab and <strong>triple-click</strong> (click three times fast) on any version in the list. This will set the launcher's background to that version's banner. You can reset it from the Settings tab.</p>
+                </details>
+
+            </div>
+
+            <!-- About Tab -->
+            <div class="tab-content" id="tab-about">
+                <h2>About</h2>
+                <img src="Logo Full Deep.png" alt="Deep Logo" class="about-logo">
+                <p>
+                    This launcher and game started as a passion project, but quickly developed into much more. A game where anything (except a few infinity things) is possible! Inspired by Skyrim, Terraria, Minecraft, Zelda, and so much more.
+                    <br><br>
+                    Thanks for playing!
+                </p>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- The hidden iFrame container for the game -->
+    <div class="game-view" id="game-view">
+        <button id="back-to-launcher" onclick="closeGame()">X</button>
+        <iframe id="game-iframe" src="about:blank"></iframe>
+    </div>
+
+    <!-- Corner Logos -->
+    <img src="Logo Full Deep.png" alt="Deep Logo" class="bottom-right-logo"/>
+    <img src="Logo Full.png" alt="Full Logo" class="bottom-left-logo"/>
+
+    <script>
+        // --- Data Provided ---
+        const LAUNCHER_OPTIONS = [
+            { name: "Block Gallery", path: "Block Gallery.html", icon: "Item Frame.png" },
+            { name: "Block Game Artist", path: "Block Game Artist.html", icon: "Paper.png" },
+            { name: "Block Music", path: "Block Music.html", icon: "Book.png" }
+        ];
+
+        const SNAPSHOT_DATA = [
+            { 
+                name: "Current Development Build (Default)", 
+                path: "Block Game Ultimate.html",
+                notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps. Added find and replace functions for cheat support. Added 8 different colors of concrete made using colored flower varieties. Blue Purple Pink Red Orange Yellow Green Cyan. Added world loss prevention tab closing and an automatic saving option (exports on close).",
+                specialSplash: "Mine with machine guns! And, yes, it's lots of fun!"
+            },
+            { 
+                name: "Geobotanical Combustion Thesis (Version ###)", 
+                path: "Snapshot - Geobotanical Combustion Thesis.html",
+                notes: "Confirmed Completion Date: 11/12/2025. Added health particle effects rendering! Added better seed drop chances for plants, and plant-to-seed salvage recipes. Added ways to obtain more seeds! Added clay marshes with hard-to-break clay, and update clay brick block recipe. In the underworld, players now suffer from hellfire, which basically after 120 seconds, which can be extended with food and armor, they will eternally catch on fire. Added drunkness as a consequence from drinking too much alcoholic food, which is definitely a worthwhile excuse to avoid the stuff in-game. Added geothermal power. When a furnace of any sort is aboe a magma stone block, it has a 20% chance not to use any pure fuel. Food can be placed in item frames now. Implemented effects on gravity curds, jump juice, and speed snacks. Added mouse scroll hotbar switching support. Added books made with rubber and paper that have titles and covers that can be used to spread info in your world and put in chests. Also added skin support for custom player sprites by typing SKIN! consecutively. To remove a skin, equip one with improper dimensions (non 1:3). Added getOp() function for easy cheating. Added books to structures with lore and story. Added orange, purple, and green flowers to the grass field and made flowers more abundant. Greatly adjusted and often increased many heal amounts. Added orange trees and oranges to apple groves. Added nitro powder (nitroglycerin) and crude oil for more accurate explosives. Flowers can be placed in grass dirt, soil, mud, and their dark variants now!"
+            },
+            { 
+                name: "Molten Sun Edict (Version ###)", 
+                path: "Snapshot - Molten Sun Edict.html",
+                notes: "Confirmed Completion Date: 11/6/2025. Added new muddy swamp biome with new thick mud block. Thick mud slows the player down a ton and makes them unable to jump! Added new mighterrum ore to the underworld as a diviniron counterpart with its own pickaxe. Using mighterrum and infinitungsten, create mythicalithium and create the new BEST pickaxe using scrapped diviniron pickaxes! Some drop adjustments and required mining power added to MANY blocks. Menus are now more supportive of controls. World borders now enablable, not defaulted though. Some lag reduction has been added. Fixed chest typing glitch. Added wall blocks, overlay blocks, and cloaked blocks. Added new desert temple structures. Added lighters and fire! Players can catch on fire, and fire spreads. Added armor and armor menus to the player inventory. Armor doesn't drop on death if equipped. Armor reduces a percentage of damage, but loses durability in the process. Added power forge to make armor using supplies! You can now search in your inventory, filtering by name and ingredients, and toggle a grid view. In the armor menu, it renders your visual character! Added doom shack structures with dark armor ingredients and added treasure chests with light armor ingredients to heaven. Use diviniron armor and jump from as high as you want, it might break the armor but it surely won't do a thing to you with a full set!"
+            },
+            { 
+                name: "New UI And Menus (Fun Snapshot)", 
+                path: "Snapshot Fun - New UI And Menus.html",
+                notes: "Confirmed Completion Date: 11/5/2025. Now with a new classy look that you can play with!"
+            },
+            { 
+                name: "The Economic Codex (Version ###)", 
+                path: "Snapshot - The Economic Codex.html",
+                notes: "Confirmed Completion Date: 10/15/2025. Respawn y reset from -320 (high up) to 0, to prevent immediate damage. Fall damage intensified from 3x to 4x. When magma stone touches any form of ice, it turns to solid obsidian. New bombs are added to the game with exciting explosions. Be careful though, bombs do not value the contents of any chests! You might ask: how to set bombs off? The answer is mechageezer contraptions. These contraptions allow for simple and complex binary computing systems and in-game signalling. Create new contraptions with levers, reactants, trailers, and of course, bombs. Bombs send EVERYTHING to the void! New void bargainer available to buy items back from. He doesn't offer pretty prices, but he will be willing to reconsider his bargain if you sacrifice 10+ bronze coins or 5+ gold coins to the void! New traders added that spawn across the world and offer unique items and trades! Remove them with bombs. More block names reduced for speed, lowered past compatibility. Stone layer greatly changed with limestone! Concrete recipe added using limestone, gravel, sand, and a magma furnace!"
+            },
+            { 
+                name: "Photosynthetic Mandate (Version ###)", 
+                path: "Snapshot - Photosynthetic Mandate.html",
+                notes: "Confirmed Completion Date: 10/8/2025.Harness the power of grass with new grass seeds items which can be used to spread grass into mud, dirt, and soil! Using ice blocks, grass seeds, moss seeds, and pest, spread dark and light moss and grass and also spread pest across your ever-growing world. Some durabilities have been fixed and adjusted. You can officially place cobweb in empty spaces now to harness the power! Some things renamed and growth updated. Exported worlds are not be compatible with past versions unless modified. New lush grasslands biome added full of wet soils, mud, grasses, and fertilizer. Onions, garlic, and red peppers have been added along with new recipes like noodles and more oven dishes. Water can be purified from ice and urine! Foods include noodles, spaghetti, ramen noodles, and pumpkin pie! Cinnamon trees added to the rainforest and cinnamon usable in recipes."
+            },
+            { 
+                name: "Posthumous Hydration Protocol (Version ###)", 
+                path: "Snapshot - Posthumous Hydration Protocol.html",
+                notes: "Confirmed Completion Date: 10/6/2025. Fixes and features! Tool damage, rather than being time-based has been adjusted so it is now based on mining power and time combined, which makes tools more proportional. Durabilities have been adjusted accordingly! Salt rock drops have been adjusted and balanced more. Salt flats biomes have gotten limestone, and redwood biomes are completely remodeled from the ground up. New chasms form on the surface down to the underneath depths with brand new chasm magma stone blocks! Powertower stone blocks added. Raw rubber can beheated to make vulcanized rubber blocks! When you die with cups there is a likely chance, if there is room, one will fill up with urine in the dead body. Don't die in a rainforest or verically aligned with one or you WILL have ALL of your paper turn into a new item called soggy paper which must be cooked to be solidified again. Sugar cane, which can be cooked into raw sugar, is obtainable in jungles now!"
+            },
+            { 
+                name: "The Prudent Index (Version ###)", 
+                path: "Snapshot - The Prudent Index.html",
+                notes: "Confirmed Completion Date: 10/5/2025. New feature overload! The in game console has new features such as TAB to autofill, and you can use arrows to access history! New oxidized copper bricks are added. Powertowers are added and are a rare source of copper bricks, materials and palladium! New chests added including magical chests which have 50 instead of 27 slots, and void chests which display every removed item! Refrigerator stoarge has been reduced to 18 rather than 27. Fixes added, and new tips added. Use % to open up a new debugging overlay. Lead and nickel bricks are added and nuggets are given images. Lead is still unobtainable. Surface variation and heights have been updated and enhanced."
+            },
+            { 
+                name: "Meaty Madness (Version ###)", 
+                path: "Snapshot - Meaty Madness.html",
+                notes: "An old version of BGU located! I found this one inside my school Google Drive. It is suspected that these were the new features of this version: New meat world biome is added to the underworld along with new ways to obtain meat. Destroy meat trees and blocks, but not the spoiled ones... This old version may seem quite plain, but older versions will continue to be excavated!"
+            },
+            { 
+                name: "Watch For Towers (Version ###)", 
+                path: "Snapshot - Watch For Towers.html",
+                notes: "This is an ancient version of the game. I found this one on my Windows 10 desktop from when I downloaded it from the outdated Onedrive folder. The underworld goes forever with no end, heaven was just added, and watchtowers are new-ish. No underworld biomes of heaven biomes, and only a few surface ones. Ancient and well-loading!"
+            },
+            { 
+                name: "Free Version 1", 
+                path: "Snapshot - Free Version 1.html",
+                notes: "Worlds incompatible with other versions."
+            },
+            { 
+                name: "Free Version 2", 
+                path: "Snapshot - Free Version 2.html",
+                notes: "Worlds incompatible with other versions. This version is based off of a version shortly after The Economic Codex."
+            },
+            { 
+                name: "ZZZ AI (Experimental)", 
+                path: "ZZZ AI.html",
+                notes: "WARNING: This experimental version introduces features not regulated for the standard game version. Why control your game when you can let a REALLY dumb robot play. It will look for wood and mindlessly stay still while occasionally moving and wandering. It will even sometimes hit blocks and craft things strangely!"
+            },
+            { 
+                name: "ZZZ Laggy Cows (Experimental)", 
+                path: "ZZZ Laggy Cows.html",
+                notes: "WARNING: This experimental version introduces features not regulated for the standard game version. Behold laggy cows, they move and interact with hits but also make your game lag heavily. They drop beef though..."
+            },
+            { 
+                name: "ZZZ Lasers (Experimental)", 
+                path: "ZZZ Lasers.html",
+                notes: "WARNING: This experimental version introduces features not regulated for the standard game version. Behold the laser miner and hyper laser miner. Using cheats, give yourself a destrcutive item and destroy everything! Shape your world!"
+            },
+            { 
+                name: "The Brickening (2025)", 
+                path: "Versions/The_Brickening.html",
+                notes: "A massive industrial update. The primary focus of The Brickening is the introduction of advanced masonry and large-scale manufacturing tools. New features include automated assembly lines, high-capacity brick presses, and a comprehensive overhaul of all stone-based recipes. This update rewards hard work and large-scale enterprise."
+            },
+            { 
+                name: "Viking Block Ship Prototype", 
+                path: "Versions/Viking_Ship.html",
+                notes: "This is a specialized, single-purpose prototype build focusing on water physics and large, mobile block structures. The only goal is to build, launch, and sail a Viking Longship constructed entirely of standard wood blocks. Note: Due to resource limitations, sailing may be unstable near coastlines."
+            },
+        ];
+
+        const SPLASH_MESSAGES = [
+            "Find dirt and place it!", "Now mostly legal!", "Freedom in the form of blocks!", "Less government, more mining!", "So many layers and layers!", "No opting out for block structures!", "Don't worry about block taxes!", "It's about time for fun!", "Ultimate!", "Check your inventory for cheese!", "Works in your browser, just not great!", "Build a big, fat wall of bricks!", "There's nothing else to kill!", "The best blocks since 2024!", "All your copper are belong to us!", "Yes, we have a void chest. No, we can't explain it!", "99% lead-free... probably!", "Did you try hitting F5? Wait, don't!", "Did you try hitting Alt+F4? Wait, don't!", "It's dangerous to go alone! Take a magical chest!", "You're going to need a bigger refrigerator!", "TAB to complete your life decisions!", "Press % to reveal the truth!", "We promise the oxidized copper won't judge your base!", "Still waiting for that unobtainable lead!", "Where we're going, we don't need inventory slots!", "Power like a Powertower!", "Now with 100% less Creepers. Wait, wrong game!", "It only costs $3.50. Wait, no!", "The only thing we don't store is regret!", "Behold! A perfectly preserved pickle!", "Don't tell me what to build, you're not my supervisor!", "Our sky is #70b6d5. What's yours?", "Can you find the legendary dirt plateau?", "I used to be an adventurer like you, then I took a dirt block to the knee!", "Don't get fourth degree sunburns in the clouds!", "A neck tourniquet may be required!", "Hasta la vista, gravel!", "In space, no one can hear you mine!", "One block to rule them all, one block to find them!", "One block to bring them, and in the darkness block them!", "Do or do not. There is no craft!", "I am inevitable… and made of blocks!", "Touch grass!", "Enter sandstone block!", "I NEED TO FIND MY QUIET PLACE!", "Spank you very much!", "I like pizza. I LIKE IT! By Steve! Go party! I like Steve.", "That leg's gonna have to come off!", "60% of the time it blocks every time!", "Eat the food, Tina! I farmed it myself!", "I bet I can throw this block over those mountains!", "Don't press * if you value progress!", "Red sand gives you wings!", "Strange players lying in mud distributing axes is no basis for a biome!", "This guy's got the right idea. He brought the brown blocks!", "GET TO DA BLOCKPA! THE GRASS IS SPREADING TOO FAST!",
+        ];
+
+        const LOGO_WEIGHTS = [
+            { path: "Logo Desert.png", weight: 12.5 }, { path: "Logo Overgrown.png", weight: 12.5 }, { path: "Logo Rock.png", weight: 12.5 }, { path: "Logo Jungle.png", weight: 12.5 }, { path: "Logo Basic.png", weight: 12.5 }, { path: "Logo Taiga.png", weight: 12.5 }, { path: "Logo Anthill.png", weight: 12.5 }, { path: "Logo Apple.png", weight: 12.5 },
+        ];
+        
+        // --- New Background Function ---
+        function getBackgroundPath(snapshotName) {
+            // Special case for ZZZ Lasers: it uses spaces in the filename.
+            if (snapshotName.includes('Current Development Build (Default)')) {
+                return 'Snapshot - Geobotanical Combustion Thesis.png';
+            }
+            if (snapshotName.includes('ZZZ Lasers')) {
+                return 'ZZZ Lasers Background.png';
+            }
+            if (snapshotName.includes('The Prudent Index (Version ###)')) {
+                return 'Snapshot - The Prudent Index Background.png';
+            }
+            if (snapshotName.includes('Posthumous Hydration Protocol (Version ###)')) {
+                return 'Snapshot - Posthumous Hydration Protocol.png';
+            }
+            if (snapshotName.includes('Photosynthetic Mandate (Version ###)')) {
+                return 'Snapshot - Photosynthetic Mandate.png';
+            }
+            if (snapshotName.includes('The Economic Codex (Version ###)')) {
+                return 'Snapshot - The Economic Codex.png';
+            }
+            if (snapshotName.includes('Molten Sun Edict (Version ###)')) {
+                return 'Snapshot - Molten Sun Edict.png';
+            }
+            if (snapshotName.includes('Geobotanical Combustion Thesis (Version ###)')) {
+                return 'Snapshot - Geobotanical Combustion Thesis.png';
+            }
+
+            // Clean the name: remove parentheses and contents, replace spaces with underscores.
+            let baseName = snapshotName.replace(/\s+\(.*?\)/g, '').trim();
+            baseName = baseName.replace(/[^a-zA-Z0-9_]/g, '_'); // Replace spaces and non-alpha/numeric/underscore with underscore
+
+            // Default naming convention: "[Cleaned Name] Background.png"
+            // Use a fallback image if the generated one is likely missing
+            const defaultBg = 'image_a1ebfc.jpg';
+            const generatedPath = `${baseName}Background.png`;
+            
+            // Simple check: if we couldn't find a special, just use the default.
+            // A more robust check would be to try/catch image loads, but this is simpler.
+            if (!snapshotName.includes('(')) { // crude check for non-special names
+                 return defaultBg;
+            }
+            
+            return generatedPath; 
+        }
+        // --- End of Data ---
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const launcherContainer = document.getElementById('launcher-container');
+            const gameView = document.getElementById('game-view');
+            const gameIframe = document.getElementById('game-iframe');
+            const backToLauncher = document.getElementById('back-to-launcher');
+
+            const versionSelect = document.getElementById('version-select');
+            const playButton = document.getElementById('play-button');
+            const heroSection = document.getElementById('hero-section');
+            const mainLogo = document.getElementById('main-logo');
+            const splashText = document.getElementById('splash-text');
+            
+            const navLinks = document.querySelectorAll('.nav-link:not([data-iframe-launch])');
+            const appLinksList = document.getElementById('app-links-list');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            const installationsList = document.getElementById('installations-list');
+            const patchNotesContent = document.getElementById('patch-notes-content');
+            const playTabNews = document.getElementById('play-tab-news');
+            
+            let currentVersionPath = '';
+
+            // --- Initialization Functions ---
+
+            function populateLauncherOptions() {
+                appLinksList.innerHTML = '';
+                LAUNCHER_OPTIONS.forEach(opt => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a href="#" class="nav-link" data-iframe-launch="${opt.path}">
+                            <img src="${opt.icon}" alt="">${opt.name}
+                        </a>`;
+                    appLinksList.appendChild(li);
+                });
+            }
+
+            function populateVersionSelect() {
+                if (SNAPSHOT_DATA.length === 0) return;
+                
+                SNAPSHOT_DATA.forEach(snapshot => {
+                    const option = document.createElement('option');
+                    option.value = snapshot.path;
+                    option.textContent = snapshot.name;
+                    versionSelect.appendChild(option);
+                });
+                
+                currentVersionPath = SNAPSHOT_DATA[0].path;
+            }
+
+            function populateInstallationsList() {
+                installationsList.innerHTML = '';
+                SNAPSHOT_DATA.forEach(snapshot => {
+                    const item = document.createElement('div');
+                    item.className = 'install-item';
+                    item.innerHTML = `
+                        <h3>${snapshot.name}</h3>
+                        <p>${snapshot.notes}</p>
+                    `;
+
+                    // --- Add Triple-Click Theme Changer ---
+                    let clickTimer = null;
+                    let clickCount = 0;
+                    const tripleClickDelay = 500; // 500ms window
+
+                    item.addEventListener('click', (e) => {
+                        clickCount++;
+
+                        if (clickTimer) {
+                            clearTimeout(clickTimer);
+                        }
+
+                        clickTimer = setTimeout(() => {
+                            if (clickCount === 1) {
+                                // Single click: Launch game
+                                launchGame(snapshot.path);
+                            }
+                            clickCount = 0; // Reset after delay
+                        }, tripleClickDelay);
+
+                        if (clickCount === 3) {
+                            // TRIPLE CLICK!
+                            e.stopPropagation();
+                            e.preventDefault();
+                            clearTimeout(clickTimer);
+                            clickCount = 0;
+                            applyLauncherTheme(snapshot);
+                            // Go back to play tab to show the theme
+                            document.querySelector('.nav-link[data-tab="play"]').click();
+                        }
+                    });
+                    // --- End Triple-Click ---
+
+                    installationsList.appendChild(item);
+                });
+            }
+
+            function setupTabNavigation() {
+                // Tab switching for main tabs
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const tabId = link.dataset.tab;
+                        
+                        navLinks.forEach(nav => nav.classList.remove('active'));
+                        tabContents.forEach(tab => tab.classList.remove('active'));
+                        
+                        link.classList.add('active');
+                        document.getElementById(`tab-${tabId}`).classList.add('active');
+                    });
+                });
+
+                // Direct iFrame launching for app links
+                appLinksList.addEventListener('click', (e) => {
+                    const link = e.target.closest('a[data-iframe-launch]');
+                    if (link) {
+                        e.preventDefault();
+                        const path = link.dataset.iframeLaunch;
+                        launchGame(path);
+                    }
+                });
+
+                // Add listener for the "Read more" link in the news feed
+                playTabNews.addEventListener('click', (e) => {
+                    if (e.target.dataset.tab) {
+                        e.preventDefault();
+                        // Find the corresponding nav link and click it
+                        document.querySelector(`.nav-link[data-tab="${e.target.dataset.tab}"]`).click();
+                    }
+                });
+            }
+            
+            // --- Logo/Splash/Background Functions ---
+
+            /**
+             * Finds a random path based on its weight.
+             * @returns {string} The selected logo image path.
+             */
+            function getWeightedRandomLogoPath() {
+                let totalWeight = 0;
+                LOGO_WEIGHTS.forEach(item => { totalWeight += item.weight; });
+                let random = Math.random() * totalWeight;
+
+                for (let i = 0; i < LOGO_WEIGHTS.length; i++) {
+                    const item = LOGO_WEIGHTS[i];
+                    if (random < item.weight) {
+                        return item.path;
+                    }
+                    random -= item.weight;
+                }
+                return "Logo Full Deep.png"; // Fallback: Use the default full deep logo
+            }
+
+            /**
+             * Sets a random logo image source based on the defined weights.
+             */
+            function setRandomLogo() {
+                const logoElement = document.getElementById('main-logo');
+                if (logoElement && logoElement.style.cursor !== 'default') {
+                    const newPath = getWeightedRandomLogoPath();
+                    logoElement.src = newPath;
+                }
+            }
+
+            function updateSplashAndNotes() {
+                currentVersionPath = versionSelect.value;
+                const selectedSnapshot = SNAPSHOT_DATA.find(s => s.path === currentVersionPath);
+                if (!selectedSnapshot) return;
+
+                // 1. Update Splash Text
+                if (selectedSnapshot.specialSplash) {
+                    splashText.textContent = selectedSnapshot.specialSplash;
+                } else {
+                    const randomIndex = Math.floor(Math.random() * SPLASH_MESSAGES.length);
+                    splashText.textContent = SPLASH_MESSAGES[randomIndex];
+                }
+
+                // 2. Update Background Image
+                const bgPath = getBackgroundPath(selectedSnapshot.name);
+                heroSection.style.backgroundImage = `url('${bgPath}'), url('image_a1ebfc.jpg')`; // Fallback
+
+                // 3. Update Patch Notes Tab
+                patchNotesContent.textContent = selectedSnapshot.notes;
+
+                // 4. Update News Feed on Play Tab
+                playTabNews.innerHTML = `
+                    <h3>${selectedSnapshot.name}</h3>
+                    <p>
+                        ${selectedSnapshot.notes.substring(0, 200)}... 
+                        <a href="#" data-tab="patch-notes">Read more</a>
+                    </p>
+                `;
+            }
+            
+            // --- Game Launch Functions ---
+
+            function launchGame(path) {
+                // If no path is provided, use the one from the dropdown
+                const gamePath = path || currentVersionPath;
+                if (!gamePath) return;
+
+                resetLauncherTheme(); // Clear any special themes
+                gameIframe.src = gamePath;
+                launcherContainer.style.display = 'none';
+                gameView.style.display = 'block';
+
+                // --- NEW: Logic for showing 'X' button (non-game snaps) ---
+                // The 'X' button should be shown for all *non-main* HTML files, 
+                // which generally means anything that is not the primary game.
+                const isMainGame = (gamePath === 'Block Game Ultimate.html');
+                
+                if (isMainGame) {
+                    backToLauncher.style.display = 'none';
+                } else {
+                    backToLauncher.style.display = 'block';
+                }
+                // --- End New Logic ---
+
+                // Focus the iframe so keyboard/mouse events are captured
+                gameIframe.focus();
+            }
+
+            function closeGame() {
+                gameIframe.src = 'about:blank'; // Stops the game from running in the bg
+                launcherContainer.style.display = 'flex';
+                gameView.style.display = 'none';
+                resetLauncherTheme(); // Reset theme when coming back
+            }
+
+            // --- Settings Toggle Functions ---
+            function toggleSplashAnimation(isDisabled) {
+                const splashElement = document.getElementById('splash-text');
+                if (isDisabled) {
+                    splashElement.style.animation = 'none';
+                    splashElement.style.transform = 'translate(-50%, -50%) rotate(-15deg) scale(1.0)'; // Set to default state
+                } else {
+                    splashElement.style.animation = 'splash-pulse 1.5s ease-in-out infinite alternate';
+                }
+            }
+
+            function toggleLogoClick(isDisabled) {
+                const logoElement = document.getElementById('main-logo');
+                if (isDisabled) {
+                    logoElement.style.cursor = 'default';
+                } else {
+                    logoElement.style.cursor = 'pointer';
+                }
+            }
+            
+            // --- Easter Egg / Theme Functions ---
+            const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a', 'Enter'];
+            let konamiIndex = 0;
+            const hackCode = ['h', 'a', 'c', 'k'];
+            let hackIndex = 0;
+
+            document.addEventListener('keydown', (event) => {
+                if (document.querySelector('.tab-content.active').id !== 'tab-play') {
+                    return; // Only listen for easter eggs on the main play tab
+                }
+
+                // Konami Code
+                const requiredKey = konamiCode[konamiIndex];
+                if (event.key.toLowerCase() === requiredKey.toLowerCase()) {
+                    konamiIndex++;
+                    if (konamiIndex === konamiCode.length) {
+                        activateKonami();
+                        konamiIndex = 0; 
+                    }
+                } else {
+                    konamiIndex = 0;
+                }
+                
+                // 'hack' Code
+                const requiredHackKey = hackCode[hackIndex];
+                if (event.key.toLowerCase() === requiredHackKey) {
+                    hackIndex++;
+                    if (hackIndex === hackCode.length) {
+                        activateHackTheme();
+                        hackIndex = 0;
+                    }
+                } else {
+                    hackIndex = 0;
+                }
+            });
+
+            function activateKonami() {
+                splashText.textContent = "Konami Activated!";
+                splashText.style.color = "#00ff00";
+                mainLogo.classList.add('konami-active');
+            }
+
+            function activateHackTheme() {
+                resetLauncherTheme();
+                document.body.classList.add('matrix-theme');
+                splashText.textContent = "SYSTEM BREACHED";
+                splashText.style.animation = 'none';
+            }
+
+            function applyLauncherTheme(snapshot) {
+                resetLauncherTheme(); // Clear any existing theme
+                const bgPath = getBackgroundPath(snapshot.name);
+                heroSection.style.backgroundImage = `url('${bgPath}'), url('image_a1ebfc.jpg')`;
+                document.body.style.backgroundImage = `url('${bgPath}'), url('image_a1ebfc.jpg')`;
+                document.body.classList.add('theme-active'); // Adds the darken overlay
+
+                if (snapshot.specialSplash) {
+                    splashText.textContent = snapshot.specialSplash;
+                }
+            }
+
+            function resetLauncherTheme() {
+                document.body.classList.remove('theme-active');
+                document.body.classList.remove('matrix-theme');
+                document.body.style.backgroundImage = `url('image_a1ebfc.jpg')`;
+                
+                // Reset splash text
+                const splashElement = document.getElementById('splash-text');
+                splashElement.style.color = "#ffd700"; /* Reset color to yellow */
+                if (!document.getElementById('toggle-splash-anim').checked) {
+                    splashElement.style.animation = 'splash-pulse 1.5s ease-in-out infinite alternate';
+                }
+                updateSplashAndNotes(); // This will set a new random splash
+                
+                // Reset logo to default
+                mainLogo.classList.remove('konami-active');
+                mainLogo.src = 'Logo Full Deep.png';
+            }
+
+            // --- Globalize functions needed by HTML ---
+            window.setRandomLogo = setRandomLogo;
+            window.launchGame = launchGame;
+            window.closeGame = closeGame;
+            window.toggleSplashAnimation = toggleSplashAnimation;
+            window.toggleLogoClick = toggleLogoClick;
+            window.resetLauncherTheme = resetLauncherTheme;
+            window.applyLauncherTheme = applyLauncherTheme;
+
+
+            // --- Run Initialization ---
+            populateLauncherOptions();
+            populateVersionSelect();
+            populateInstallationsList();
+            setupTabNavigation();
+            updateSplashAndNotes(); // Set initial splash, notes, and background
+
+            // --- Event Listeners ---
+            versionSelect.addEventListener('change', updateSplashAndNotes);
+            playButton.addEventListener('click', () => launchGame(null)); // Pass null to use selected version
+            backToLauncher.addEventListener('click', closeGame);
+        });
+    </script>
+</body>
+</html>
