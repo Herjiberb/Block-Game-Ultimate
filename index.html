@@ -837,7 +837,7 @@
 
 
     <div id="top-right-controls">
-        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">Geobotanical Combustion Thesis</span>
+        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">The Vibrant Guano Ordinance</span>
         <button id="gallery-button" onclick="openGalleryModal()">
             <img src="Item Frame.png" alt="Block Gallery Icon" class="block-icon"/>
         </button>
@@ -1079,6 +1079,10 @@
 		"Strange players lying in mud distributing axes is no basis for a biome!",
 		"This guy's got the right idea. He brought the brown blocks!",
 		"GET TO DA BLOCKPA! THE GRASS IS SPREADING TOO FAST!",
+		"And you must be the monopoly guy. Do not pass go! Do not collect $200!",
+		"Ree-heee-heee-heeeeally?!",
+		"Kinda hot in these rhinos…",
+		"For a skeleton, you've got a lot to say!",
     ];
 
     // --- NEW: Logo Weights Configuration ---
@@ -1099,7 +1103,12 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps. Added find and replace functions for cheat support. Added 8 different colors of concrete made using colored flower varieties with dark and light concrete variants. Blue Purple Pink Red Orange Yellow Green Cyan. Added world loss prevention tab closing and an automatic saving option (exports on close). Added more shovels and axes with materials like infinitungsten. Completely remade super heaven with super minerals and infinitungsten ores. Added heaven gate brick blocks to normal heaven chests. Added 3 types of destroyed heaven gate portals to the surface rarely.",
+            notes: "",
+		},
+		{ 
+            name: "The Vibrant Guano Ordinance (Version ###)", 
+            path: "Snapshot - The Vibrant Guano Ordinance.html",
+            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps. Added find and replace functions for cheat support. Added 8 different colors of concrete made using colored flower varieties with dark and light concrete variants. Blue Purple Pink Red Orange Yellow Green Cyan. Added world loss prevention tab closing and an automatic saving option (exports on close). Added more shovels and axes with materials like infinitungsten. Completely remade super heaven with super minerals and infinitungsten ores. Added heaven gate brick blocks to normal heaven chests. Added 3 types of destroyed heaven gate portals to the surface rarely. Added skip to game to skip asset loading temporarily and mobile triple click texture pack loading.",
 			specialSplash: "Mine with machine guns! And, yes, it's lots of fun!"
 		},
         { 
@@ -1482,6 +1491,9 @@
         if (snapshotName.includes('Geobotanical Combustion Thesis (Version ###)')) {
             return 'Snapshot - Geobotanical Combustion Thesis.png';
         }
+		if (snapshotName.includes('The Vibrant Guano Ordinance (Version ###)')) {
+            return 'Snapshot - The Vibrant Guano Ordinance.png';
+        }
 
         // Clean the name: remove parentheses and contents, replace spaces with underscores.
         let baseName = snapshotName.replace(/\s+\(.*?\)/g, '').trim();
@@ -1524,7 +1536,7 @@
         contentContainer.innerHTML = `
             <button class="modal-close" onclick="closePatchNotesModal()">✕</button>
             <h2 class="modal-title">${snapshot.name} Changelog</h2>
-            <div class="patch-notes-version">Standard Version: Geobotanical Combustion Thesis</div>
+            <div class="patch-notes-version">Standard Version: The Vibrant Guano Ordinance</div>
             ${formattedNotes}
         `;
 
