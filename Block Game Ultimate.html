@@ -2048,7 +2048,7 @@
         </div>
     </div>
 	
-	<div id="traderCharacterContainer" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1001; align-items:flex-end; gap:15px;">
+	<div id="traderCharacterContainer" oncontextmenu="return false;" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1001; align-items:flex-end; gap:15px;">
 	  <img id="traderCharacter" src="Trader.png" alt="Trader" style="width:80px; image-rendering:pixelated;">
 	  <div id="traderTradeOffer" class="inventory-section" style="background-color:rgba(10,10,30,0.9); border-radius:10px; padding:10px; width:260px;">
 		<p id="traderDialogue" style="font-style:italic; text-align:center; margin:0 0 8px 0;">Got goods if you've got coin.</p>
@@ -2264,7 +2264,7 @@
 	</div>
 	
     <!-- Custom Message Box Overlay -->
-    <div id="customMessageBoxOverlay">
+    <div id="customMessageBoxOverlay" oncontextmenu="return false;">
         <div id="customMessageBox">
             <p id="messageBoxText"></p>
             <div id="messageBoxButtons">
@@ -2379,7 +2379,7 @@
         let insomnia = 0;
         let guanoMined = 0;
         // END ACHIEVEMENT VARIABLES
-		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed'];
+		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile'];
 		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
@@ -3464,6 +3464,7 @@
 			'hellrock': { imgSrc: 'Hellrock Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellrock', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'magma_stone_block': { imgSrc: 'Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff8700' },
 			'chasm_magma_stone_block': { imgSrc: 'Chasm Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'chasm_magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff00af' },
+			'heaven_magma_stone_block': { imgSrc: 'Heaven Magma Stone Block.png', solid: true, miningHardness: -1, drops: [], color: '#ff8700' },
 			'meteorite': { imgSrc: 'Meteorite.png', solid: true, miningHardness: 500, drops: [{item: 'gold_nugget', chance: 0.3, min: 1, max: 3}, {item: 'palladium_nugget', chance: 0.2, min: 1, max: 3}, {item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.6, min: 1, max: 3}], color: '#696969' },
 			'hellsteel_hellstone': { imgSrc: 'Hellsteel Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'hellsteel_nugget', chance: 1, min: 1, max: 3}], color: '#E62020' },
 			'mighterrum_hellstone': { imgSrc: 'Mighterrum Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'mighterrum_nugget', chance: 1, min: 1, max: 1}], color: '#B22222' },
@@ -3780,6 +3781,27 @@
 			'planked_birch_wall': { imgSrc: 'Planked Birch Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_birch_wall', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
 			'planked_spruce_wall': { imgSrc: 'Planked Spruce Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_spruce_wall', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'hellstone_wall': { imgSrc: 'Hellstone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'hellstone_wall', chance: 1, min: 1, max: 1}], color: '#B22222' },
+			// Special Versions:
+			// Viking Block Ship Prototype
+			'viking_wood': { imgSrc: 'Viking Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'viking_wood', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'warped_viking_wood': { imgSrc: 'Warped Viking Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'warped_viking_wood', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'viking_wood_wall': { imgSrc: 'Viking Wood Wall.png', solid: false, miningHardness: 75, drops: [{item: 'viking_wood_wall', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'warped_viking_wood_wall': { imgSrc: 'Warped Viking Wood Wall.png', solid: false, miningHardness: 75, drops: [{item: 'warped_viking_wood_wall', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'viking_wood_pole': { imgSrc: 'Viking Wood Pole.png', solid: false, miningHardness: 50, drops: [{item: 'viking_wood_pole', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			// The Brickening (2025)
+			'industrial_brick_block': { imgSrc: 'Industrial Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'industrial_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'industrial_block': { imgSrc: 'Industrial Block.png', solid: true, miningHardness: 600, drops: [{item: 'industrial_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'industrial_rubber_block': { imgSrc: 'Industrial Rubber Block.png', solid: true, miningHardness: 200, drops: [{item: 'industrial_rubber_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'industrial_top_rubber_block': { imgSrc: 'Industrial Top Rubber Block.png', solid: true, miningHardness: 400, drops: [{item: 'industrial_top_rubber_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'industrial_bottom_rubber_block': { imgSrc: 'Industrial Bottom Rubber Block.png', solid: true, miningHardness: 400, drops: [{item: 'industrial_bottom_rubber_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'mechanical_brick_block': { imgSrc: 'Mechanical Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'mechanical_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'mechanical_block': { imgSrc: 'Mechanical Block.png', solid: true, miningHardness: 600, drops: [{item: 'mechanical_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'mechanical_rubber_block': { imgSrc: 'Mechanical Rubber Block.png', solid: true, miningHardness: 200, drops: [{item: 'mechanical_rubber_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'mechanical_top_rubber_block': { imgSrc: 'Mechanical Top Rubber Block.png', solid: true, miningHardness: 400, drops: [{item: 'mechanical_top_rubber_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'mechanical_bottom_rubber_block': { imgSrc: 'Mechanical Bottom Rubber Block.png', solid: true, miningHardness: 400, drops: [{item: 'mechanical_bottom_rubber_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'saw_brick_block': { imgSrc: 'Saw Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'saw_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'drone_brick_block': { imgSrc: 'Drone Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'drone_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'rover_brick_block': { imgSrc: 'Rover Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'rover_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 		};
 
         // Item types and their properties (imgSrc, isTool, miningPower, maxDurability, color - for fallback)
@@ -5429,9 +5451,9 @@
                             return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'hellsteel_nugget', count: 6 }, { type: 'void_dust', count: 7 }, { type: 'heaven_gate_brick_block', count: 1 } ], label: 'Rare Treasure Chest' };
 						} else if (random() < 0.0003) {
                             return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'heaven_gate_brick_block', count: 1 } ], label: 'Compact Treasure Chest' };
-						} else if (random() < 0.0008) {
+						} else if (random() < 0.0010) {
                             return (worldBlocks[key] = { type: 'heavensteel_cloud_block', mineProg: 0 });
-                        } else if (random() < 0.0033) {
+                        } else if (random() < 0.0035) {
                             return (worldBlocks[key] = { type: 'diviniron_cloud_block', mineProg: 0 });
                         } else if (random() < 0.1) {
                             return (worldBlocks[key] = { type: 'cloud_rock_block', mineProg: 0 });
@@ -5468,7 +5490,10 @@
 				// Use superHeavenStartHeight (not heavenStartHeight)
 				const heavenBaseY = superHeavenStartHeight - heavenSurfaceHeight;
 
-				if (row >= heavenBaseY) {
+				if (row === -99976) {
+					return (worldBlocks[key] = { type: 'heaven_magma_stone_block', mineProg: 0 });
+				}
+				else if (row >= heavenBaseY) {
 					const heavenBiome = getHeavenBiome(col); // re-use biome chooser or create superHeaven-specific if desired
 					let blockType;
 						// cloudscape / default (same as your cloud logic)
@@ -8271,6 +8296,10 @@
                 // Apply damage over time. The '50' means 50 health per second.
                 // You can adjust this value to make the damage faster or slower.
                 if (applyDamage(10 * (dt / 1000))) return;
+            } else if (blockBelow === 'heaven_magma_stone_block') {
+                // Apply damage over time. The '50' means 50 health per second.
+                // You can adjust this value to make the damage faster or slower.
+                if (applyDamage(50 * (dt / 1000))) return;
             }
 			
             
@@ -9961,7 +9990,7 @@
 				const selectedItemIsGrassSeeds = selectedItemType === 'grass_seeds';
 				const selectedItemIsMossSeeds = selectedItemType === 'moss_seeds';
                 const selectedItemIsPest = selectedItemType === 'pest';
-				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall');
+				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall') || selectedItemType === 'viking_wood_pole';
                 const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds' || selectedItemType === 'potato_seeds';
                 const currentBlockAtTarget = getBlockType(targetCol, targetRow);
                 const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
@@ -11922,6 +11951,14 @@
                 input: { 0: { type: 'colony_heart', count: 1 }, 1: { type: 'void_crystal', count: 1 }, 4: { type: 'void_crystal', count: 1 }, 5: { type: 'void_crystal', count: 1 } },
                 output: 'red_void_crystal', outputCount: 1
             },
+			{ name: "Ancient Heaven Debris Blocks",
+                input: { 0: { type: 'corroded_heaven_debris_block', count: 1 }, 1: { type: 'corroded_heaven_debris_block', count: 1 }, 2: { type: 'corroded_heaven_debris_block', count: 1 }, 3: { type: 'corroded_heaven_debris_block', count: 1 }, 4: { type: 'corroded_heaven_debris_block', count: 1 }, 5: { type: 'corroded_heaven_debris_block', count: 1 }, 6: { type: 'corroded_heaven_debris_block', count: 1 }, 7: { type: 'corroded_heaven_debris_block', count: 1 }, 8: { type: 'corroded_heaven_debris_block', count: 1 }, 9: { type: 'corroded_heaven_debris_block', count: 1 }, 10: { type: 'corroded_heaven_debris_block', count: 1 }, 11: { type: 'corroded_heaven_debris_block', count: 1 }, 12: { type: 'corroded_heaven_debris_block', count: 1 }, 13: { type: 'corroded_heaven_debris_block', count: 1 }, 14: { type: 'corroded_heaven_debris_block', count: 1}, 15: { type: 'corroded_heaven_debris_block', count: 1 } },
+                output: 'ancient_heaven_debris_block', outputCount: 2
+            },
+			{ name: "Strong Heaven Debris Blocks",
+                input: { 0: { type: 'ancient_heaven_debris_block', count: 1 }, 1: { type: 'ancient_heaven_debris_block', count: 1 }, 2: { type: 'ancient_heaven_debris_block', count: 1 }, 3: { type: 'ancient_heaven_debris_block', count: 1 }, 4: { type: 'ancient_heaven_debris_block', count: 1 }, 5: { type: 'ancient_heaven_debris_block', count: 1 }, 6: { type: 'ancient_heaven_debris_block', count: 1 }, 7: { type: 'ancient_heaven_debris_block', count: 1 }, 8: { type: 'ancient_heaven_debris_block', count: 1 }, 9: { type: 'ancient_heaven_debris_block', count: 1 }, 10: { type: 'ancient_heaven_debris_block', count: 1 }, 11: { type: 'ancient_heaven_debris_block', count: 1 }, 12: { type: 'ancient_heaven_debris_block', count: 1 }, 13: { type: 'ancient_heaven_debris_block', count: 1 }, 14: { type: 'ancient_heaven_debris_block', count: 1}, 15: { type: 'ancient_heaven_debris_block', count: 1 } },
+                output: 'strong_heaven_debris_block', outputCount: 2
+            },
 			{ name: "Pure Heaven Debris Block",
                 input: { 0: { type: 'corroded_heaven_debris_block', count: 1 }, 1: { type: 'ancient_heaven_debris_block', count: 1 }, 2: { type: 'ancient_heaven_debris_block', count: 1 }, 3: { type: 'corroded_heaven_debris_block', count: 1 }, 4: { type: 'ancient_heaven_debris_block', count: 1 }, 5: { type: 'strong_heaven_debris_block', count: 1 }, 6: { type: 'strong_heaven_debris_block', count: 1 }, 7: { type: 'ancient_heaven_debris_block', count: 1 }, 8: { type: 'ancient_heaven_debris_block', count: 1 }, 9: { type: 'strong_heaven_debris_block', count: 1 }, 10: { type: 'strong_heaven_debris_block', count: 1 }, 11: { type: 'ancient_heaven_debris_block', count: 1 }, 12: { type: 'corroded_heaven_debris_block', count: 1 }, 13: { type: 'ancient_heaven_debris_block', count: 1 }, 14: { type: 'ancient_heaven_debris_block', count: 1}, 15: { type: 'corroded_heaven_debris_block', count: 1 } },
                 output: 'pure_heaven_debris_block', outputCount: 1
@@ -12173,6 +12210,11 @@
 			},
 			{ name: "Armor Tile",
                 input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'clay', count: 1 } },
+				anvilPower: 2,
+                output: 'armor_tile', outputCount: 1,
+            },
+			{ name: "Armor Tile",
+                input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'taiga_dirt', count: 1 } },
 				anvilPower: 2,
                 output: 'armor_tile', outputCount: 1,
             },
@@ -12428,9 +12470,15 @@
             { input: { type: 'topaz_nugget', count: 2 }, output: { type: 'iron_pickaxe', count: 1 } },
             { input: { type: 'coal', count: 20 }, output: { type: 'rock_pickaxe', count: 1 } },
             { input: { type: 'planked_oak', count: 35 }, output: { type: 'iron_axe', count: 1 } },
+			{ input: { type: 'zinc_nugget', count: 5 }, output: { type: 'iron_shovel', count: 1 } },
+			{ input: { type: 'armor_tile', count: 25 }, output: { type: 'pistol', count: 1 } },
 			// Nuggets For Trade
             { input: { type: 'hellrock', count: 30 }, output: { type: 'heavensteel_nugget', count: 1 } },
 			{ input: { type: 'cloud_rock_block', count: 30 }, output: { type: 'hellsteel_nugget', count: 1 } },
+			{ input: { type: 'hellsteel_nugget', count: 10 }, output: { type: 'heavensteel_nugget', count: 5 } },
+			{ input: { type: 'heavensteel_nugget', count: 10 }, output: { type: 'hellsteel_nugget', count: 5 } },
+			{ input: { type: 'infinitungsten_nugget', count: 4 }, output: { type: 'mythicalithium_nugget', count: 1 } },
+			{ input: { type: 'book', count: 25 }, output: { type: 'impure_infinitungsten_nugget', count: 1 } },
             // Seed For Trade
             { input: { type: 'refrigerator', count: 1 }, output: { type: 'chili_pepper_seeds', count: 8 } },
             { input: { type: 'oven', count: 1 }, output: { type: 'coffee_seeds', count: 8 } },
@@ -12438,6 +12486,7 @@
             // Food For Sale
             { input: { type: 'bronze_coin', count: 3 }, output: { type: 'prickly_pear_fruit', count: 5 } },
             { input: { type: 'gold_coin', count: 2 }, output: { type: 'tomato_sandwich', count: 1 } },
+			{ input: { type: 'compressed_stone', count: 15 }, output: { type: 'pumpkin_pie', count: 1 } },
             // Food For Trade
             // Miscalleneous For Sale
             { input: { type: 'bronze_coin', count: 1 }, output: { type: 'grass_seeds', count: 5 } },
@@ -12447,11 +12496,19 @@
             { input: { type: 'bronze_coin', count: 25 }, output: { type: 'glass_cup', count: 5 } },
             // Miscalleneous For Trade
             { input: { type: 'diviniron_nugget', count: 13 }, output: { type: 'colony_heart', count: 1 } },
+			{ input: { type: 'mighterrum_nugget', count: 1 }, output: { type: 'clay', count: 10 } },
+			{ input: { type: 'stone', count: 12 }, output: { type: 'watchtower_stone_block', count: 1 } },
+			{ input: { type: 'stone', count: 15 }, output: { type: 'powertower_stone_block', count: 1 } },
             // Civilization Blocks For Trade
             { input: { type: 'cactus_block', count: 25 }, output: { type: 'asphalt', count: 5 } },
 			{ input: { type: 'pest', count: 20 }, output: { type: 'concrete', count: 5 } },
 			// Butter
 			{ input: { type: 'dirt', count: 120 }, output: { type: 'butter', count: 1 } },
+		];
+		const level2TraderTrades = [
+			{ input: { type: 'gold_coin', count: 50 }, output: { type: 'diamond_nugget', count: 1 } },
+			{ input: { type: 'steel_pickaxe', count: 1 }, output: { type: 'ruby_plated_steel_pickaxe', count: 1 } }
+			// ... add 5 or more trades here
 		];
         const farmerTraderTrades = [
 			{ input: { type: 'bronze_coin', count: 5 }, output: { type: 'wheat_seeds', count: 10 } },

@@ -316,23 +316,20 @@
         left: 1rem;
         width: 200px; /* Small size */
         height: auto;
-        opacity: 1; /* Slightly transparent */
+        opacity: 1;
         z-index: 5; /* Below the main UI elements */
         pointer-events: none; /* Allows clicks to pass through */
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
         transition: opacity 0.3s;
     }
-    .bottom-right-logo:hover {
-        opacity: 1; /* Slight increase on hover, though pointer-events is none */
-    }
     @media (max-width: 600px) {
-        .bottom-right-logo {
+        .bottom-left-logo {
             width: 100px; /* Even smaller on mobile */
             bottom: 0.5rem;
-            right: 0.5rem;
+            left: 0.5rem;
         }
     }
-    /* --- End Bottom Right Logo Style --- */
+    /* --- End Bottom Left Logo Style --- */
 
 
     /* --- Modal Styles (Snapshots, Gallery, Patch Notes) --- */
@@ -833,7 +830,7 @@
     </main>
     
     <img src="Logo Full Deep.png" alt="Deep Logo" class="bottom-right-logo"/>
-    <img src="Logo Full.png" alt="Deep Logo" class="bottom-left-logo"/>
+    <img src="Logo Full.png" alt="Full Logo" class="bottom-left-logo"/>
 
 
     <div id="top-right-controls">
@@ -1108,7 +1105,7 @@
 		{ 
             name: "The Vibrant Guano Ordinance (Version ###)", 
             path: "Snapshot - The Vibrant Guano Ordinance.html",
-            notes: "Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps. Added find and replace functions for cheat support. Added 8 different colors of concrete made using colored flower varieties with dark and light concrete variants. Blue Purple Pink Red Orange Yellow Green Cyan. Added world loss prevention tab closing and an automatic saving option (exports on close). Added more shovels and axes with materials like infinitungsten. Completely remade super heaven with super minerals and infinitungsten ores. Added heaven gate brick blocks to normal heaven chests. Added 3 types of destroyed heaven gate portals to the surface rarely. Added skip to game to skip asset loading temporarily and mobile triple click texture pack loading.",
+            notes: "Confirmed Completion Date: 11/29/2025. Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps. Added find and replace functions for cheat support. Added 8 different colors of concrete made using colored flower varieties with dark and light concrete variants. Blue Purple Pink Red Orange Yellow Green Cyan. Added world loss prevention tab closing and an automatic saving option (exports on close). Added more shovels and axes with materials like infinitungsten. Completely remade super heaven with super minerals and infinitungsten ores. Added heaven gate brick blocks to normal heaven chests. Added 3 types of destroyed heaven gate portals to the surface rarely. Added skip to game to skip asset loading temporarily and mobile triple click texture pack loading.",
 			specialSplash: "Mine with machine guns! And, yes, it's lots of fun!"
 		},
         { 
@@ -1184,13 +1181,15 @@
         }, 
         { 
             name: "The Brickening (2025)", 
-            path: "Versions/The_Brickening.html",
-            notes: "A massive industrial update. The primary focus of The Brickening is the introduction of advanced masonry and large-scale manufacturing tools. New features include automated assembly lines, high-capacity brick presses, and a comprehensive overhaul of all stone-based recipes. This update rewards hard work and large-scale enterprise."
+            path: "The Brickening (2025).html",
+            notes: "Confirmed Completion Date: 12/1/2025. A massive industrial update. The primary focus of The Brickening is the introduction of advanced masonry and large-scale manufacturing tools. New features include automated assembly lines, high-capacity brick presses, and a comprehensive overhaul of all stone-based recipes. This update rewards hard work and large-scale enterprise. To be perfectly honest: it adds some static decorative items. Offers some retextures such as chests and grass dirt blocks.",
+			specialSplash: "Industrialize your loadout!"
         },
         { 
             name: "Viking Block Ship Prototype", 
-            path: "Versions/Viking_Ship.html",
-            notes: "This is a specialized, single-purpose prototype build focusing on water physics and large, mobile block structures. The only goal is to build, launch, and sail a Viking Longship constructed entirely of standard wood blocks. Note: Due to resource limitations, sailing may be unstable near coastlines."
+            path: "Viking Block Ship Prototype.html",
+            notes: "Confirmed Completion Date: 11/30/2025. This is a specialized, single-purpose prototype build focusing on large viking ship structures and a weird new block palette. The only goal is to build, launch, and sail a Viking Longship constructed entirely of standard wood blocks. Note: Due to resource limitations, sailing may be unstable near coastlines. Has a hidden buried chest close at spawn! Offers some retextures such as chests.",
+			specialSplash: "Congrats! Make yer-self a vikin' ship!"
         },
     ];
 
@@ -1493,6 +1492,12 @@
         }
 		if (snapshotName.includes('The Vibrant Guano Ordinance (Version ###)')) {
             return 'Snapshot - The Vibrant Guano Ordinance.png';
+        }
+		if (snapshotName.includes('The Brickening (2025)')) {
+            return 'The Brickening (2025).png';
+        }
+		if (snapshotName.includes('Viking Block Ship Prototype')) {
+            return 'Viking Block Ship Prototype.png';
         }
 
         // Clean the name: remove parentheses and contents, replace spaces with underscores.
