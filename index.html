@@ -1381,6 +1381,11 @@
                     clickCount = 0;
                     return; // Stop processing the click for the li (game launch)
                 }
+				// Stop the mobile browser's default behavior (like scroll or zoom) 
+				// from cancelling the launch timer, preserving the triple-click logic.
+				if (event.type === 'touchstart') {
+					event.preventDefault(); 
+				}
                 clickCount++;
 
                 if (clickTimer) {
