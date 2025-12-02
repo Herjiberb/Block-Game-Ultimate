@@ -9186,7 +9186,7 @@
 
 				// Check for special inventory-not-empty case for chests
 				const blockToMine = worldBlocks[targetKey];
-				if (blockToMine && (blockToMine.type === 'chest' || blockToMine.type === 'dead_body_chest' || blockToMine.type === 'refrigerator' || blockToMine.type === 'oven')) {
+				if (blockToMine && (blockToMine.type === 'chest' || blockToMine.type === 'dead_body_chest' || blockToMine.type === 'refrigerator' || blockToMine.type === 'magical_chest')) {
 					if (blockToMine.inventory && blockToMine.inventory.some(item => item !== null)) {
 						miningTarget = null;
 						return;
@@ -10173,7 +10173,13 @@
                 mouse.rightDown = false; // Consume the right-click
                 return;
             } else if (blockAtTarget.type === 'chest_lever_off' || blockAtTarget.type === 'chest_lever_on') {
-                // ... (existing code) ...
+                // Toggle the lever's state
+                const newState = blockAtTarget.type === 'chest_lever_off' ? 'chest_lever_on' : 'chest_lever_off';
+                worldBlocks[targetKey].type = newState;
+
+                // Update the network starting from the toggled lever and its neighbors
+                scheduleMechUpdate(targetCol, targetRow);
+                
                 mouse.rightDown = false; // Consume the right-click
                 return;
             
