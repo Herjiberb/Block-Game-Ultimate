@@ -1835,6 +1835,137 @@
 		.cinema-mode #mobileControlsOverlay {
 			display: none !important;
 		}
+		/* --- Trader Level Up Menu Styles --- */
+		#traderLevelUpOverlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background-color: rgba(0, 0, 0, 0.85);
+			display: none; /* Hidden by default */
+			justify-content: center;
+			align-items: center;
+			z-index: 1002; /* Above trader UI */
+			font-family: 'Inter', sans-serif;
+			color: #E0E0E0;
+		}
+
+		#traderLevelUpMenu {
+			background-color: #333;
+			padding: 25px;
+			border-radius: 15px;
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			width: 90%;
+			max-width: 400px;
+			border: 2px solid #DAA520; /* Gold border */
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			text-align: center;
+		}
+
+		#traderLevelUpMenu h2 {
+			color: #DAA520;
+			margin: 0;
+		}
+
+		#traderLevelUpImage {
+			width: 100px;
+			height: 100px;
+			
+			margin: 0 auto;
+			border: 2px solid #555;
+			background-color: #222;
+			border-radius: 8px;
+		}
+
+		#traderXpBar {
+			width: 100%;
+			height: 25px;
+			background-color: #2a2a2a;
+			border: 1px solid #555;
+			border-radius: 12px;
+			overflow: hidden;
+			position: relative;
+		}
+
+		#traderXpBarFill {
+			height: 100%;
+			width: 0%;
+			background: linear-gradient(90deg, #4CAF50, #8BC34A);
+			transition: width 0.5s ease, background-color 0.5s ease;
+		}
+
+		#traderXpBar.ready {
+			background: linear-gradient(90deg, #FFD700, #FFEC8B);
+			box-shadow: 0 0 10px #FFD700;
+		}
+		#traderXpBar.max {
+			background: linear-gradient(90deg, #dc3545, #ff6b7b);
+			box-shadow: 0 0 10px #dc3545;
+		}
+
+		#traderXpText {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-weight: bold;
+			color: white;
+			text-shadow: 1px 1px 2px black;
+			font-size: 0.9em;
+		}
+
+		#traderUpgradeButtons {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+		}
+
+		.upgrade-button {
+			padding: 10px 15px;
+			border: none;
+			border-radius: 8px;
+			font-size: 1em;
+			cursor: pointer;
+			background-color: #007bff;
+			color: white;
+			font-weight: bold;
+			transition: background-color 0.2s;
+		}
+		.upgrade-button:hover {
+			background-color: #0056b3;
+		}
+		.upgrade-button img {
+			width: 24px;
+			height: 24px;
+			vertical-align: middle;
+			margin-right: 8px;
+		}
+
+		/* --- Trader Pagination Arrows --- */
+		.trade-page-controls {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 10px;
+		}
+
+		.trade-page-arrow {
+			padding: 5px 10px;
+			font-size: 1.5em;
+			background-color: #555;
+			border: 1px solid #777;
+			color: white;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		.trade-page-arrow:disabled {
+			background-color: #333;
+			color: #666;
+			cursor: not-allowed;
+		}
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -2054,13 +2185,35 @@
 		<p id="traderDialogue" style="font-style:italic; text-align:center; margin:0 0 8px 0;">Got goods if you've got coin.</p>
 		<div id="traderOfferList"></div>
 		<div id="traderOfferCost" style="margin-top:8px;"></div>
+		<div class="trade-page-controls">
+			<button id="traderPrevPage" class="trade-page-arrow" style="display: none;">&larr;</button>
+			<span id="traderPageIndicator">Page 1/1</span>
+			<button id="traderNextPage" class="trade-page-arrow" style="display: none;">&rarr;</button>
+		</div>
+
 		<div id="traderTradeButtons" style="display:flex; justify-content:center; gap:8px; margin-top:8px;">
-		  <button id="traderAcceptButton">Accept</button>
+		  <button id="traderLevelUpButton">Levels</button>
 		  <button id="traderDeclineButton">Close</button>
-            </div>
-          </div>
 		</div>
 	  </div>
+	</div>
+	
+	<div id="traderLevelUpOverlay" oncontextmenu="return false;">
+		<div id="traderLevelUpMenu">
+			<button class="mobile-close-button" id="traderLevelUpCloseButton">X</button>
+			<h2>Trader Progression</h2>
+			
+			<img id="traderLevelUpImage" src="Trader.png" alt="Trader">
+			
+			<div id="traderXpBar">
+				<div id="traderXpBarFill"></div>
+				<span id="traderXpText">0 / 100 XP</span>
+			</div>
+			
+			<div id="traderUpgradeButtons">
+				</div>
+			<p id="traderUpgradePrompt" style="font-size: 0.9em; color: #ccc;"></p>
+		</div>
 	</div>
 	
 	<div id="anvilOverlay" oncontextmenu="return false;">
@@ -2504,6 +2657,14 @@
 		let lastAmmoTypeFired = null;
 		
 		const traderCharacterContainer = document.getElementById('traderCharacterContainer');
+		
+		// --- TRADER LEVELING CONSTANTS ---
+		const XP_PER_TRADE = 20;
+		const XP_PER_LEVEL = 100;
+		const TRADES_PER_PAGE = 5;
+		const MAX_TRADER_LEVEL = 2; // Set max level for now
+		let currentTraderTradePage = 0;
+		// --- END TRADER LEVELING ---
 		
         // Chest Menu
         const chestOverlay = document.getElementById('chestOverlay');
@@ -3383,7 +3544,6 @@
             'cobweb': { imgSrc: 'Cobweb.png', solid: false, miningHardness: 50, drops: [], color: '#EEEEEE', wallPlace: true },
             'bed': { imgSrc: 'Bed.png', solid: true, miningHardness: 100, drops: [{item: 'bed', chance: 1, min: 1, max: 1}], color: '#FF0000' },
 			'trader': { imgSrc: 'Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513' },
-			'full_trader': { imgSrc: 'Full Trader.png', solid: true, miningHardness: 120, drops: null, color: '#8B4513' },
             'chest': { imgSrc: 'Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'magical_chest': { imgSrc: 'Magical Chest.png', solid: true, miningHardness: 150, drops: [{item: 'magical_chest', chance: 1, min: 1, max: 1}], color: '#9400D3' },
             'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#483D8B' },
@@ -3398,6 +3558,7 @@
             'power_forge': { imgSrc: 'Power Forge.png', solid: true, miningHardness: 750, drops: [{item: 'power_forge', chance: 1, min: 1, max: 1}], color: '#FFD700' },
 			'item_frame': { imgSrc: 'Item Frame.png', solid: true, miningHardness: 50, drops: [{item: 'item_frame', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'world_mover': { imgSrc: 'World Mover.png', solid: true, miningHardness: 250, drops: [{item: 'world_mover', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
+			'world_builder': { imgSrc: 'World Builder.png', solid: true, miningHardness: 250, drops: [{item: 'world_builder', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
 			'napalm_bomb': { imgSrc: 'Napalm Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#FF4500', bombDamage: 3, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 90 },
 			'dynamite_bomb': { imgSrc: 'Dynamite Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#DC143C', bombDamage: 15, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 220 },
 			'octogen_bomb': { imgSrc: 'Octogen Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#FFD700', bombDamage: 45, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 180 },
@@ -3755,6 +3916,10 @@
             'blueglow_dirt_block': { imgSrc: 'Blueglow Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
 			'blueglow_grass_soil_block': { imgSrc: 'Blueglow Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'blueglow_soil_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
             'blueglow_soil_block': { imgSrc: 'Blueglow Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_soil_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
+			// BGU!
+			'b_of_creation': { imgSrc: 'B Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'b_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22 },
+			'g_of_creation': { imgSrc: 'G Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'g_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22 },
+			'u_of_creation': { imgSrc: 'U Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'u_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22 },
 			// To Be Implemented Into Future Biomes
 			// Experimental And In Waiting
 			'flesh_grass_dirt_block': { imgSrc: 'Flesh Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#FFC0CB', shovelBlock: true },
@@ -3829,6 +3994,7 @@
 			 // ---NUGGETS---
              'coal': { imgSrc: 'Coal Nugget.png', color: '#36454F' },
 			 'pure_fuel': { imgSrc: 'Pure Fuel.png', color: '#FFFF00' },
+			 'pure_condensed_fuel': { imgSrc: 'Pure Condensed Fuel.png', color: '#FFFF00' },
 			 // Metals
 			 'copper_nugget': { imgSrc: 'Copper Nugget.png', color: '#B87333' },
 			 'tin_nugget': { imgSrc: 'Tin Nugget.png', color: '#C0C0C0' },
@@ -3904,6 +4070,7 @@
 			 'tomato_sandwich': { imgSrc: 'Tomato Sandwich.png', color: '#FF6347', isFood: true, healAmount: 20 },
 			 'coffee_bean': { imgSrc: 'Coffee Bean.png', color: '#6F4E37' },
 			 'apple': { imgSrc: 'Apple.png', color: '#FF0000', isFood: true, healAmount: 4, spoilable: { into: 'plant_mush', time: 300000 } },
+			 'golden_apple': { imgSrc: 'Golden Apple.png', color: '#FF0000', isFood: true, healAmount: 100, fullHeal: true },
 			 'orange': { imgSrc: 'Orange.png', color: '#FFA500', isFood: true, healAmount: 3, spoilable: { into: 'plant_mush', time: 300000 } },
 			 'beef': { imgSrc: 'Beef.png', color: '#C04040', isFood: true, healAmount: 8, spoilable: { into: 'spoiled_beef', time: 300000 } },
 			 'spoiled_beef': { imgSrc: 'Spoiled Beef.png', color: '#556B2F', isFood: true, healAmount: -5 },
@@ -3975,6 +4142,7 @@
              'anthill_infinitungsten_pickaxe': { imgSrc: 'Anthill Infinitungsten Pickaxe.png', color: '#8B8B83', isTool: true, miningPower: 20.0, maxDurability: 320000 },
              'void_infinitungsten_pickaxe': { imgSrc: 'Void Infinitungsten Pickaxe.png', color: '#8B8B83', isTool: true, miningPower: 8.0, maxDurability: 600000 },
 			 'mythicalithium_pickaxe': { imgSrc: 'Mythicalithium Pickaxe.png', color: '#8A2BE2', isTool: true, miningPower: 22.0, maxDurability: 700000 },
+			 'miner_pickaxe': { imgSrc: 'Miner Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.9, maxDurability: 50000 },
 			 'pest': { imgSrc: 'Pest.png', color: '#6B8E23' },
 			 // ---SHOVEL SECTION---
 			 'wooden_shovel': { imgSrc: 'Wooden Shovel.png', color: '#A0522D', isTool: true, miningPower: 0.1, shovelPower: 0.2, maxDurability: 7500 },
@@ -4048,6 +4216,12 @@
              'forge_hammer': { imgSrc: 'Forge Hammer.png', color: '#A9A9A9', isTool: true, miningPower: 0.25, maxDurability: 1000 },
 			 // Misc 
              'lighter': { imgSrc: 'Lighter.png', color: '#c0c0c0', isTool: true, miningPower: 0, maxDurability: 10 },
+			 // BGU!
+			 'chestplate_of_creation': { imgSrc: 'Chestplate Of Creation Icon.png', equippedImgSrc: 'Chestplate Of Creation.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.24, maxDurability: 1000 },
+			 'soup_of_creation': { imgSrc: 'Soup Of Creation.png', color: '#00BFFF', isFood: true, healAmount: 100, addsMaxHealth: 60, fullHeal: true },
+			 'pickaxe_of_creation': { imgSrc: 'Pickaxe Of Creation.png', color: '#8A2BE2', isTool: true, miningPower: 50.0, maxDurability: 2500000 },
+			 'elemental_helmet': { imgSrc: 'Elemental Helmet Icon.png', equippedImgSrc: 'Elemental Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.24, maxDurability: 300 },
+			 'powered_elemental_helmet': { imgSrc: 'Powered Elemental Helmet Icon.png', equippedImgSrc: 'Powered Elemental Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.24, maxDurability: 500 }, // Not Actually Obtainable
 		};
 
         // Breaking stage assets for visual feedback during mining
@@ -4068,6 +4242,13 @@
             'full_heart': { imgSrc: 'Full Heart Icon.png' },
             'half_heart': { imgSrc: 'Half Heart Icon.png' },
             'empty_heart': { imgSrc: 'Empty Heart Icon.png' }
+        };
+		
+		const traderImageAssets = {
+            'Trader': { imgSrc: 'Trader.png' },
+            'Farmer Trader': { imgSrc: 'Farmer Trader.png' },
+            'Miner Trader': { imgSrc: 'Miner Trader.png' },
+            'Trader 2': { imgSrc: 'Trader 2.png' }
         };
 
         // Combine all assets to load
@@ -4146,7 +4327,7 @@
         
 		function getAssetGroups() {
 			// Add any other asset maps you use here
-			return [blockTypes, itemTypes, breakingStageAssets, healthAssets, fireAssets]; // NEW: Added fireAssets
+			return [blockTypes, itemTypes, breakingStageAssets, healthAssets, fireAssets, traderImageAssets]; // NEW: Added traderImageAssets
 		}
 
 		function loadAssets() {
@@ -8631,31 +8812,60 @@
 
 			// If the block was part of a trader, handle vertical trader breaking
 			if (blockData && blockData.type === 'trader') {
-				const [col, row] = targetKey.split(',').map(Number);
-				const part = blockData.part; // 'bottom'|'middle'|'top'
-				let bottomRow = row;
-				if (part === 'middle') bottomRow = row + 1;
-				else if (part === 'top') bottomRow = row + 2;
+                const [col, row] = targetKey.split(',').map(Number);
+                const part = blockData.part; // 'bottom'|'middle'|'top'
+                let bottomRow = row;
+                
+                // Find the bottom block of the trader
+                if (part === 'middle') bottomRow = row + 1;
+                else if (part === 'top') bottomRow = row + 2;
+                
+                const bottomKey = `${col},${bottomRow}`;
+                const traderData = worldBlocks[bottomKey];
 
-				// verify trader intact (bottom, middle, top)
-				let traderIntact = true;
-				for (let dy = 0; dy <= 2; dy++) {
-					const k = `${col},${bottomRow - dy}`; // bottomRow, bottomRow-1, bottomRow-2
-					if (!worldBlocks[k] || worldBlocks[k].type !== 'trader') {
-						traderIntact = false; break;
-					}
-				}
-				if (traderIntact) {
-					// remove all three parts
-					for (let dy = 0; dy <= 2; dy++) {
-						const k = `${col},${bottomRow - dy}`;
-						worldBlocks[k] = { type: '', mineProg: 0 };
-					}
-					// drop trader item once (or some coin/item if you'd prefer)
-					traderDropRandom = random() < 0.5 ? 'bronze_coin' : random() < 0.5 ? 'trader_mask' : 'gold_coin';
-					addToInventory(traderDropRandom, 1);
-				}
-			}
+                // Verify the trader is intact before dropping items
+                let traderIntact = (
+                    traderData && traderData.part === 'bottom' &&
+                    worldBlocks[`${col},${bottomRow - 1}`]?.type === 'trader' &&
+                    worldBlocks[`${col},${bottomRow - 2}`]?.type === 'trader'
+                );
+
+                if (traderIntact) {
+                    // Remove all three parts of the trader
+                    for (let dy = 0; dy <= 2; dy++) {
+                        const k = `${col},${bottomRow - dy}`;
+                        worldBlocks[k] = { type: '', mineProg: 0 };
+                    }
+                    
+                    // --- NEW: Smart Drop Logic ---
+                    const traderType = traderData.traderType || 'default';
+                    const traderLevel = traderData.level || 1;
+
+                    if (traderType === 'farmer') {
+                        // Farmer drops their mask
+                        addToInventory('farmer_trader_mask', 1);
+                    } else if (traderType === 'miner') {
+                        // Miner drops their mask
+                        addToInventory('miner_trader_mask', 1);
+                    } else if (traderType === 'level2') {
+                        // Level 2 trader drops one random piece of default trader armor
+                        const r = random();
+                        if (r < 0.25) addToInventory('trader_mask', 1);
+                        else if (r < 0.5) addToInventory('trader_cloak', 1);
+                        else if (r < 0.75) addToInventory('trader_pants', 1);
+                        else addToInventory('trader_shoes', 1);
+                    } else {
+                        // Default (Level 1) trader drop
+                        const traderDropRandom = random() < 0.5 ? 'bronze_coin' : random() < 0.5 ? 'trader_mask' : 'gold_coin';
+                        addToInventory(traderDropRandom, 1);
+                    }
+                    // --- END: Smart Drop Logic ---
+                }
+                
+                // After handling drops, we must return to stop the function
+                // from processing the block's *normal* drops (which are null)
+                return;
+            }
 
 
             // Handle the block's own drops
@@ -9858,6 +10068,30 @@
 				  return; // Stop block placement
 				}
 			const blockProps = blockTypes[blockAtTarget.type];
+			// --- NEW: World Builder Item-Use Logic (Tree Growing) ---
+                if (selectedItemType === 'world_builder') {
+                    if (blockAtTarget.type.startsWith('raw_')) {
+                        const treeType = blockAtTarget.type.replace('raw_', '');
+                        
+                        // Find the actual surface row *below* the raw_wood block
+                        let surfaceRow = targetRow;
+                        while(getBlockType(targetCol, surfaceRow + 1) === blockAtTarget.type) {
+                            surfaceRow++; // Find the lowest block of the trunk
+                        }
+                        // Now go one more to find the *actual* ground
+                        surfaceRow++; 
+
+                        console.log(`World Builder attempting to grow '${treeType}' tree at ${targetCol},${surfaceRow}`);
+                        
+                        // Call generateTree, pointing to the ground block
+                        generateTree(targetCol, surfaceRow, treeType);
+                        
+                        // Consume the item
+                        removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+                        mouse.rightDown = false; // Consume click
+                        return; // Stop here
+                    }
+            }
             if (blockProps && blockProps.anvilPower > 0) {
                 toggleAnvilMenu(targetCol, targetRow, blockAtTarget.type, blockProps.anvilPower);
                 mouse.rightDown = false;
@@ -9939,18 +10173,18 @@
                 mouse.rightDown = false; // Consume the right-click
                 return;
             } else if (blockAtTarget.type === 'chest_lever_off' || blockAtTarget.type === 'chest_lever_on') {
-                // Toggle the lever's state
-                const newState = blockAtTarget.type === 'chest_lever_off' ? 'chest_lever_on' : 'chest_lever_off';
-                worldBlocks[targetKey].type = newState;
-
-                // Update the network starting from the toggled lever and its neighbors
-                scheduleMechUpdate(targetCol, targetRow);
-                
+                // ... (existing code) ...
                 mouse.rightDown = false; // Consume the right-click
                 return;
-            }
-			
-			if (selectedItemType === 'lighter') {
+            
+            // --- NEW: World Builder Block-Use Logic ---
+            } else if (blockAtTarget.type === 'world_builder') {
+                handleWorldBuilderActivation(targetCol, targetRow);
+                mouse.rightDown = false;
+                return;
+            // --- END NEW ---
+
+            } else if (selectedItemType === 'lighter') {
                 const blockToIgnite = getBlockType(targetCol, targetRow);
                 const blockBelow = getBlockType(targetCol, targetRow + 1);
     
@@ -10796,6 +11030,118 @@
                 }
             }
         }
+		
+		// --- NEW: World Builder Biome Definitions ---
+        const biomeBlockPools = {
+            'soil': [ { type: 'dirt', chance: 0.5 }, { type: 'soil', chance: 0.25 }, { type: 'mud', chance: 0.2 }, { type: 'clay', chance: 0.049 }, { type: 'thick_mud', chance: 0.001 } ],
+			'stone': [ { type: 'stone', chance: 0.5 }, { type: 'stump_stone', chance: 0.15 }, { type: 'compacted_stone', chance: 0.15 }, { type: 'compressed_stone', chance: 0.1 }, { type: 'bedrock_stone', chance: 0.05 }, { type: 'compacting_stone', chance: 0.03 }, { type: 'outer_mantle_molten_stone', chance: 0.012 }, { type: 'inner_mantle_molten_stone', chance: 0.007 }, { type: 'core_molten_stone', chance: 0.001 } ],
+			'foliage': [ { type: 'grass_sprouts', chance: 0.05 }, { type: 'grass', chance: 0.4 }, { type: 'tall_grass', chance: 0.05 }, { type: 'desert_brush', chance: 0.05 }, { type: 'desert_grass', chance: 0.05 }, { type: 'fern', chance: 0.05 }, { type: 'weed', chance: 0.05 }, { type: 'pine_needle_pile', chance: 0.05 }, { type: 'moss', chance: 0.05 }, { type: 'dark_moss', chance: 0.05 }, { type: 'shroom', chance: 0.05 }, { type: 'leaf_plant', chance: 0.05 }, { type: 'leaf_pile', chance: 0.05 } ]
+			/*'deciduous_forest': [ { type: 'grass_soil', chance: 0.05 }, { type: 'grass_dirt', chance: 0.95 } ],
+            'grass_field': [ { type: 'grass_soil', chance: 0.1 }, { type: 'grass_dirt', chance: 0.9 } ],
+            'coniferous_forest': [ { type: 'taiga_grass_dirt_block_2', chance: 0.25 }, { type: 'taiga_grass_dirt_block_1', chance: 0.75 } ],
+            'rocky': [ { type: 'packed_ice', chance: 0.03 }, { type: 'rock_block', chance: 0.97 } ],
+            'muddy_swamp': [ { type: 'thick_mud', chance: 0.5 }, { type: 'mud', chance: 0.5 } ],
+            'lava_flats': [ { type: 'ash_block', chance: 0.02 }, { type: 'compacted_stone', chance: 0.1 }, { type: 'magma_stone_block', chance: 0.88 } ],
+            'salt_flats': [ { type: 'limestone', chance: 0.03 }, { type: 'salt_rock_block', chance: 0.97 } ],
+            'icy_hills': [ { type: 'ice', chance: 0.1 }, { type: 'packed_ice', chance: 0.9 } ],
+            'desert': [ { type: 'sandstone', chance: 0.2 }, { type: 'sand', chance: 0.8 } ],
+            'clay_marsh': [ { type: 'clay', chance: 1.0 } ],
+            'red_rocks': [ { type: 'red_sand_block', chance: 0.2 }, { type: 'red_sandstone_block', chance: 0.8 } ],
+            'redwood_forest': [ { type: 'taiga_grass_dirt_block_1', chance: 1.0 } ],
+            'granite_mountain': [ { type: 'aluminum_granite', chance: 0.004 }, { type: 'iron_granite', chance: 0.001 }, { type: 'granite', chance: 0.995 } ],
+            'dirt_plateau': [ { type: 'dirt', chance: 1.0 } ],
+            'anthill': [ { type: 'anthill_sand_block', chance: 0.88 }, { type: 'sand', chance: 0.04 }, { type: 'sandstone', chance: 0.039 }, { type: 'colony_heart_sand_block', chance: 0.001 }, { type: 'air', chance: 0.04 } ],
+            'overgrown_forest': [ { type: 'weed_dirt', chance: 0.3 }, { type: 'dark_moss_dirt', chance: 0.7 } ],
+            'apple_grove': [ { type: 'dark_grass_soil', chance: 0.05 }, { type: 'dark_grass_dirt', chance: 0.95 } ],
+            'rainforest': [ { type: 'surface_mud', chance: 0.9 }, { type: 'mud', chance: 0.1 } ],
+            'hell': [ { type: 'hellrock', chance: 0.05 }, { type: 'magma_stone_block', chance: 0.03 }, { type: 'hellstone', chance: 0.92 } ],
+            'golden_city': [ { type: 'gilded_grass_dirt_block', chance: 1.0 } ],
+            'meat_world': [ { type: 'meat_block', chance: 0.6 }, { type: 'spoiled_meat_block', chance: 0.35 }, { type: 'flesh_block', chance: 0.05 } ],
+            'doom_forest': [ { type: 'doom_hellstone', chance: 1.0 } ],
+            'flesh_forest': [ { type: 'flesh_hellstone', chance: 1.0 } ],
+            'ash_wastes': [ { type: 'ash_block', chance: 0.8 }, { type: 'obsidian_block', chance: 0.2 } ],
+            'magma_basin': [ { type: 'magma_stone_block', chance: 0.9 }, { type: 'obsidian_block', chance: 0.1 } ],
+            'icy_hell': [ { type: 'hell_ice', chance: 1.0 } ],
+            'cloudscape': [ { type: 'heaven_brick_block', chance: 0.01 }, { type: 'heavensteel_cloud_block', chance: 0.001 }, { type: 'diviniron_cloud_block', chance: 0.0035 }, { type: 'cloud_rock_block', chance: 0.1 }, { type: 'cloud_block', chance: 0.8855 } ],
+            'gilded_forest': [ { type: 'gilded_grass_dirt_block', chance: 1.0 } ],
+            'blueglow_forest': [ { type: 'blueglow_grass_soil_block', chance: 0.05 }, { type: 'blueglow_grass_dirt_block', chance: 0.95 } ],
+            'debris_flats': [ { type: 'pure_heaven_debris_block', chance: 0.005 }, { type: 'strong_heaven_debris_block', chance: 0.045 }, { type: 'ancient_heaven_debris_block', chance: 0.15 }, { type: 'corroded_heaven_debris_block', chance: 0.8 } ],*/
+        };
+
+        function getRandomBlockFromBiomePool(biomeName) {
+            const pool = biomeBlockPools[biomeName.toLowerCase().replace(/ /g, '_')];
+            if (!pool) return null;
+
+            const roll = random();
+            let cumulativeChance = 0;
+            for (const entry of pool) {
+                cumulativeChance += entry.chance;
+                if (roll < cumulativeChance) {
+                    return entry.type === 'air' ? '' : entry.type;
+                }
+            }
+            // Fallback just in case of rounding errors
+            return pool[pool.length - 1].type; 
+        }
+
+        function handleWorldBuilderActivation(builderCol, builderRow) {
+            const blockAboveKey = `${builderCol},${builderRow - 1}`;
+            const blockBelowKey = `${builderCol},${builderRow + 1}`;
+            
+            const blockAbove = getBlockType(builderCol, builderRow - 1);
+            const blockBelow = worldBlocks[blockBelowKey];
+
+            // 1. Check if block above is empty
+            if (blockAbove !== '') {
+                showMessageBox("The space above the World Builder must be empty.", 'alert');
+                return;
+            }
+
+            // 2. Check for Magical Chest below
+            if (!blockBelow || blockBelow.type !== 'magical_chest') {
+                showMessageBox("A Magical Chest must be placed directly below the World Builder.", 'alert');
+                return;
+            }
+
+            // 3. Check chest label for biome name
+            const biomeName = blockBelow.label ? blockBelow.label.trim() : '';
+            const blockToPlace = getRandomBlockFromBiomePool(biomeName);
+
+            if (blockToPlace === null) {
+                showMessageBox(`The chest's label "${biomeName}" is not a valid biome for the World Builder.`, 'alert');
+                return;
+            }
+
+            // 4. Check for fuel
+            const chestInventory = blockBelow.inventory;
+            let fuelSlotIndex = -1;
+            if (chestInventory) {
+                fuelSlotIndex = chestInventory.findIndex(item => item && item.type === 'pure_condensed_fuel' && item.count > 0);
+            }
+
+            if (fuelSlotIndex === -1) {
+                showMessageBox("The Magical Chest is out of Pure Condensed Fuel.", 'alert');
+                return;
+            }
+
+            // 5. All checks passed! Consume fuel and place block.
+            const fuelSlot = chestInventory[fuelSlotIndex];
+            fuelSlot.count--;
+            if (fuelSlot.count <= 0) {
+                chestInventory[fuelSlotIndex] = null;
+            }
+            
+            // Place the new block (don't place 'air' if it was selected)
+            if (blockToPlace !== '') {
+                worldBlocks[blockAboveKey] = { type: blockToPlace, mineProg: 0 };
+            }
+
+            // Create a "poof" effect
+            const originalParticleCount = particleCount;
+            particleCount = 10;
+            createBlockBreakParticles(builderCol, builderRow - 1, 'cloud_block'); // Use cloud particles for a magical effect
+            particleCount = originalParticleCount;
+        }
 
         function drawWorld() {
             // Background color change based on depth
@@ -10858,11 +11204,19 @@
                         if (blockImg && !failedAssets[displayType]) { // <-- This line was modified
                             // Special drawing for beds (3 blocks wide)
                             if (blockType === 'trader' && blockData.part === 'bottom') {
+								// --- NEW: Select correct trader image ---
+								const traderTypeKey = blockData.traderType || 'default';
+								const traderInfo = traderTypeMap[traderTypeKey] || traderTypeMap['default'];
+								// Get the asset key from the image source (e.g., "Farmer Trader.png" -> "Farmer Trader")
+								const assetKey = traderInfo.imgSrc.replace('.png', '');
+								const traderImg = assets[assetKey] || blockImg; // Fallback to default 'Trader' image
+								
 								// draw trader as 1 column wide, 3 rows tall - draw from bottom up so y shifts up 2 tiles
-								ctx.drawImage(blockImg, screenX, screenY - tileSize*2, tileSize, tileSize*3);
+								ctx.drawImage(traderImg, screenX, screenY - tileSize*2, tileSize, tileSize*3);
+								
 							} else if (blockType === 'bed' && blockData.part === 'left') {
                                 ctx.drawImage(blockImg, screenX, screenY, tileSize * 3, tileSize);
-                            } else if (blockType !== 'bed') { // Draw normal blocks
+                            } else if (blockType !== 'bed' && blockType !== 'trader') { // --- MODIFIED: Don't draw other trader parts
                                 ctx.drawImage(blockImg, screenX, screenY, tileSize, tileSize);
                             }
                         } else if (displayProps && displayProps.color) { // <-- This line was modified
@@ -11342,8 +11696,12 @@
 					toggleVoidChestMenu();
 				} else if (isGamePaused && isTraderMenuOpen === true) {
 					toggleTraderMenu();
+				} else if (isGamePaused && traderLevelUpOverlay.style.display === 'flex') {
+					closeTraderLevelUpMenu();
 				} else if (isGamePaused && gameMenuOverlay.style.display === 'flex') {
 					toggleGameMenu();
+				} else if (isGamePaused && traderLevelUpOverlay.style.display === 'flex') {
+					closeTraderLevelUpMenu();
 				} else {
 					toggleGameMenu();
 				}
@@ -11554,6 +11912,10 @@
 				input: { 0: { type: 'chili_pepper', count: 1 } },
 				output: 'chili_pepper_seeds', outputCount: 2
 			},
+			{ name: "Golden Apple",
+                input: { 0: { type: 'gold_nugget', count: 1 }, 1: { type: 'gold_nugget', count: 1 }, 2: { type: 'gold_nugget', count: 1 }, 3: { type: 'gold_nugget', count: 1 }, 4: { type: 'gold_nugget', count: 1 }, 5: { type: 'apple', count: 1 }, 6: { type: 'apple', count: 1 }, 7: { type: 'gold_nugget', count: 1 }, 8: { type: 'gold_nugget', count: 1 }, 9: { type: 'apple', count: 1 }, 10: { type: 'apple', count: 1 }, 11: { type: 'gold_nugget', count: 1 }, 12: { type: 'gold_nugget', count: 1 }, 13: { type: 'gold_nugget', count: 1 }, 14: { type: 'gold_nugget', count: 1 }, 15: { type: 'gold_nugget', count: 1 } },
+                output: 'golden_apple', outputCount: 1
+            },
 			{ name: "Bronze Coins", 
                 input: { 0: { type: 'bronze_nugget', count: 1 } },
                 output: 'bronze_coin', outputCount: 10,
@@ -11577,6 +11939,10 @@
             { name: "Pure Fuel",
 				input: { 0: { type: 'leaf', count: 5 } },
 				output: 'pure_fuel', outputCount: 1
+			},
+			{ name: "Pure Condensed Fuel",
+				input: { 0: { type: 'pure_fuel', count: 5 } },
+				output: 'pure_condensed_fuel', outputCount: 1
 			},
             { name: "Paper",
 				input: { 0: { type: 'any_plank', count: 1 }, 3: { type: 'any_plank', count: 1 } },
@@ -12155,6 +12521,18 @@
                 input: { 0: { type: 'light_concrete', count: 3 }, 1: { type: 'blue_flower', count: 1 }, 2: { type: 'green_flower', count: 1 } },
                 output: 'cyan_light_concrete', outputCount: 3,
             },
+			{ name: "Pickaxe Of Creation",
+                input: { 0: { type: 'b_of_creation', count: 1 }, 1: { type: 'mythicalithium_pickaxe', count: 1 } },
+                output: 'pickaxe_of_creation', outputCount: 1
+            },
+			{ name: "Soup Of Creation",
+                input: { 0: { type: 'g_of_creation', count: 1 }, 1: { type: 'power_soup', count: 1 } },
+                output: 'soup_of_creation', outputCount: 1
+            },
+			{ name: "Chestplate Of Creation",
+                input: { 0: { type: 'u_of_creation', count: 1 }, 1: { type: 'diviniron_chestplate', count: 1 } },
+                output: 'chestplate_of_creation', outputCount: 1
+            },
         ];
 		const anvilRecipes = [
 			{ name: "Rock Block",
@@ -12461,6 +12839,11 @@
 				fuel: 1,
                 output: 'light_boots', outputCount: 1,
             },
+			{ name: "Elemental Helmet",
+				fuel: 10,
+                input: { 0: { type: 'nickel_nugget', count: 1 }, 1: { type: 'impotent_orb', count: 1 }, 2: { type: 'nickel_nugget', count: 1 }, 3: { type: 'nickel_nugget', count: 1 }, 4: { type: 'armor_tile', count: 1 }, 5: { type: 'nickel_nugget', count: 1 } },
+                output: 'elemental_helmet', outputCount: 1,
+            },
 		];
 		const traderTrades = [
 			// Money For Trade
@@ -12505,48 +12888,81 @@
 			// Butter
 			{ input: { type: 'dirt', count: 120 }, output: { type: 'butter', count: 1 } },
 		];
+		// This array is for the 'Level 2' (default) trader upgrade
 		const level2TraderTrades = [
+			// Money For Trade
+			{ input: { type: 'book', count: 1 }, output: { type: 'gold_coin', count: 3 } },
+			// Nuggets For Sale
 			{ input: { type: 'gold_coin', count: 50 }, output: { type: 'diamond_nugget', count: 1 } },
-			{ input: { type: 'steel_pickaxe', count: 1 }, output: { type: 'ruby_plated_steel_pickaxe', count: 1 } }
-			// ... add 5 or more trades here
+			// Tools For Trade
+			{ input: { type: 'rock_pickaxe', count: 15 }, output: { type: 'ruby_plated_steel_pickaxe', count: 1 } },
+			// Miscalleneous For Sale
+			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'nitro_powder', count: 15 } },
+			// Miscalleneous For Trade
+			{ input: { type: 'void_dust', count: 20 }, output: { type: 'void_crystal', count: 1 } },
 		];
         const farmerTraderTrades = [
-			{ input: { type: 'bronze_coin', count: 5 }, output: { type: 'wheat_seeds', count: 10 } },
-			{ input: { type: 'bronze_coin', count: 5 }, output: { type: 'cotton_seeds', count: 10 } },
-			{ input: { type: 'gold_coin', count: 1 }, output: { type: 'pumpkin_seeds', count: 8 } },
-			{ input: { type: 'apple', count: 15 }, output: { type: 'fertilizer', count: 5 } },
+			// Seeds For Sale
+			{ input: { type: 'bronze_coin', count: 2 }, output: { type: 'wheat_seeds', count: 3 } },
+			{ input: { type: 'bronze_coin', count: 3 }, output: { type: 'cotton_seeds', count: 1 } },
+			{ input: { type: 'gold_coin', count: 1 }, output: { type: 'pumpkin_seeds', count: 3 } },
+			// Farm Assets For Sale
 			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'refrigerator', count: 1 } },
+			// Farm Assets For Trade
+			{ input: { type: 'orange', count: 15 }, output: { type: 'fertilizer', count: 5 } },
 		];
-
 		const minerTraderTrades = [
-			{ input: { type: 'gold_coin', count: 2 }, output: { type: 'coal', count: 25 } },
-			{ input: { type: 'iron_nugget', count: 10 }, output: { type: 'rock_pickaxe', count: 1 } },
-			{ input: { type: 'gold_coin', count: 8 }, output: { type: 'iron_pickaxe', count: 1 } },
-			{ input: { type: 'diamond_nugget', count: 6 }, output: { type: 'emerald_nugget', count: 3 } },
-			{ input: { type: 'wooden_stick', count: 30 }, output: { type: 'planked_oak', count: 9 } },
-		];
-
-		// This defines our trader types, their appearance, and their trades.
-		const traderTypes = [
-			{ name: 'Trader', imgSrc: 'Trader.png', trades: traderTrades },
-			{ name: 'Farmer', imgSrc: 'Farmer Trader.png', trades: farmerTraderTrades },
-			{ name: 'Miner', imgSrc: 'Miner Trader.png', trades: minerTraderTrades },
-			{ name: 'Full_Trader', imgSrc: 'Full Trader.png', trades: minerTraderTrades },
+			// Tools For Sale
+			{ input: { type: 'gold_coin', count: 12 }, output: { type: 'miner_pickaxe', count: 1 } },
+			// Tools For Trade
+			{ input: { type: 'jade_nugget', count: 1 }, output: { type: 'heavenrock_pickaxe', count: 2 } },
+			// Minerals For Trade
+			{ input: { type: 'diamond_nugget', count: 5 }, output: { type: 'emerald_nugget', count: 2 } },
+			// Minerals For Sale
+			{ input: { type: 'gold_coin', count: 2 }, output: { type: 'coal', count: 5 } },
+			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'rock_block', count: 24 } },
 		];
 		
-		// Choose N random trades (no duplicates)
-		function pickRandomTradesFromPool(count = 5) {
-			if (!Array.isArray(traderTrades) || traderTrades.length === 0) return [];
-			const pool = traderTrades.slice();
+		// This defines our trader types, their appearance, and their trades.
+		const traderTypes = [
+			{ name: 'Trader', key: 'default', imgSrc: 'Trader.png', trades: [traderTrades] },
+			{ name: 'Farmer', key: 'farmer', imgSrc: 'Farmer Trader.png', trades: [farmerTraderTrades] },
+			{ name: 'Miner', key: 'miner', imgSrc: 'Miner Trader.png', trades: [minerTraderTrades] },
+			{ name: 'Trader Lvl. 2', key: 'level2', imgSrc: 'Trader 2.png', trades: [traderTrades, level2TraderTrades] },
+		];
+		
+		// --- NEW: Chooses N random, non-repeating trades from a pool ---
+		function pickRandomTradesFromPool(pool, count) {
+			if (!Array.isArray(pool) || pool.length === 0) return [];
+			
+			const available = pool.slice(); // Create a copy to avoid modifying the original
 			const picks = [];
-			for (let i = 0; i < Math.min(count, pool.length); i++) {
-				const idx = Math.floor(random() * pool.length);
-				picks.push(JSON.parse(JSON.stringify(pool[idx]))); // deep copy
-				pool.splice(idx, 1);
+			const numToPick = Math.min(count, available.length); // Don't try to pick more than available
+			
+			for (let i = 0; i < numToPick; i++) {
+				const idx = Math.floor(random() * available.length);
+				// Deep copy the trade and add it
+				picks.push(JSON.parse(JSON.stringify(available[idx]))); 
+				// Remove from the available pool so it can't be picked again
+				available.splice(idx, 1);
 			}
 			return picks;
 		}
+		
+		// Create a map for easy lookup by key
+		const traderTypeMap = {};
+		traderTypes.forEach(t => { traderTypeMap[t.key] = t; });
+		
+        // NEW: A map linking the type key to its specific trade POOL
+        const traderTradePools = {
+            'default': traderTrades,
+            'farmer': farmerTraderTrades,
+            'miner': minerTraderTrades,
+            'level2': level2TraderTrades
+        };
 
+		// Place a vertical 1x3 trader at (col,row) such that `row` is the bottom block row.
+		// Returns true if placed.
 		// Place a vertical 1x3 trader at (col,row) such that `row` is the bottom block row.
 		// Returns true if placed.
 		function placeTraderAt(col, row, presetTrades = null) {
@@ -12562,9 +12978,14 @@
 			const playerRect = { x: player.x, y: player.y, width: playerWidth, height: playerHeight };
 			if (rectIntersects(playerRect, placementRect)) return false;
 
-			const trades = presetTrades || pickRandomTradesFromPool(5);
+			// --- NEW LOGIC: ---
+			// If presetTrades are provided (e.g., from a command), use them.
+			// Otherwise, generate a new set of 5 random trades for this Level 1 trader.
+			// We wrap it in an array to match the multi-page format: [ [page1_trades] ]
+			const tradesToAssign = presetTrades ? presetTrades : [pickRandomTradesFromPool(traderTrades, 5)];
+			// --- END NEW LOGIC ---
 
-			worldBlocks[`${col},${row}`]     = { type: 'trader', part: 'bottom', mineProg: 0, trades: trades };
+			worldBlocks[`${col},${row}`]     = { type: 'trader', part: 'bottom', mineProg: 0, trades: tradesToAssign, traderType: 'default', level: 1, xp: 0 };
 			worldBlocks[`${col},${row-1}`]   = { type: 'trader', part: 'middle', mineProg: 0 };
 			worldBlocks[`${col},${row-2}`]   = { type: 'trader', part: 'top', mineProg: 0 };
 			return true;
@@ -14179,6 +14600,7 @@
 				traderCharacterContainer.style.display = 'flex';
 				updateTraderMenu();
 				animateTraderCharacter(); // start bobbing
+				currentTraderTradePage = 0; // Reset trade page
 			} else {
 				isTraderMenuOpen = false;
 				traderCharacterContainer.style.display = 'none';
@@ -14208,35 +14630,48 @@
 				return;
 			}
 
+			// Get trader data
+			const traderTypeKey = bottomBlock.traderType || 'default';
+			const traderInfo = traderTypeMap[traderTypeKey] || traderTypeMap['default'];
+			
+			// Update trader character image
+			document.getElementById('traderCharacter').src = traderInfo.imgSrc;
+			document.getElementById('traderDialogue').textContent = traderInfo.name; // Show trader type
+
 			const offerList = document.getElementById('traderOfferList');
 			offerList.innerHTML = ''; // Clear previous offers
 			
-			// Use the trader's stored trades, or generate new ones if they don't exist
-			if (!bottomBlock.trades) {
-				bottomBlock.trades = pickRandomTradesFromPool(5);
-			}
-			const trades = bottomBlock.trades;
+			// --- Pagination Logic ---
+			const allTradePages = bottomBlock.trades || traderInfo.trades; // Use block's trades first!
+			const numPages = allTradePages.length;
+			
+			// Ensure page is valid
+			if (currentTraderTradePage >= numPages) currentTraderTradePage = numPages - 1;
+			if (currentTraderTradePage < 0) currentTraderTradePage = 0;
 
-			trades.forEach((trade, index) => {
+			const currentTradeList = allTradePages[currentTraderTradePage] || [];
+
+			// --- Button References ---
+			const prevPageButton = document.getElementById('traderPrevPage');
+			const nextPageButton = document.getElementById('traderNextPage');
+			const pageIndicator = document.getElementById('traderPageIndicator');
+			const levelUpButton = document.getElementById('traderLevelUpButton');
+
+			// --- Render Trades for Current Page ---
+			currentTradeList.forEach((trade, index) => {
 				const tradeRow = document.createElement('div');
 				tradeRow.className = 'trade-row';
 
-				// 1. Create Input Item Slot
 				const inputSlot = createInventorySlot(trade.input, -1, 'trade_ui');
-				
-				// 2. Create Arrow
 				const arrow = document.createElement('span');
 				arrow.className = 'trade-arrow';
-				arrow.innerHTML = '&rarr;'; // Right arrow
-
-				// 3. Create Output Item Slot
+				arrow.innerHTML = '&rarr;';
 				const outputSlot = createInventorySlot(trade.output, -1, 'trade_ui');
 
-				// 4. Create Accept Button
 				const acceptButton = document.createElement('button');
 				acceptButton.textContent = 'Trade';
 				
-				// Check if player can afford it and disable button if not
+				// Check affordability
 				let playerHas = 0;
 				inventorySlots.forEach(item => {
 					if (item && item.type === trade.input.type) {
@@ -14253,7 +14688,7 @@
 					inventorySlots.forEach(item => { if (item && item.type === trade.input.type) currentHas += item.count; });
 
 					if (currentHas >= trade.input.count) {
-						// Remove cost from player inventory
+						// Remove cost
 						let remainingCost = trade.input.count;
 						for (let i = inventorySlots.length - 1; i >= 0; i--) {
 							const item = inventorySlots[i];
@@ -14266,12 +14701,15 @@
 							}
 						}
 						
-						// Add output to player inventory
+						// Add output
 						addToInventory(trade.output.type, trade.output.count);
+						
+						// --- ADD XP ---
+						bottomBlock.xp = (bottomBlock.xp || 0) + XP_PER_TRADE;
 						
 						unlockAchievement('BARTERIN_TIME');
 						
-						// Refresh the menu UI
+						// Refresh UI
 						updateTraderMenu();
 						syncHotbarIndices();
 					} else {
@@ -14280,24 +14718,58 @@
 					}
 				};
 
-				// Assemble the row
 				tradeRow.appendChild(inputSlot);
 				tradeRow.appendChild(arrow);
 				tradeRow.appendChild(outputSlot);
 				tradeRow.appendChild(acceptButton);
-				
 				offerList.appendChild(tradeRow);
 			});
+
+			// --- Update Pagination & Level Button ---
+			pageIndicator.textContent = `Page ${currentTraderTradePage + 1}/${numPages}`;
+			
+			prevPageButton.style.display = (numPages > 1) ? 'block' : 'none';
+			nextPageButton.style.display = (numPages > 1) ? 'block' : 'none';
+			
+			prevPageButton.disabled = (currentTraderTradePage === 0);
+			nextPageButton.disabled = (currentTraderTradePage === numPages - 1);
+
+			prevPageButton.onclick = () => { currentTraderTradePage--; updateTraderMenu(); };
+			nextPageButton.onclick = () => { currentTraderTradePage++; updateTraderMenu(); };
+
+			levelUpButton.textContent = 'Levels';
+			levelUpButton.onclick = () => { openTraderLevelUpMenu(bottomBlock); };
 		}
 
 		// bobbing
 		function animateTraderCharacter() {
-			if (!isTraderMenuOpen) {
+			if (!isTraderMenuOpen || !currentTraderRef) {
 				traderBob = 0;
 				traderBobDirection = 1;
 				document.getElementById('traderCharacterContainer').style.bottom = '20px';
 				return;
 			}
+
+			// --- NEW: Update image source ---
+			try {
+				const { col, row } = currentTraderRef;
+				let bottomRow = row;
+				const middleBlock = worldBlocks[`${col},${row-1}`];
+				const topBlock = worldBlocks[`${col},${row-2}`];
+				if (middleBlock && middleBlock.type === 'trader' && middleBlock.part === 'bottom') bottomRow = row - 1;
+				if (topBlock && topBlock.type === 'trader' && topBlock.part === 'bottom') bottomRow = row - 2;
+				const bottomBlock = worldBlocks[`${col},${bottomRow}`];
+				
+				if (bottomBlock && bottomBlock.traderType) {
+					const traderInfo = traderTypeMap[bottomBlock.traderType] || traderTypeMap['default'];
+					const charImg = document.getElementById('traderCharacter');
+					if (charImg.src !== traderInfo.imgSrc) {
+						charImg.src = traderInfo.imgSrc;
+					}
+				}
+			} catch (e) { /* ignore errors during animation */ }
+			// --- END NEW ---
+
 			traderBob += 0.25 * traderBobDirection;
 			if (traderBob > 6) traderBobDirection = -1;
 			if (traderBob < -2) traderBobDirection = 1;
@@ -15910,6 +16382,30 @@
 				grid.appendChild(slot);
 			}
 		}
+		
+		function placeBGU() {
+			let col = -1;
+			let row = 1500;
+			let key = `${col},${row}`;
+			worldBlocks[key] = {
+				type: 'b_of_creation',
+				mineProg: 0,
+			};
+			col = 0;
+			row = 1500;
+			key = `${col},${row}`;
+			worldBlocks[key] = {
+				type: 'g_of_creation',
+				mineProg: 0,
+			};
+			col = 1;
+			row = 1500;
+			key = `${col},${row}`;
+			worldBlocks[key] = {
+				type: 'u_of_creation',
+				mineProg: 0,
+			};
+		}
 
         function init() {
             resizeCanvas();
@@ -15952,6 +16448,13 @@
 				e.stopPropagation();
 				toggleXPMenu();
 			});
+			document.getElementById('traderLevelUpCloseButton').addEventListener('click', closeTraderLevelUpMenu);
+			document.getElementById('traderLevelUpCloseButton').addEventListener('touchstart', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				closeTraderLevelUpMenu();
+			});
+			placeBGU();
         }
 		
 		loadSavedSkin();
@@ -15978,8 +16481,11 @@
                 if (block.published) sanitizedBlock.pub = block.published;
                 if (block.title) sanitizedBlock.tit = block.title;
                 if (block.cover) sanitizedBlock.cov = block.cover;
-
                 if (block.item) sanitizedBlock.itm = block.item;
+				if (block.traderType) sanitizedBlock.tty = block.traderType;
+				if (block.level) sanitizedBlock.lvl = block.level;
+				if (block.xp) sanitizedBlock.xp = block.xp;
+				if (block.trades) sanitizedBlock.trd = block.trades; // Save the trades
                 
                 sanitizedWorldBlocks[key] = sanitizedBlock;
             }
@@ -16101,7 +16607,38 @@
                     part: sBlock.prt,
                     plantTime: sBlock.pT,
                     baseBlockType: sBlock.bBT,
-                    code: sBlock.cd
+                    code: sBlock.cd,
+					traderType: sBlock.tty || 'default',
+					level: sBlock.lvl || 1,
+					xp: sBlock.xp || 0,
+					trades: (() => {
+						// This IIFE (Immediately Invoked Function Expression)
+						// determines the correct trades to load.
+						
+						// 1. If trades are saved, load them.
+						if (sBlock.trd) {
+							return sBlock.trd;
+						}
+						
+						// 2. If no trades are saved (old save), generate them based on type.
+						const traderType = sBlock.tty || 'default';
+						if (traderType === 'default') {
+							// This is a Lvl 1 trader from an old save, give it 5 new random trades.
+							return [pickRandomTradesFromPool(traderTrades, 5)];
+						}
+						if (traderType === 'farmer') {
+							return [farmerTraderTrades];
+						}
+						if (traderType === 'miner') {
+							return [minerTraderTrades];
+						}
+						if (traderType === 'level2') {
+							return [traderTrades, level2TraderTrades];
+						}
+						
+						// Fallback for any other Lvl 1 trader (just in case)
+						return [pickRandomTradesFromPool(traderTrades, 5)];
+					})(),
                 };
                 if (sBlock.clk) newBlock.cloakedAs = sBlock.clk;
                 if (sBlock.ovr) newBlock.overlay = sBlock.ovr;
@@ -16349,6 +16886,10 @@
               if (block.cover) sanitizedBlock.cov = block.cover;
 
               if (block.item) sanitizedBlock.itm = block.item;
+			  if (block.traderType) sanitizedBlock.tty = block.traderType;
+			  if (block.level) sanitizedBlock.lvl = block.level;
+			  if (block.xp) sanitizedBlock.xp = block.xp;
+			  if (block.trades) sanitizedBlock.trd = block.trades; // Save the trades
                 
               sanitizedWorldBlocks[key] = sanitizedBlock;
             }
@@ -17105,8 +17646,143 @@
                 subMenu.classList.remove('show');
             });
             // --- END OF ADDITION ---
-
         }
+		
+		// --- NEW TRADER LEVEL UP FUNCTIONS ---
+
+		function openTraderLevelUpMenu(traderData) {
+			const overlay = document.getElementById('traderLevelUpOverlay');
+			overlay.style.display = 'flex';
+			updateTraderLevelUpMenu(traderData);
+		}
+
+		function closeTraderLevelUpMenu() {
+			const overlay = document.getElementById('traderLevelUpOverlay');
+			overlay.style.display = 'none';
+		}
+
+		function updateTraderLevelUpMenu(traderData) {
+			if (!traderData) {
+				// Find the trader data if not passed
+				if (!currentTraderRef) return;
+				const { col, row } = currentTraderRef;
+				let bottomRow = row;
+				const middleBlock = worldBlocks[`${col},${row-1}`];
+				const topBlock = worldBlocks[`${col},${row-2}`];
+				if (middleBlock && middleBlock.type === 'trader' && middleBlock.part === 'bottom') bottomRow = row - 1;
+				if (topBlock && topBlock.type === 'trader' && topBlock.part === 'bottom') bottomRow = row - 2;
+				traderData = worldBlocks[`${col},${bottomRow}`];
+				if (!traderData) return;
+			}
+
+			const imgEl = document.getElementById('traderLevelUpImage');
+			const barFillEl = document.getElementById('traderXpBarFill');
+			const barEl = document.getElementById('traderXpBar');
+			const textEl = document.getElementById('traderXpText');
+			const buttonsEl = document.getElementById('traderUpgradeButtons');
+			const promptEl = document.getElementById('traderUpgradePrompt');
+
+			const traderTypeKey = traderData.traderType || 'default';
+			const traderInfo = traderTypeMap[traderTypeKey] || traderTypeMap['default'];
+			const traderLevel = traderData.level || 1;
+			const traderXp = traderData.xp || 0;
+			
+			imgEl.src = traderInfo.imgSrc;
+			buttonsEl.innerHTML = ''; // Clear old buttons
+			barEl.classList.remove('ready', 'max');
+
+			const canLevelUp = traderXp >= XP_PER_LEVEL;
+
+			if (traderLevel >= MAX_TRADER_LEVEL) {
+				barEl.classList.add('max');
+				barFillEl.style.width = '100%';
+				textEl.textContent = 'MAX LEVEL';
+				promptEl.textContent = 'This trader has reached their maximum potential.';
+			} else if (canLevelUp) {
+				barEl.classList.add('ready');
+				barFillEl.style.width = '100%';
+				textEl.textContent = `Ready to Upgrade! (${traderXp} XP)`;
+				promptEl.textContent = 'Choose an upgrade for this trader:';
+
+				// --- Define Upgrades ---
+				let upgrades = [];
+				if (traderLevel === 1) {
+					upgrades = [
+						{ name: 'Farmer', type: 'farmer', level: 2, icon: 'Farmer Trader.png' },
+						{ name: 'Miner', type: 'miner', level: 2, icon: 'Miner Trader.png' },
+						{ name: 'Lvl. 2', type: 'level2', level: 2, icon: 'Trader 2.png' }
+					];
+				}
+				// Example for future:
+				// else if (traderLevel === 2) {
+				//     if (traderTypeKey === 'farmer') {
+				//         upgrades = [{ name: 'Farmer Lvl. 3', type: 'farmer3', level: 3, icon: '...' }];
+				//     } else {
+				//         upgrades = [{ name: 'Lvl. 3', type: 'level3', level: 3, icon: '...' }];
+				//     }
+				// }
+
+				// Create buttons
+				upgrades.forEach(upg => {
+					const btn = document.createElement('button');
+					btn.className = 'upgrade-button';
+					
+					// Try to find icon in assets
+					const iconKey = upg.icon.replace('.png', '');
+					const asset = assets[iconKey];
+					
+					let iconHtml = '';
+					if (asset) {
+						iconHtml = `<img src="${asset.src}" alt="${upg.name}">`;
+					}
+
+					btn.innerHTML = `${iconHtml}${upg.name}`;
+					btn.onclick = () => {
+						upgradeTrader(traderData, upg.type, upg.level);
+					};
+					buttonsEl.appendChild(btn);
+				});
+
+			} else {
+				const xpPercent = (traderXp / XP_PER_LEVEL) * 100;
+				barFillEl.style.width = `${xpPercent}%`;
+				textEl.textContent = `${traderXp} / ${XP_PER_LEVEL} XP`;
+				promptEl.textContent = `Trade with this trader to gain XP and level them up.`;
+			}
+		}
+
+		function upgradeTrader(traderData, newType, newLevel) {
+            if (!traderData || traderData.xp < XP_PER_LEVEL) return;
+
+            // 1. Consume XP and set new level/type
+            traderData.xp -= XP_PER_LEVEL;
+            traderData.traderType = newType;
+            traderData.level = newLevel;
+
+            // 2. Find the correct trade pool for the new type
+            const newTradePool = traderTradePools[newType];
+            if (!newTradePool) {
+                console.error("No trade pool found for type:", newType);
+                return; // Safety exit
+            }
+
+            // 3. Pick 3 new random trades from that pool
+            // We use the (now fixed) correct function
+            const newPageOfTrades = pickRandomTradesFromPool(newTradePool, 3);
+
+            // 4. Add these 3 trades as a new page
+            if (!traderData.trades) {
+                // This shouldn't happen, but as a fallback, create the array
+                traderData.trades = [];
+            }
+            traderData.trades.push(newPageOfTrades); // This adds the new page
+
+            // 5. Close the level menu and refresh the trade menu
+            closeTraderLevelUpMenu();
+            updateTraderMenu(); // Refresh main trade menu
+        }
+
+		// --- END NEW TRADER FUNCTIONS ---
 		
         setupMapListeners();
 		setupMobileControls();
