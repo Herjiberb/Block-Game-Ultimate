@@ -785,6 +785,60 @@
         .matrix-theme .bottom-left-logo {
             filter: hue-rotate(120deg) brightness(1.2) drop-shadow(0 0 5px #00ff00);
         }
+		.save-card {
+			background-color: #3e5039;
+			border: 2px solid #555;
+			border-radius: 0.5rem;
+			overflow: hidden;
+			transition: transform 0.2s, border-color 0.2s;
+			display: flex;
+			flex-direction: column;
+		}
+		.save-card:hover {
+			transform: translateY(-2px);
+			border-color: #90ee90;
+		}
+		.save-thumb {
+			width: 100%;
+			height: 120px;
+			object-fit: cover;
+			background-color: #000;
+		}
+		.save-info {
+			padding: 0.75rem;
+			flex-grow: 1;
+		}
+		.save-name {
+			font-weight: bold;
+			font-size: 1.1rem;
+			color: #facc15;
+			margin-bottom: 0.25rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.save-date {
+			font-size: 0.8rem;
+			color: #bbb;
+			margin-bottom: 0.75rem;
+		}
+		.save-actions {
+			display: flex;
+			gap: 0.5rem;
+			justify-content: space-between;
+		}
+		.save-btn {
+			padding: 0.4rem;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-weight: bold;
+			font-size: 0.8rem;
+			flex-grow: 1;
+		}
+		.btn-play { background-color: #28a745; color: white; }
+		.btn-edit { background-color: #ffc107; color: black; }
+		.btn-del { background-color: #dc3545; color: white; }
 </style>
 </head>
 <body>
@@ -804,6 +858,10 @@
     <button class="sidebar-button" onclick="openAboutModal()">
         <img src="About Icon.png" alt="About" class="sidebar-icon"/> About
     </button>
+	
+	<button class="sidebar-button" onclick="openProfileModal()">
+		<img src="Elemental Helmet.png" alt="Profile" class="sidebar-icon"/> Profile / Saves
+	</button>
 </div>
 
 
@@ -967,6 +1025,22 @@
     </div>
 </div>
 
+<div id="profile-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 800px; max-height: 85vh; overflow-hidden; display:flex; flex-direction:column;">
+        <button class="modal-close" onclick="closeProfileModal()">✕</button>
+        <div class="modal-title">My Worlds</div>
+        
+        <div id="storage-usage" style="text-align:right; color:#aaa; font-size:0.9rem; margin-bottom:10px;">Storage: Calculating...</div>
+
+        <div id="save-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; overflow-y: auto; padding: 10px;">
+            </div>
+        
+        <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 10px;">
+            <p style="font-size: 0.9rem; color: #ccc;">Note: Saves are stored in your browser. Clearing browser data will delete them.</p>
+        </div>
+    </div>
+</div>
+
 <div id="faq-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 700px; max-height: 80%; overflow-y: auto;">
         <button class="modal-close" onclick="closeFAQModal()">✕</button>
@@ -1105,7 +1179,7 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world makers, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes.",
+            notes: "Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world makers, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes. Added local launcher profile saving with world thumbnails. Added placeable laying players that can be turned into skeletons with... THE SWORD!!! Swords are especially good for bone and living tissue (but not those pesky shovelable meat blocks).",
 		},
 		{ 
             name: "The Vibrant Guano Ordinance (Version ###)", 
@@ -1270,7 +1344,146 @@
         closeAboutModal(); // NEW
     }
 
+	// --- PROFILE SYSTEM ---
 
+	function openProfileModal() {
+		closeAllModals();
+		const modal = document.getElementById('profile-modal');
+		modal.style.display = 'flex';
+		setTimeout(() => modal.classList.add('open'), 10);
+		renderProfileSaves();
+	}
+
+	function closeProfileModal() {
+		const modal = document.getElementById('profile-modal');
+		modal.classList.remove('open');
+		setTimeout(() => { 
+			if(!modal.classList.contains('open')) modal.style.display = 'none'; 
+		}, 300);
+	}
+
+	function renderProfileSaves() {
+		const grid = document.getElementById('save-grid');
+		grid.innerHTML = '';
+		
+		// Find all BGU saves
+		const saves = [];
+		let totalBytes = 0;
+
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key.startsWith('bgu_save_')) {
+				try {
+					const raw = localStorage.getItem(key);
+					totalBytes += raw.length * 2; // Approx char size
+					const data = JSON.parse(raw);
+					saves.push(data);
+				} catch(e) { console.error("Corrupt save", key); }
+			}
+		}
+
+		// Update storage usage text
+		const mbUsed = (totalBytes / 1024 / 1024).toFixed(2);
+		document.getElementById('storage-usage').textContent = `Local Storage Used: ~${mbUsed} MB`;
+
+		// Sort by date (newest first)
+		saves.sort((a, b) => b.date - a.date);
+
+		if (saves.length === 0) {
+			grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 2rem; color: #888;">No saved worlds found.<br>Play the game and use "Save to Profile" in the menu!</div>';
+			return;
+		}
+
+		saves.forEach(save => {
+			const card = document.createElement('div');
+			card.className = 'save-card';
+			
+			const dateStr = new Date(save.date).toLocaleDateString() + ' ' + new Date(save.date).toLocaleTimeString();
+
+			card.innerHTML = `
+				<img src="${save.thumbnail || 'Stone Block.png'}" class="save-thumb" alt="World">
+				<div class="save-info">
+					<div class="save-name" title="${save.name}">${save.name}</div>
+					<div class="save-date">${dateStr}</div>
+					<div class="save-actions">
+						<button class="save-btn btn-play" onclick="launchProfileSave('${save.id}')">PLAY</button>
+						<button class="save-btn btn-edit" onclick="renameSave('${save.id}')">EDIT</button>
+						<button class="save-btn btn-del" onclick="deleteSave('${save.id}')">DEL</button>
+					</div>
+					<input type="file" id="thumb-${save.id}" accept="image/*" style="display:none" onchange="updateSaveThumbnail('${save.id}', this)">
+				</div>
+			`;
+			grid.appendChild(card);
+		});
+	}
+
+	function launchProfileSave(saveId) {
+		// Set a flag that the Game will check upon initialization
+		localStorage.setItem('bgu_load_request', saveId);
+		
+		// Launch the game (Assuming Main Build)
+		// You might want to store which "version" created the save, 
+		// but for now we assume standard BGU.
+		launchContent('Block Game Ultimate.html');
+	}
+
+	function deleteSave(saveId) {
+		if(confirm("Are you sure you want to delete this world permanently?")) {
+			localStorage.removeItem(saveId);
+			renderProfileSaves();
+		}
+	}
+
+	function renameSave(saveId) {
+		const raw = localStorage.getItem(saveId);
+		if (!raw) return;
+		const data = JSON.parse(raw);
+		
+		const newName = prompt("Rename World:", data.name);
+		if (newName) {
+			data.name = newName;
+			localStorage.setItem(saveId, JSON.stringify(data));
+			renderProfileSaves();
+		}
+		
+		// Also offer to change thumbnail
+		if(confirm("Do you want to upload a custom thumbnail image for this world?")) {
+			document.getElementById(`thumb-${saveId}`).click();
+		}
+	}
+
+	function updateSaveThumbnail(saveId, inputElement) {
+		const file = inputElement.files[0];
+		if (!file) return;
+		
+		const reader = new FileReader();
+		reader.onload = function(e) {
+			// Resize image to save space (Max 200px width)
+			const img = new Image();
+			img.onload = function() {
+				const canvas = document.createElement('canvas');
+				const scale = 200 / img.width;
+				canvas.width = 200;
+				canvas.height = img.height * scale;
+				const ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+				
+				const thumbData = canvas.toDataURL('image/jpeg', 0.7);
+				
+				// Update Save
+				const raw = localStorage.getItem(saveId);
+				if(raw) {
+					const data = JSON.parse(raw);
+					data.thumbnail = thumbData;
+					localStorage.setItem(saveId, JSON.stringify(data));
+					renderProfileSaves();
+				}
+			};
+			img.src = e.target.result;
+		};
+		reader.readAsDataURL(file);
+	}
+	
     /**
      * Hides the launcher UI and loads the content (game, gallery, or snapshot) into the iframe.
      * @param {string} contentPath - The filename to load (e.g., "Block Game Ultimate.html").

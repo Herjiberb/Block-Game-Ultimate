@@ -2050,6 +2050,23 @@
             <label style="margin-top: 10px; display: flex; align-items: center; justify-content: center;">
 				<input type="checkbox" id="autosaveCheckbox" style="margin-right: 8px;"> Autosave World
 			</label>
+			<div class="menu-item" style="margin-bottom: 15px; border-top: 1px solid #555; padding-top: 15px;">
+				<h3 style="margin: 0 0 10px 0; color: #00BFFF; text-align:center;">Save to Profile</h3>
+				
+				<input type="text" id="profileSaveName" placeholder="Save Name (e.g. My Castle)" 
+					   style="width: 100%; padding: 8px; margin-bottom: 5px; box-sizing:border-box; background:#444; border:1px solid #666; color:white;">
+				
+				<label for="profileSaveThumb" style="display:block; margin: 5px 0; font-size:0.9em; color:#ccc;">
+					Upload Thumbnail (Optional):
+				</label>
+				<input type="file" id="profileSaveThumb" accept="image/*" 
+					   style="width: 100%; font-size: 0.9em; color: #ccc;">
+				
+				<button id="saveToProfileButton" 
+						style="width: 100%; margin-top: 10px; background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight:bold;">
+					Save to Profile
+				</button>
+			</div>
 			<div id="deathDisplay">Coords: (0, 0)</div>
             <div id="gameMenuTipText"></div>
         </div>
@@ -3541,9 +3558,15 @@
             // Grass Tops Add 10 Durability, Overgrown Grass Adds 20
             'sky': { imgSrc: null, solid: false, miningHardness: 0, drops: [], color: '#87ceeb' },
 			'': { imgSrc: null, solid: false, miningHardness: 0, drops: [], color: '#87ceeb' }, // New replacement for sky, even faster loading!
-            'cobweb': { imgSrc: 'Cobweb.png', solid: false, miningHardness: 50, drops: [], color: '#EEEEEE', wallPlace: true },
+            'cobweb': { imgSrc: 'Cobweb.png', solid: false, miningHardness: 50, drops: [], color: '#EEEEEE', wallPlace: true, swordBlock: true },
             'bed': { imgSrc: 'Bed.png', solid: true, miningHardness: 100, drops: [{item: 'bed', chance: 1, min: 1, max: 1}], color: '#FF0000' },
-			'trader': { imgSrc: 'Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513' },
+			'trader': { imgSrc: 'Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513', swordBlock: true },
+			'player_laying_left': { imgSrc: 'Player Laying Left.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
+			'player_laying_middle': { imgSrc: 'Player Laying Middle.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
+			'player_laying_right': { imgSrc: 'Player Laying Right.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
+			'skeleton_laying_left': { imgSrc: 'Skeleton Laying Left.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', swordBlock: true },
+			'skeleton_laying_middle': { imgSrc: 'Skeleton Laying Middle.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', swordBlock: true },
+			'skeleton_laying_right': { imgSrc: 'Skeleton Laying Right.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', swordBlock: true },
             'chest': { imgSrc: 'Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'magical_chest': { imgSrc: 'Magical Chest.png', solid: true, miningHardness: 150, drops: [{item: 'magical_chest', chance: 1, min: 1, max: 1}], color: '#9400D3' },
             'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#483D8B' },
@@ -4164,6 +4187,8 @@
 			 'bronze_axe': { imgSrc: 'Bronze Axe.png', color: '#CD7F32', isTool: true, miningPower: 0.1, axePower: 0.8, maxDurability: 35000 },
 			 'steel_axe': { imgSrc: 'Steel Axe.png', color: '#43464B', isTool: true, miningPower: 0.1, axePower: 1.5, maxDurability: 100000 },
 			 'infinitungsten_axe': { imgSrc: 'Infinitungsten Axe.png', color: '#8B8B83', isTool: true, miningPower: 0.1, axePower: 10.0, maxDurability: 400000 },
+			 // ---SWORD SECTION---
+			 'wooden_sword': { imgSrc: 'Wooden Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.2, maxDurability: 7500 },
 			 // ---GUN SECTION---
 			 'wood_bullet': { imgSrc: 'Wood Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 1 },
              'brass_bullet': { imgSrc: 'Brass Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 5 },
@@ -9078,6 +9103,7 @@
 			if (equippedItemProps && equippedItemProps.isTool) {
 				const isAxeBlock = effectiveBlockType.startsWith('raw_') || effectiveBlockType.startsWith('planked_') || effectiveBlockType.startsWith('cactus_') || effectiveBlockType.endsWith('_wood');
 				const isShovelBlock = blockPropsForMining && blockPropsForMining.shovelBlock;
+				const isSwordBlock = blockPropsForMining && blockPropsForMining.swordBlock;
                 const isPickaxe = equippedItemType.includes('_pickaxe');
 
                 if (isPickaxe && (isAxeBlock || isShovelBlock)) {
@@ -9091,6 +9117,10 @@
 					// Correct tool (shovel) for shovelable blocks
 					currentMiningPower = equippedItemProps.shovelPower;
 					unlockAchievement('POOP_SCOOP');
+				} else if (isSwordBlock && equippedItemProps.swordPower) {
+					// Correct tool (sword) for swordable blocks
+					currentMiningPower = equippedItemProps.swordPower;
+					// unlockAchievement('DUEL');
 				} else {
 					// It's a tool, but not the right one for this special block, or it's a generic block. Use its base mining power.
                     currentMiningPower = equippedItemProps.miningPower;
@@ -10230,6 +10260,7 @@
 				const selectedItemIsGrassSeeds = selectedItemType === 'grass_seeds';
 				const selectedItemIsMossSeeds = selectedItemType === 'moss_seeds';
                 const selectedItemIsPest = selectedItemType === 'pest';
+				const selectedItemIsSword = selectedItemType.endsWith('_sword');
 				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall') || selectedItemType === 'viking_wood_pole';
                 const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds' || selectedItemType === 'potato_seeds';
                 const currentBlockAtTarget = getBlockType(targetCol, targetRow);
@@ -10541,6 +10572,41 @@
 					if (seedUsed) {
 						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 						mouse.rightDown = false; // Prevents using multiple pest in one click
+					}
+				} else if (selectedItemIsSword) {
+					let seedUsed = false;
+					const blockAtTarget = getBlockData(targetCol, targetRow);
+					const blockAboveKey = `${targetCol},${targetRow - 1}`;
+					const blockAboveType = getBlockType(targetCol, targetRow - 1);
+
+					// Prevent placing inside the player
+					const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
+					const playerRect = { x: player.x, y: player.y, width: playerWidth, height: playerHeight };
+					if (rectIntersects(placementRect, playerRect)) {
+						mouse.rightDown = false;
+						return;
+					}
+					
+					// Case 1: Target is LAYING PLAYER
+					if (blockAtTarget.type === 'player_laying_left') {
+						worldBlocks[targetKey] = { type: 'skeleton_laying_left', mineProg: 0 };
+						addToInventory('human_flesh', 1);
+						seedUsed = true;
+					} else if (blockAtTarget.type === 'player_laying_middle') {
+						worldBlocks[targetKey] = { type: 'skeleton_laying_middle', mineProg: 0 };
+						addToInventory('human_flesh', 1);
+						seedUsed = true;
+					} else if (blockAtTarget.type === 'player_laying_right') {
+						worldBlocks[targetKey] = { type: 'skeleton_laying_right', mineProg: 0 };
+						addToInventory('human_flesh', 1);
+						seedUsed = true;
+					}
+					
+					// If any action was successful, consume the pest
+					if (seedUsed) {
+						// Add damaging logic here!
+						const equippedItemObject = getSelectedItem();
+						equippedItemObject.durability -= 20;
 					}
 				} else if (selectedItemIsPlaceworthy) {
 					let seedUsed = false;
@@ -12005,6 +12071,10 @@
             { name: "Wooden Axe",
                 input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'any_plank', count: 1 }, 2: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'wooden_axe', outputCount: 1
+            },
+			{ name: "Wooden Sword",
+                input: { 3: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'wooden_sword', outputCount: 1
             },
             { name: "Rock Pickaxe",
                 input: { 0: { type: 'rock_block', count: 1 }, 1: { type: 'rock_block', count: 1 }, 2: { type: 'rock_block', count: 1 }, 3: { type: 'rock_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
@@ -16460,6 +16530,16 @@
 				e.stopPropagation();
 				closeTraderLevelUpMenu();
 			});
+			// --- NEW: Check if Launcher requested a load ---
+			const loadRequest = localStorage.getItem('bgu_load_request');
+			if (loadRequest) {
+				// Clear the request so it doesn't reload on refresh
+				localStorage.removeItem('bgu_load_request');
+				// Load the world
+				setTimeout(() => {
+					loadFromBrowserProfile(loadRequest);
+				}, 500); // Small delay to ensure assets logic runs
+			}
 			placeBGU();
         }
 		
@@ -17067,6 +17147,217 @@
             bgu2Input.click();
           }
         });
+		
+		// --- LOCAL STORAGE & PROFILE SYSTEM ---
+
+		// Helper: Convert Uint8Array to Base64 string for LocalStorage
+		function uint8ToBase64(u8Arr) {
+			const CHUNK_SIZE = 0x8000; // 32768
+			let index = 0;
+			let length = u8Arr.length;
+			let result = '';
+			let slice;
+			while (index < length) {
+				slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length));
+				result += String.fromCharCode.apply(null, slice);
+				index += CHUNK_SIZE;
+			}
+			return btoa(result);
+		}
+
+		// Helper: Convert Base64 string back to Uint8Array
+		function base64ToUint8(base64) {
+			const binary_string = window.atob(base64);
+			const len = binary_string.length;
+			const bytes = new Uint8Array(len);
+			for (let i = 0; i < len; i++) {
+				bytes[i] = binary_string.charCodeAt(i);
+			}
+			return bytes;
+		}
+
+		// Save World to Local Profile
+		async function saveToBrowserProfile(saveName, customThumbnail = null) {
+			try {
+				// Reuse existing world serialization logic
+				const sanitizedWorldBlocks = {};
+				for (const key in worldBlocks) {
+					const block = worldBlocks[key];
+					const sanitizedBlock = { tp: block.type };
+					
+					// Save all necessary properties
+					if (block.mineProg) sanitizedBlock.mP = block.mineProg;
+					if (block.inventory) sanitizedBlock.inv = block.inventory;
+					if (block.label) sanitizedBlock.lbl = block.label;
+					if (block.part) sanitizedBlock.prt = block.part;
+					if (block.plantTime) sanitizedBlock.pT = block.plantTime;
+					if (block.baseBlockType) sanitizedBlock.bBT = block.baseBlockType;
+					if (block.code) sanitizedBlock.cd = block.code;
+					if (block.cloakedAs) sanitizedBlock.clk = block.cloakedAs;
+					if (block.overlay) sanitizedBlock.ovr = block.overlay;
+					if (block.content) sanitizedBlock.con = block.content;
+					if (block.published) sanitizedBlock.pub = block.published;
+					if (block.title) sanitizedBlock.tit = block.title;
+					if (block.cover) sanitizedBlock.cov = block.cover;
+					if (block.item) sanitizedBlock.itm = block.item;
+					if (block.traderType) sanitizedBlock.tty = block.traderType;
+					if (block.level) sanitizedBlock.lvl = block.level;
+					if (block.xp) sanitizedBlock.xp = block.xp;
+					if (block.trades) sanitizedBlock.trd = block.trades;
+					
+					sanitizedWorldBlocks[key] = sanitizedBlock;
+				}
+
+				const worldData = {
+					seed: currentSeed,
+					blocks: sanitizedWorldBlocks,
+					heights: columnSurfaceHeights,
+					heavenHeights: heavenColumnSurfaceHeights,
+					biomes: worldBiomes,
+					underworldBiomes: underworldBiomes,
+					caves: Array.from(caveBlocks),
+					islands: Array.from(skyIslandColumns),
+					towers: Array.from(watchtowerColumns),
+					temples: Array.from(sandstoneTempleColumns),
+					player: {
+						x: player.x,
+						y: player.y,
+						h: player.health,
+						mh: player.maxHealth,
+						bac: player.bloodAlcohol,
+						eff: player.activeEffects,
+						bed: player.bedSpawnPoint,
+						armor: player.armor
+					},
+					inventory: inventorySlots,
+					hotbar: hotbarIndices,
+					void: voidStorage,
+					trade: currentVoidTrade,
+					death: deathCount,
+					insomnia: insomnia,
+					guanoMined: guanoMined,
+					xp: playerXP,
+					achievements: earnedAchievements,
+					consoleHistory: commandHistory
+				};
+
+				const json = JSON.stringify(worldData);
+				const jsonU8 = strToU8(json);
+				
+				// Compress
+				let compressedU8;
+				try {
+					compressedU8 = await deflateRawUint8(jsonU8);
+				} catch (err) {
+					console.warn("Compression failed, using raw", err);
+					compressedU8 = jsonU8; // Fallback
+				}
+
+				// Convert to Base64 String for storage
+				const storageString = uint8ToBase64(compressedU8);
+				
+				// Create Save Object
+				const saveId = 'bgu_save_' + Date.now();
+				const saveMeta = {
+					id: saveId,
+					name: saveName || `World ${currentSeed}`,
+					date: Date.now(),
+					// FIXED: If no custom thumbnail is provided, send null. 
+					// The Launcher will handle the default image.
+					thumbnail: customThumbnail, 
+					data: storageString,
+					isCompressed: true 
+				};
+
+				// Save to LocalStorage
+				try {
+					localStorage.setItem(saveId, JSON.stringify(saveMeta));
+					showMessageBox("World saved to Profile successfully!");
+				} catch (e) {
+					console.error(e);
+					showMessageBox("Error: Storage full! Delete old saves from the Launcher Profile.");
+				}
+
+			} catch (err) {
+				console.error(err);
+				showMessageBox("Failed to save to profile.");
+			}
+		}
+
+		// Load from Browser (Called by init if flag exists)
+		async function loadFromBrowserProfile(saveId) {
+			try {
+				const saveJson = localStorage.getItem(saveId);
+				if (!saveJson) return;
+				
+				const saveMeta = JSON.parse(saveJson);
+				const compressedString = saveMeta.data;
+				const compressedU8 = base64ToUint8(compressedString);
+				
+				let jsonU8;
+				if (saveMeta.isCompressed) {
+					jsonU8 = await inflateRawUint8(compressedU8);
+				} else {
+					jsonU8 = compressedU8;
+				}
+				
+				const jsonText = u8ToStr(jsonU8);
+				const data = JSON.parse(jsonText);
+				
+				importWorldData(data);
+				console.log("Loaded save from profile:", saveMeta.name);
+				
+			} catch (err) {
+				console.error("Failed to load profile save", err);
+				showMessageBox("Error loading save file.");
+			}
+		}
+		
+		document.getElementById('saveToProfileButton').addEventListener('click', () => {
+			const nameInput = document.getElementById('profileSaveName');
+			const name = nameInput.value;
+			const fileInput = document.getElementById('profileSaveThumb');
+			
+			if(!name) {
+				showMessageBox("Please enter a name for your save.");
+				return;
+			}
+
+			const file = fileInput.files[0];
+
+			if (file) {
+				// User provided a custom image, process it first
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					// Optional: Resize image to save space (Max 200px width)
+					const img = new Image();
+					img.onload = function() {
+						const canvas = document.createElement('canvas');
+						// Calculate aspect ratio
+						const scale = 200 / img.width;
+						canvas.width = 200;
+						canvas.height = img.height * scale;
+						const ctx = canvas.getContext('2d');
+						ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+						
+						// Get data URL (Medium quality JPEG)
+						const thumbData = canvas.toDataURL('image/jpeg', 0.7);
+						
+						// Save with the processed thumbnail
+						saveToBrowserProfile(name, thumbData);
+					};
+					img.onerror = function() {
+						showMessageBox("Invalid image file.");
+					};
+					img.src = e.target.result;
+				};
+				reader.readAsDataURL(file);
+			} else {
+				// No image provided, save with null (Launcher will show default block icon)
+				saveToBrowserProfile(name, null);
+			}
+		});
+		document.getElementById('profileSaveName').onkeydown = (e) => e.stopPropagation(); // Allow typing
 		
 		// --- Skin UI Functions ---
 
