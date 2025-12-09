@@ -2549,8 +2549,8 @@
         let insomnia = 0;
         let guanoMined = 0;
         // END ACHIEVEMENT VARIABLES
-		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile'];
-		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed'];
+		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass'];
+		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
 		let portals = []; // Will store all portal locations and links
@@ -3406,10 +3406,13 @@
 		const zincVeinProbability = 0.003;
         const copperVeinProbability = 0.0025;
 		const tinVeinProbability = 0.0015;
-        const ironVeinProbability = 0.001;
+        const ironVeinProbability = 0.0011;
+		const titaniumVeinProbability = 0.0008;
+		const leadVeinProbability = 0.0006;
 		const tungstenVeinProbability = 0.0005;
 		const rareMineralProbability = 0.0008
-        const goldVeinProbability = 0.0001; 
+        const silverVeinProbability = 0.0002;
+		const goldVeinProbability = 0.0001;
         const topazVeinProbability = rareMineralProbability / 10;
 		const diamondVeinProbability = rareMineralProbability / 12;
 		const jadeVeinProbability = rareMineralProbability / 12;
@@ -3633,6 +3636,7 @@
 			'limestone': { imgSrc: 'Limestone Block.png', solid: true, miningHardness: 300, drops: [{item: 'limestone', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'sand': { imgSrc: 'Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'sand', chance: 1, min: 1, max: 1}], color: '#F4A460', shovelBlock: true },
 			'red_sand_block': { imgSrc: 'Red Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'red_sand_block', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true },
+			'blue_sand_block': { imgSrc: 'Blue Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'blue_sand_block', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true },
             'sandstone': { imgSrc: 'Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'sandstone', chance: 1, min: 1, max: 1}], color: '#47433e' },
 			'red_sandstone_block': { imgSrc: 'Red Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'red_sandstone_block', chance: 1, min: 1, max: 1}], color: '#851500' },
             'compacting_stone': { imgSrc: 'Compacting Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#696969' },
@@ -3675,13 +3679,13 @@
 			'palladium_brick_block': { imgSrc: 'Palladium Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'palladium_brick_block', chance: 1, min: 1, max: 1}], color: '#E6E8FA' },
             'heaven_brick_block': { imgSrc: 'Heaven Brick Block.png', solid: true, miningHardness: 1200, drops: [{item: 'heaven_brick_block', chance: 1, min: 1, max: 1}], color: '#F0EAD6' },
             // Ores And Minerals
-			'coal_stone': { imgSrc: 'Coal Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F' },
+			'coal_stone': { imgSrc: 'Coal Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.15 },
 			'coal_compacted_stone': { imgSrc: 'Coal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.2 },
             'coal_compressed_stone': { imgSrc: 'Coal Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.5 },
 			'copper_compacted_stone': { imgSrc: 'Copper Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'copper_nugget', chance: 1, min: 1, max: 1}], color: '#B87333', requiredMiningPower: 0.2 },
             'tin_compacted_stone': { imgSrc: 'Tin Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tin_nugget', chance: 1, min: 1, max: 1}], color: '#C0C0C0', requiredMiningPower: 0.2 },
 			'zinc_compacted_stone': { imgSrc: 'Zinc Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'zinc_nugget', chance: 1, min: 1, max: 1}], color: '#B0C4DE', requiredMiningPower: 0.2 },
-			'iron_stone': { imgSrc: 'Iron Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
+			'iron_stone': { imgSrc: 'Iron Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.15 },
             'iron_compacted_stone': { imgSrc: 'Iron Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
 			'iron_granite': { imgSrc: 'Iron Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.8 },
 			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.5 },
@@ -3695,9 +3699,12 @@
             'amethyst_compacted_stone': { imgSrc: 'Amethyst Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'amethyst_nugget', chance: 1, min: 1, max: 1}], color: '#9966CC', requiredMiningPower: 0.2 },
             'opal_compacted_stone': { imgSrc: 'Opal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'opal_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7', requiredMiningPower: 0.2 },
 			'jade_compacted_stone': { imgSrc: 'Jade Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'jade_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
-            'aluminum_granite': { imgSrc: 'Aluminum Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3' },
+            'aluminum_granite': { imgSrc: 'Aluminum Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.15 },
 			'aluminum_compressed_stone': { imgSrc: 'Aluminum Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.5 },
 			'palladium_compressed_stone': { imgSrc: 'Palladium Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'palladium_nugget', chance: 1, min: 1, max: 1}], color: '#E6E8FA', requiredMiningPower: 0.5 },
+			'silver_compacted_stone': { imgSrc: 'Silver Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'silver_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
+			'titanium_compacted_stone': { imgSrc: 'Titanium Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'titanium_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
+			'lead_compacted_stone': { imgSrc: 'Lead Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'lead_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
 			'nitro_compacted_stone': { imgSrc: 'Nitro Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'nitro_powder', chance: 1, min: 1, max: 5}], color: '#FFFF00', requiredMiningPower: 0.2 },
 			'crude_oil_compacted_stone': { imgSrc: 'Crude Oil Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'crude_oil_chunk', chance: 1, min: 1, max: 1}], color: '#000000', requiredMiningPower: 0.2 },
 			'any_plank': { imgSrc: 'Any Plank.png', solid: false, miningHardness: 0, drops: [], color: '#654321' },
@@ -3745,6 +3752,7 @@
 			'grass_sprouts': { imgSrc: 'Grass Sprouts.png', solid: false, miningHardness: 5, drops: [{item: 'grass_seeds', chance: 0.3, min: 1, max: 2}, {item: 'pumpkin_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
             'grass': { imgSrc: 'Grass.png', solid: false, miningHardness: 10, drops: [{item: 'grass_seeds', chance: 0.4, min: 1, max: 3}, {item: 'wheat_seeds', chance: 0.2, min: 1, max: 2}, {item: 'barley_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
 			'tall_grass': { imgSrc: 'Tall Grass.png', solid: false, miningHardness: 20, drops: [{item: 'grass_seeds', chance: 0.5, min: 1, max: 5}, {item: 'wheat_seeds', chance: 0.3, min: 1, max: 3}, {item: 'cotton_seeds', chance: 0.1, min: 1, max: 2}], color: '#6B8E23' },
+			'clay_grass': { imgSrc: 'Clay Grass.png', solid: false, miningHardness: 35, drops: [{item: 'grass_seeds', chance: 0.5, min: 1, max: 2}, {item: 'potato_seeds', chance: 0.3, min: 1, max: 3}], color: '#6B8E23' },
 			'yellow_flower': { imgSrc: 'Yellow Flower.png', solid: false, miningHardness: 10, drops: [{item: 'yellow_flower', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
 			'red_flower': { imgSrc: 'Red Flower.png', solid: false, miningHardness: 10, drops: [{item: 'red_flower', chance: 1, min: 1, max: 1}], color: '#FF0000' },
 			'blue_flower': { imgSrc: 'Blue Flower.png', solid: false, miningHardness: 10, drops: [{item: 'blue_flower', chance: 1, min: 1, max: 1}], color: '#0000FF' },
@@ -3934,6 +3942,7 @@
 			'bone_block': { imgSrc: 'Bone Block.png', solid: true, miningHardness: 500, drops: [{item: 'bone_block', chance: 1, min: 1, max: 1}], color: '#F5F5DC', swordBlock: true },
 			'obsidian_block': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian_block', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
 			'ash_block': { imgSrc: 'Ash Block.png', solid: true, miningHardness: 40, drops: [{item: 'ash_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
+			'soot_block': { imgSrc: 'Soot Block.png', solid: true, miningHardness: 30, drops: [{item: 'soot_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
 			'ant_larva_block': { imgSrc: 'Ant Larva Block.png', solid: true, miningHardness: 30, drops: [/*ADD_DROPS*/], color: '#F5F5DC', shovelBlock: true },
 			'blueglow_grass_dirt_block': { imgSrc: 'Blueglow Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
             'blueglow_dirt_block': { imgSrc: 'Blueglow Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
@@ -5115,7 +5124,10 @@
 					['zinc_compacted_stone', (typeof zincVeinProbability === 'number' ? zincVeinProbability : 0)],
 					['coal_compacted_stone', (typeof deepCoalVeinProbability === 'number' ? deepCoalVeinProbability : 0)],
 					['iron_compacted_stone', (typeof ironVeinProbability === 'number' ? ironVeinProbability : 0)],
+					['titanium_compacted_stone', (typeof titaniumVeinProbability === 'number' ? titaniumVeinProbability : 0)],
+					['lead_compacted_stone', (typeof leadVeinProbability === 'number' ? leadVeinProbability : 0)],
 					['tungsten_compacted_stone', (typeof tungstenVeinProbability === 'number' ? tungstenVeinProbability : 0)],
+					['silver_compacted_stone', (typeof silverVeinProbability === 'number' ? silverVeinProbability : 0)],
 					['gold_compacted_stone', (typeof goldVeinProbability === 'number' ? goldVeinProbability : 0)],
 					['amethyst_compacted_stone', (typeof amethystVeinProbability === 'number' ? amethystVeinProbability : 0)],
 					['ruby_compacted_stone', (typeof rubyVeinProbability === 'number' ? rubyVeinProbability : 0)],
@@ -5338,7 +5350,9 @@
                     return 'gilded_forest';
                 } else if (random() < 0.15) {
                     return 'blueglow_forest';
-                } else if (random() < 0.35) {
+                } else if (random() < 0.2) {
+                    return 'blueglow_desert';
+                } else if (random() < 0.4) {
                     return 'debris_flats';
                 } else {
 					return 'cloudscape'; // The default heaven biome
@@ -5609,6 +5623,17 @@
 							} else {
 								blockType = 'blueglow_dirt_block';
 							}
+                        }
+                        return (worldBlocks[key] = { type: blockType, mineProg: 0 });
+
+                    } else if (heavenBiome === 'blueglow_desert' && row < heavenBaseY + 15) { 
+                        if (row === heavenBaseY) {
+							blockType = 'blue_sand_block';
+                            if (random() < 0.2) {
+                                generateCactus(col, heavenBaseY);
+                            }
+                        } else {
+                            blockType = 'blue_sand_block';
                         }
                         return (worldBlocks[key] = { type: blockType, mineProg: 0 });
 
@@ -5965,7 +5990,8 @@
 								else blockType = 'obsidian_block';
 							} else {
 								const b = random();
-								if (b < 0.8) blockType = 'ash_block';
+								if (b < 0.5) blockType = 'ash_block';
+								else if (b < 0.8) blockType = 'soot_block';
 								else blockType = 'obsidian_block';
 							}
 						} else if (underworldBiome === 'magma_basin' && depth < 315) {
@@ -6174,10 +6200,12 @@
                 if (depth >= 35) { 
                     if (random() < ironVeinProbability * oreSpawnMultiplier) blockType = 'iron_compacted_stone';
                 } 
-                // Layer 3: Gold, Tungsten
+                // Layer 3: Gold, Silver, Tungsten, Titanium
                 if (depth >= 45) { 
                     if (random() < goldVeinProbability * oreSpawnMultiplier) blockType = 'gold_compacted_stone';
+					else if (random() < silverVeinProbability * oreSpawnMultiplier) blockType = 'silver_compacted_stone';
 					else if (random() < tungstenVeinProbability * oreSpawnMultiplier) blockType = 'tungsten_compacted_stone';
+					else if (random() < titaniumVeinProbability * oreSpawnMultiplier) blockType = 'titanium_compacted_stone';
                 } 
                 // Layer 4: Ruby, Sapphire, Topaz, Amethyst
                 if (depth >= 60) { 
@@ -6186,10 +6214,11 @@
                     else if (random() < sapphireVeinProbability * oreSpawnMultiplier) blockType = 'sapphire_compacted_stone';
                     else if (random() < topazVeinProbability * oreSpawnMultiplier) blockType = 'topaz_compacted_stone';
                 }
-                // Layer 5: Diamond, Emerald
+                // Layer 5: Diamond, Emerald, Lead
                 if (depth >= 60) {
                      if (random() < diamondVeinProbability * oreSpawnMultiplier) blockType = 'diamond_compacted_stone';
                      else if (random() < emeraldVeinProbability * oreSpawnMultiplier) blockType = 'emerald_compacted_stone';
+					 else if (random() < leadVeinProbability * oreSpawnMultiplier) blockType = 'lead_compacted_stone';
                 }
                 // Layer 6: Opal
                 if (depth >= 65) {
@@ -6384,6 +6413,20 @@
 						else if (rand < 0.4) worldBlocks[`${col},${row - 1}`] = { type: 'tall_grass', mineProg: 0 };
 						else if (rand < 0.5) generateTree(col, row, 'dead_tree');
 						else if (rand < 0.55) generateTree(col, row, 'sugarcane');
+                    }
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                        if (placeTraderAt(col, row - 1)) {
+                            console.log("Naturally spawned a Trader at", col);
+                            // Mark a buffer zone around the trader to prevent clumping
+                            for(let i = -15; i <= 15; i++) {
+                                traderColumns.add(col + i);
+                            }
+                        }
+                    }
+                } else if (biome === 'clay_marsh') {
+                    if (getBlockType(col, row - 1) === '') {
+						let rand = random(); // This is ideal rather than reusing random()
+						if (rand < 0.8) worldBlocks[`${col},${row - 1}`] = { type: 'clay_grass', mineProg: 0 };
                     }
                     if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
@@ -6774,7 +6817,8 @@
                 };
                 // Add dungeon loot
                 const loot = [];
-                loot.push({ type: 'gold_nugget', count: 1 + Math.floor(random() * 3) });
+                loot.push({ type: 'tin_nugget', count: 1 + Math.floor(random() * 3) });
+				loot.push({ type: 'gold_nugget', count: 1 });
                 loot.push({ type: 'iron_nugget', count: 1 + Math.floor(random() * 5) });
                 if (random() < 0.1) loot.push({ type: 'diamond_nugget', count: 1 + Math.floor(random() * 2) });
                 if (random() < 0.5) loot.push({ type: 'corn_seeds', count: 2 + Math.floor(random() * 5) });
@@ -6957,7 +7001,7 @@
             }
 
             // 2. Add other supplies with an 80% chance
-            const supplies = ['butter', 'cup_of_milk', 'egg', 'raw_sugar', 'beef'];
+            const supplies = ['butter', 'cup_of_milk', 'egg', 'raw_sugar', 'beef', 'pork'];
             let currentSlot = 3; // Start placing after the seeds
             
             // The outer check for the *entire* block (if you still want it) is now gone,
@@ -7092,6 +7136,7 @@
 				{ type: 'heavensteel_nugget', chance: 0.04, maxCount: 1 },
 				{ type: 'amethyst_nugget', chance: 0.02, maxCount: 1 },
 				{ type: 'gold_nugget', chance: 0.25, maxCount: 1 },
+				{ type: 'ruby_nugget', chance: 0.01, maxCount: 1 },
 				{ type: 'coal', chance: 0.45, maxCount: 3 },
 				{ type: 'dark_armor_tile', chance: 0.1, maxCount: 1 }
 			];
@@ -7970,8 +8015,8 @@
             };
             const loot = [
                 { type: 'topaz_nugget', count: 1 },
-                { type: 'iron_nugget', count: 2 + Math.floor(random() * 4) },
-                { type: 'gold_nugget', count: 2 },
+                { type: 'tungsten_nugget', count: 2 + Math.floor(random() * 4) },
+                { type: 'bronze_coin', count: 2 },
                 { type: 'steel_pickaxe', count: 1, durability: 150000 * (random() * 0.1), maxDurability: 150000 }
             ];
             loot.forEach((item, index) => {
@@ -11114,7 +11159,7 @@
 		
 		// --- NEW: World Builder Biome Definitions ---
         const biomeBlockPools = {
-            'soil': [ { type: 'dirt', chance: 0.5 }, { type: 'soil', chance: 0.25 }, { type: 'mud', chance: 0.2 }, { type: 'clay', chance: 0.049 }, { type: 'thick_mud', chance: 0.001 } ],
+            'soil': [ { type: 'dirt', chance: 0.5 }, { type: 'soil', chance: 0.25 }, { type: 'mud', chance: 0.2 }, { type: 'clay', chance: 0.040 }, { type: 'taiga_dirt', chance: 0.009 }, { type: 'thick_mud', chance: 0.001 } ],
 			'stone': [ { type: 'stone', chance: 0.5 }, { type: 'stump_stone', chance: 0.15 }, { type: 'compacted_stone', chance: 0.15 }, { type: 'compressed_stone', chance: 0.1 }, { type: 'bedrock_stone', chance: 0.05 }, { type: 'compacting_stone', chance: 0.03 }, { type: 'outer_mantle_molten_stone', chance: 0.012 }, { type: 'inner_mantle_molten_stone', chance: 0.007 }, { type: 'core_molten_stone', chance: 0.001 } ],
 			'foliage': [ { type: 'grass_sprouts', chance: 0.05 }, { type: 'grass', chance: 0.4 }, { type: 'tall_grass', chance: 0.05 }, { type: 'desert_brush', chance: 0.05 }, { type: 'desert_grass', chance: 0.05 }, { type: 'fern', chance: 0.05 }, { type: 'weed', chance: 0.05 }, { type: 'pine_needle_pile', chance: 0.05 }, { type: 'moss', chance: 0.05 }, { type: 'dark_moss', chance: 0.05 }, { type: 'shroom', chance: 0.05 }, { type: 'leaf_plant', chance: 0.05 }, { type: 'leaf_pile', chance: 0.05 } ]
 			/*'deciduous_forest': [ { type: 'grass_soil', chance: 0.05 }, { type: 'grass_dirt', chance: 0.95 } ],
@@ -12069,6 +12114,7 @@
                 input: { 0: { type: 'cup_of_water', count: 1 }, 1: { type: 'barley_item', count: 1 }, 2: { type: 'corn_item', count: 1 }, 4: { type: 'hop_item', count: 1 }, 5: { type: 'hop_item', count: 1 }, 6: { type: 'hop_item', count: 1 } },
                 output: 'cup_of_beer', outputCount: 1
             },
+			{ name: "Electrum Nugget", input: { 0: { type: 'gold_nugget', count: 1 }, 1: { type: 'silver_nugget', count: 1 } }, output: 'electrum_nugget', outputCount: 1 },
             { name: "Wooden Pickaxe",
                 input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'any_plank', count: 1 }, 2: { type: 'any_plank', count: 1 }, 3: { type: 'any_plank', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'wooden_pickaxe', outputCount: 1
@@ -12259,6 +12305,10 @@
                 input: { 0: { type: 'iron_nugget', count: 1 }, 1: { type: 'copper_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 3: { type: 'tin_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 6: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 10: { type: 'wooden_stick', count: 1 } },
                 output: 'forge_hammer', outputCount: 1
             },
+			 { name: "Lighter",
+                input: { 0: { type: 'cup_of_gasoline', count: 1 }, 1: { type: 'aluminum_nugget', count: 1 }, 2: { type: 'steel_nugget', count: 1 } },
+                output: 'lighter', outputCount: 1
+            },
             { name: "Snow Block",
                 input: { 0: { type: 'snow_ball', count: 1 }, 1: { type: 'snow_ball', count: 1 }, 2: { type: 'snow_ball', count: 1 }, 4: { type: 'snow_ball', count: 1 }, 5: { type: 'snow_ball', count: 1 }, 6: { type: 'snow_ball', count: 1 }, 8: { type: 'snow_ball', count: 1 }, 9: { type: 'snow_ball', count: 1 }, 10: { type: 'snow_ball', count: 1 } },
                 output: 'snow_block', outputCount: 1
@@ -12277,7 +12327,7 @@
             { name: "Gilded Wood Planks", input: { 0: { type: 'raw_gilded_wood', count: 1 } }, output: 'planked_gilded_wood', outputCount: 3 },
 			{ name: "Blueglow Wood Planks", input: { 0: { type: 'raw_blueglow_wood', count: 1 } }, output: 'planked_blueglow_wood', outputCount: 3 },
 			{ name: "Deadwood Planks", input: { 0: { type: 'raw_deadwood', count: 1 } }, output: 'planked_deadwood', outputCount: 3 },
-            { name: "Cinnamon", input: { 0: { type: 'raw_cinnamon', count: 1 }, 4: { type: 'raw_cinnamon', count: 1 }, 8: { type: 'raw_cinnamon', count: 1 }, 12: { type: 'raw_cinnamon', count: 1 } }, output: 'cinnamon', outputCount: 10 },
+            { name: "Cinnamon Sticks", input: { 0: { type: 'raw_cinnamon', count: 1 }, 4: { type: 'raw_cinnamon', count: 1 }, 8: { type: 'raw_cinnamon', count: 1 }, 12: { type: 'raw_cinnamon', count: 1 } }, output: 'cinnamon', outputCount: 20 },
 			{ name: "Hay Bale",
                 input: { 0: { type: 'wheat_item', count: 1 }, 1: { type: 'barley_item', count: 1 }, 4: { type: 'barley_item', count: 1 }, 5: { type: 'wheat_item', count: 1 } },
                 output: 'hay_bale', outputCount: 1
@@ -12453,6 +12503,10 @@
 			{ name: "World Mover",
                 input: { 0: { type: 'red_sand_block', count: 1 }, 3: { type: 'red_sand_block', count: 1 }, 12: { type: 'red_sand_block', count: 1 }, 15: { type: 'red_sand_block', count: 1 }, 5: { type: 'infinitungsten_nugget', count: 1 }, 6: { type: 'infinitungsten_nugget', count: 1 }, 9: { type: 'infinitungsten_nugget', count: 1 }, 10: { type: 'infinitungsten_nugget', count: 1 } },
                 output: 'world_mover', outputCount: 1
+            },
+			{ name: "World Builder",
+                input: { 0: { type: 'blue_sand_block', count: 1 }, 3: { type: 'blue_sand_block', count: 1 }, 12: { type: 'blue_sand_block', count: 1 }, 15: { type: 'blue_sand_block', count: 1 }, 5: { type: 'mighterrum_nugget', count: 1 }, 6: { type: 'diviniron_nugget', count: 1 }, 9: { type: 'mighterrum_nugget', count: 1 }, 10: { type: 'diviniron_nugget', count: 1 } },
+                output: 'world_builder', outputCount: 1
             },
             { name: "Mechageezer: Trailer",
                 input: { 0: { type: 'copper_nugget', count: 1 }, 1: { type: 'dirt', count: 1 } },
