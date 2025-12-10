@@ -1966,6 +1966,160 @@
 			color: #666;
 			cursor: not-allowed;
 		}
+		/* Seasonal Shop Styles */
+		#seasonalShopOverlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background-color: rgba(0, 0, 0, 0.85);
+			display: none; /* Hidden by default */
+			justify-content: center;
+			align-items: center;
+			z-index: 1600; /* Above XP menu */
+			font-family: 'Inter', sans-serif;
+			color: #E0E0E0;
+		}
+
+		#seasonalShopMenu {
+			background-color: #222;
+			padding: 20px;
+			border-radius: 15px;
+			box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+			width: 90%;
+			max-width: 400px;
+			border: 2px solid #00FF00;
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+			text-align: center;
+		}
+
+		.shop-item-row {
+			display: flex;
+			align-items: center;
+			background-color: #333;
+			padding: 10px;
+			border-radius: 8px;
+			border: 1px solid #555;
+			justify-content: space-between;
+		}
+
+		.shop-icon {
+			width: 40px;
+			height: 40px;
+			image-rendering: pixelated;
+		}
+
+		.shop-info {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			flex-grow: 1;
+			padding-left: 15px;
+		}
+
+		.shop-name {
+			font-weight: bold;
+			font-size: 1.1em;
+		}
+
+		.shop-cost {
+			color: #4CAF50;
+			font-size: 0.9em;
+		}
+
+		.shop-buy-btn {
+			padding: 8px 15px;
+			background-color: #28a745;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-weight: bold;
+		}
+
+		.shop-buy-btn:hover {
+			background-color: #218838;
+		}
+
+		/* Add the button style for the XP menu integration */
+		#seasonalShopButton {
+			background-color: #C41E3A; /* Christmas Red */
+			color: white;
+			border: 2px solid #00FF00;
+			padding: 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			margin-top: 10px;
+			font-weight: bold;
+			width: 100%;
+		}
+		#seasonalShopButton:hover {
+			background-color: #A01830;
+		}
+		/* Preset Container */
+		#skinPresetsContainer {
+			display: none; /* Hidden by default */
+			grid-template-columns: repeat(3, 1fr); /* 3 columns */
+			gap: 10px;
+			margin-top: 15px;
+			max-height: 300px;
+			overflow-y: auto;
+			padding: 5px;
+			background-color: rgba(0, 0, 0, 0.2);
+			border-radius: 8px;
+			border: 1px solid #555;
+		}
+
+		/* Individual Preset Item */
+		.skin-preset-item {
+			background-color: #444;
+			border: 1px solid #666;
+			border-radius: 5px;
+			padding: 5px;
+			cursor: pointer;
+			transition: transform 0.1s, background-color 0.2s;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.skin-preset-item:hover {
+			background-color: #555;
+			transform: scale(1.05);
+			border-color: #00BFFF;
+		}
+
+		.skin-preset-item img {
+			width: 32px; /* Scale specifically for preview */
+			height: 96px; /* Maintain 1:3 aspect ratio */
+			image-rendering: pixelated;
+			object-fit: contain;
+		}
+
+		.skin-preset-item span {
+			margin-top: 5px;
+			font-size: 0.8em;
+			color: #eee;
+			font-weight: bold;
+		}
+
+		/* New Button Style */
+		#skinViewPresetsButton {
+			background-color: #6f42c1; /* Purple */
+			color: white;
+			padding: 10px 15px;
+			border: none;
+			border-radius: 5px;
+			font-size: 1em;
+			cursor: pointer;
+			margin-top: 5px;
+		}
+		#skinViewPresetsButton:hover {
+			background-color: #5a32a3;
+		}
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -2409,13 +2563,22 @@
 
     <div id="skinUploadOverlay" oncontextmenu="return false;">
         <div id="skinUploadMenu">
-            <h2>Upload Custom Skin</h2>
-            <button class="mobile-close-button">X</button>
-            <p style="font-size: 0.9em; color: #ccc;">Image must have a 1:3 aspect ratio (e.g., 50px wide, 150px tall).</p>
-            <label for="skinUploadInput" id="skinUploadLabel">Choose Image...</label>
-            <button id="skinResetButton">Reset to Default</button>
-            <button id="skinUploadCancelButton">Cancel</button>
-        </div>
+			<h2>Customize Skin</h2>
+			<button class="mobile-close-button">X</button>
+			
+			<p style="font-size: 0.9em; color: #ccc;">Upload (1:3 ratio) or choose a preset.</p>
+			
+			<label for="skinUploadInput" id="skinUploadLabel">Upload Custom Image...</label>
+			
+			<button id="skinViewPresetsButton">View Presets</button>
+			
+			<div id="skinPresetsContainer"></div>
+
+			<div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px; width: 100%;">
+				<button id="skinResetButton" style="flex: 1;">Default</button>
+				<button id="skinUploadCancelButton" style="flex: 1;">Cancel</button>
+			</div>
+		</div>
     </div>
 	
 	<div id="xpMenuOverlay" oncontextmenu="return false;">
@@ -2430,6 +2593,41 @@
 
 			<div id="achievementGrid">
 				</div>
+		</div>
+	</div>
+	
+	<div id="seasonalShopOverlay" oncontextmenu="return false;">
+		<div id="seasonalShopMenu">
+			<h2 style="color: #FF0000; text-shadow: 2px 2px #00FF00;">🎄 Seasonal Shop 🎄</h2>
+			<button class="mobile-close-button">X</button>
+			<p style="color: #ccc; margin-bottom: 15px;">Spend your hard-earned XP on festive gifts!</p>
+			
+			<div class="shop-item-row">
+				<img src="Bad Present.png" alt="Bad Present" class="shop-icon">
+				<div class="shop-info">
+					<span class="shop-name" style="color: #8B4513;">Bad Present</span>
+					<span class="shop-cost">3 XP</span>
+				</div>
+				<button class="shop-buy-btn" onclick="buySeasonalItem('bad_present', 3)">Buy</button>
+			</div>
+
+			<div class="shop-item-row">
+				<img src="Good Present.png" alt="Good Present" class="shop-icon">
+				<div class="shop-info">
+					<span class="shop-name" style="color: #00FF00;">Good Present</span>
+					<span class="shop-cost">10 XP</span>
+				</div>
+				<button class="shop-buy-btn" onclick="buySeasonalItem('good_present', 10)">Buy</button>
+			</div>
+
+			<div class="shop-item-row">
+				<img src="Gilded Present.png" alt="Gilded Present" class="shop-icon">
+				<div class="shop-info">
+					<span class="shop-name" style="color: #FFD700;">Gilded Present</span>
+					<span class="shop-cost">35 XP</span>
+				</div>
+				<button class="shop-buy-btn" onclick="buySeasonalItem('gilded_present', 35)">Buy</button>
+			</div>
 		</div>
 	</div>
 	
@@ -2640,6 +2838,28 @@
 		let isPlayerInHellfireZone = false;
 		let isPlayerOnHellfire = false; // The permanent fire state
 		
+		// --- Seasonal System Variables ---
+		let seasonCycle = true; // Control via dev console
+		let snowParticles = [];
+		const SNOW_SPEED_MIN = 2;
+		const SNOW_SPEED_MAX = 5;
+
+		// Helper to check if it is December and Seasons are enabled
+		function isChristmasSeason() {
+			if (!seasonCycle) return false;
+			const date = new Date();
+			return date.getMonth() === 11; // 11 is December in JS (0-indexed)
+		}
+		
+		function isNightTime() {
+			const date = new Date();
+			const hour = date.getHours(); // Gets the current hour (0-23)
+
+			// Returns true if the hour is 10 PM (22) or later, 
+			// OR 4 AM (4) or earlier (covering 22, 23, 0, 1, 2, 3, 4).
+			return (hour >= 22 || hour <= 4);
+		}
+		
 		let showDebugStats = false;
 		const debugStatsDiv = document.getElementById('debugStats');
 		let frameCount = 0;
@@ -2791,6 +3011,13 @@
 				name: 'Terraformer!',
 				desc: 'Use a pickaxe to hover over a pickaxe-suited block.',
 				icon: 'Wooden Pickaxe.png',
+				xp: 5
+			},
+			'DUEL': {
+				id: 'DUEL',
+				name: 'Duel!',
+				desc: 'Use a sword to hover over a sword-suited block.',
+				icon: 'Wooden sword.png',
 				xp: 5
 			},
 			'PEW_PEW': {
@@ -2961,6 +3188,151 @@
 		
         let heldItem = null; // Stores the item object being dragged by the cursor {type, count, durability}
 		
+		// --- 1. CONFIGURATION: Add players here easily! ---
+		// Just add a new line: { name: "Name", file: "FileName.png" }
+		const skinPresets = [
+			{ name: "Player", file: "Player.png" },
+			{ name: "Player", file: "Player Dark.png" },
+			{ name: "Player", file: "Player Tan.png" },
+			{ name: "Todd", file: "Player Male.png" },
+			{ name: "Reginald", file: "Player Male Dark.png" },
+			{ name: "Vincent", file: "Player Male Tan.png" },
+			{ name: "Gertrude", file: "Player Female.png" },
+			{ name: "Fiona", file: "Player Female Dark.png" },
+			{ name: "Sadie", file: "Player Female Tan.png" },
+			{ name: "Dead Player", file: "Dead Player.png" },
+			{ name: "Zombie", file: "Zombie.png" },
+			{ name: "Brickening Player", file: "Brickening Player.png" },
+			// Example of easy expansion:
+			// { name: "Cyborg",    file: "Player Cyborg.png" },
+		];
+
+		// --- 2. LOGIC: Preset System ---
+
+		const skinViewPresetsButton = document.getElementById('skinViewPresetsButton');
+		const skinPresetsContainer = document.getElementById('skinPresetsContainer');
+
+		// Toggle Preset Menu Visibility
+		skinViewPresetsButton.addEventListener('click', () => {
+			if (skinPresetsContainer.style.display === 'none' || skinPresetsContainer.style.display === '') {
+				skinPresetsContainer.style.display = 'grid';
+				renderSkinPresets();
+				skinViewPresetsButton.textContent = "Hide Presets";
+			} else {
+				skinPresetsContainer.style.display = 'none';
+				skinViewPresetsButton.textContent = "View Presets";
+			}
+		});
+
+		function renderSkinPresets() {
+			skinPresetsContainer.innerHTML = ''; // Clear existing
+
+			skinPresets.forEach(preset => {
+				const itemDiv = document.createElement('div');
+				itemDiv.className = 'skin-preset-item';
+				
+				// Image Preview
+				const img = document.createElement('img');
+				img.src = preset.file;
+				img.alt = preset.name;
+				// Fallback if image doesn't exist
+				img.onerror = function() { this.src = 'Player.png'; }; 
+				
+				// Label
+				const label = document.createElement('span');
+				label.textContent = preset.name;
+
+				// Click Event -> Apply Skin
+				itemDiv.onclick = () => {
+					// Set the player image source directly
+					playerImg.src = preset.file;
+					
+					// We use a special marker in localStorage to know it's a preset filename, not a dataURL
+					localStorage.setItem('customPlayerSkin', preset.file); 
+					
+					showMessageBox(`Applied skin: ${preset.name}!`, 'alert');
+					closeSkinUploader();
+				};
+
+				itemDiv.appendChild(img);
+				itemDiv.appendChild(label);
+				skinPresetsContainer.appendChild(itemDiv);
+			});
+		}
+
+		// Update the load function to handle both DataURLs (uploads) and filenames (presets)
+		function loadSavedSkin() {
+			const savedSkin = localStorage.getItem('customPlayerSkin');
+			if (savedSkin) {
+				playerImg.src = savedSkin;
+			}
+		}
+
+		// --- 3. BUG FIX: Texture/Skin Upload Debounce ---
+
+		let isUploadTriggered = false; // Flag to prevent double-firing
+
+		function triggerTextureUpload() {
+			if (isUploadTriggered) return; // Prevent spamming
+			isUploadTriggered = true;
+
+			const input = document.getElementById('texturePackInput');
+			
+			// CRITICAL FIX: Reset value so 'change' event fires even if same file is selected
+			input.value = ''; 
+			
+			// Small timeout to decouple the click from the touch event stack
+			setTimeout(() => {
+				input.click();
+				
+				// Reset flag after a reasonable time (user closes dialog or selects file)
+				setTimeout(() => { isUploadTriggered = false; }, 1000);
+			}, 50);
+		}
+
+		// Update the Skin Upload Trigger to use similar logic
+		skinUploadLabel.addEventListener('click', (e) => {
+			// Stop event bubbling which might cause immediate re-clicks
+			e.preventDefault(); 
+			e.stopPropagation();
+			
+			const input = document.getElementById('skinUploadInput');
+			input.value = ''; // Reset
+			input.click();
+		});
+
+		// Update the Triple-Tap listener to be more robust
+		function setupLoadingScreenListeners() {
+			const loadingScreen = document.getElementById('loadingScreen');
+			if (!loadingScreen) return;
+
+			let tapCount = 0;
+			let lastTapTime = 0;
+			const tapTimeout = 400; // Slightly tighter window
+
+			loadingScreen.addEventListener('touchstart', (e) => {
+				if (loadingScreen.style.display === 'none') return;
+				
+				// Prevent default zooming AND click emulation
+				e.preventDefault(); 
+				
+				const currentTime = Date.now();
+
+				if (currentTime - lastTapTime > tapTimeout) {
+					tapCount = 1; 
+				} else {
+					tapCount++;
+				}
+				
+				lastTapTime = currentTime;
+
+				if (tapCount === 3) {
+					console.log("Triple-tap detected! Opening texture uploader.");
+					tapCount = 0; 
+					triggerTextureUpload(); 
+				}
+			}, { passive: false });
+		}
 		
 		// --- IN-GAME DEV CONSOLE CODE START ---
 
@@ -3407,6 +3779,7 @@
         const copperVeinProbability = 0.0025;
 		const tinVeinProbability = 0.0015;
         const ironVeinProbability = 0.0011;
+		const nickelVeinProbability = 0.0005;
 		const titaniumVeinProbability = 0.0008;
 		const leadVeinProbability = 0.0006;
 		const tungstenVeinProbability = 0.0005;
@@ -3689,6 +4062,7 @@
             'iron_compacted_stone': { imgSrc: 'Iron Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
 			'iron_granite': { imgSrc: 'Iron Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.8 },
 			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.5 },
+			'nickel_compacted_stone': { imgSrc: 'Nickel Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'nickel_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
 			'tungsten_compacted_stone': { imgSrc: 'Tungsten Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tungsten_nugget', chance: 1, min: 1, max: 1}], color: '#8B8B83', requiredMiningPower: 0.2 },
             'gold_compacted_stone': { imgSrc: 'Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'gold_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
             'ruby_compacted_stone': { imgSrc: 'Ruby Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ruby_nugget', chance: 1, min: 1, max: 1}], color: '#E0115F', requiredMiningPower: 0.2 },
@@ -3978,6 +4352,11 @@
 			'planked_birch_wall': { imgSrc: 'Planked Birch Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_birch_wall', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
 			'planked_spruce_wall': { imgSrc: 'Planked Spruce Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_spruce_wall', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'hellstone_wall': { imgSrc: 'Hellstone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'hellstone_wall', chance: 1, min: 1, max: 1}], color: '#B22222' },
+			// Seasonal Content
+			'bad_present': { imgSrc: 'Bad Present.png', solid: false, miningHardness: 10, color: '#8B4513', presentStats: [ { type: 'coal', min: 1, max: 5, chance: 0.4 }, { type: 'dirt', min: 1, max: 10, chance: 0.3 }, { type: 'raw_deadwood', min: 1, max: 5, chance: 0.2 }, { type: 'christmas_light_spruce_bush', min: 1, max: 25, chance: 0.1 } ] },
+			'good_present': { imgSrc: 'Good Present.png', solid: false, miningHardness: 15, color: '#00FF00', presentStats: [ { type: 'iron_nugget', min: 1, max: 5, chance: 0.3 }, { type: 'gold_nugget', min: 1, max: 3, chance: 0.15 }, { type: 'cooked_beef', min: 2, max: 6, chance: 0.15 }, { type: 'santa_coat', min: 1, max: 1, chance: 0.1 }, { type: 'steel_bullet', min: 5, max: 15, chance: 0.2 }, { type: 'pumpkin_pie', min: 1, max: 1, chance: 0.1 } ] },
+			'gilded_present': { imgSrc: 'Gilded Present.png', solid: false, miningHardness: 25, color: '#FFD700', presentStats: [ { type: 'diamond_nugget', min: 1, max: 3, chance: 0.25 }, { type: 'emerald_nugget', min: 1, max: 3, chance: 0.25 }, { type: 'impotent_orb', min: 1, max: 1, chance: 0.1 }, { type: 'mythicalithium_bullet', min: 5, max: 10, chance: 0.2 }, { type: 'santa_face', min: 1, max: 1, chance: 0.05 }, { type: 'void_dust', min: 5, max: 10, chance: 0.15 } ] },
+			'christmas_light_spruce_bush': { imgSrc: 'Christmas Light Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'christmas_light_spruce_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.2, min: 1, max: 1}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
 			// Special Versions:
 			// Viking Block Ship Prototype
 			'viking_wood': { imgSrc: 'Viking Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'viking_wood', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
@@ -4220,7 +4599,9 @@
 			 'speed_snack': { color: '#ADFF2F', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'speed', type: 'add', value: 3 } ] } },
 			 'jump_juice': { color: '#00BFFF', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
 			 // Armor
-			 'happy_face': { imgSrc: 'Happy Face Icon.png', equippedImgSrc: 'Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
+			 'happy_face': { imgSrc: 'Happy Face Icon.png', equippedImgSrc: 'Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'face', protectionFactor: 0, maxDurability: 1 },
+			 'santa_face': { imgSrc: 'Santa Face Icon.png', equippedImgSrc: 'Santa Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'face', protectionFactor: 0, maxDurability: 1 },
+			 'santa_coat': { imgSrc: 'Santa Coat Icon.png', equippedImgSrc: 'Santa Coat.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0, maxDurability: 1 },
 			 'farmer_trader_mask': { imgSrc: 'Farmer Trader Mask Icon.png', equippedImgSrc: 'Farmer Trader Mask.png', color: '#F5DEB3', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'miner_trader_mask': { imgSrc: 'Miner Trader Mask Icon.png', equippedImgSrc: 'Miner Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'trader_mask': { imgSrc: 'Trader Mask Icon.png', equippedImgSrc: 'Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
@@ -4295,13 +4676,6 @@
 		let failedAssets = {};      // track failures
 		let assetsToLoad = 0;
 		let assetsLoaded = 0;
-
-        // --- Texture Pack Functions ---
-        function triggerTextureUpload() {
-            const input = document.getElementById('texturePackInput');
-            input.value = ''; // Reset to allow re-uploading same folder if needed
-            input.click();
-        }
 
         document.getElementById('texturePackInput').addEventListener('change', function(e) {
             const files = Array.from(e.target.files);
@@ -4556,6 +4930,7 @@
             // NEW: Armor slots now hold the full item object, not an index.
             armor: {
                 helmet: null,
+				face: null,
                 chestGear: null,
                 legGear: null,
                 boots: null
@@ -5124,6 +5499,7 @@
 					['zinc_compacted_stone', (typeof zincVeinProbability === 'number' ? zincVeinProbability : 0)],
 					['coal_compacted_stone', (typeof deepCoalVeinProbability === 'number' ? deepCoalVeinProbability : 0)],
 					['iron_compacted_stone', (typeof ironVeinProbability === 'number' ? ironVeinProbability : 0)],
+					['nickel_compacted_stone', (typeof nickelVeinProbability === 'number' ? nickelVeinProbability : 0)],
 					['titanium_compacted_stone', (typeof titaniumVeinProbability === 'number' ? titaniumVeinProbability : 0)],
 					['lead_compacted_stone', (typeof leadVeinProbability === 'number' ? leadVeinProbability : 0)],
 					['tungsten_compacted_stone', (typeof tungstenVeinProbability === 'number' ? tungstenVeinProbability : 0)],
@@ -6196,9 +6572,10 @@
 					else if (random() < zincVeinProbability * oreSpawnMultiplier) blockType = 'zinc_compacted_stone';
 					else if (random() < deepCoalVeinProbability * oreSpawnMultiplier) blockType = 'coal_compacted_stone';
                 } 
-                // Layer 2: Iron
+                // Layer 2: Iron, Nickel
                 if (depth >= 35) { 
                     if (random() < ironVeinProbability * oreSpawnMultiplier) blockType = 'iron_compacted_stone';
+					else if (random() < nickelVeinProbability * oreSpawnMultiplier) blockType = 'nickel_compacted_stone';
                 } 
                 // Layer 3: Gold, Silver, Tungsten, Titanium
                 if (depth >= 45) { 
@@ -8438,7 +8815,7 @@
             let totalReduction = 0;
 
             // Iterate over equipped armor directly from the player.armor object
-            for (const armorSlot in player.armor) { // 'helmet', 'chestGear', 'legGear', 'boots'
+            for (const armorSlot in player.armor) { // 'helmet', 'chestGear', 'legGear', 'boots', 'face'
                 const armorItem = player.armor[armorSlot]; // This is the item object, e.g., { type: 'trader_mask', ... }
                 
                 if (armorItem === null) continue; // Nothing in this slot
@@ -8838,6 +9215,61 @@
                 }
             }
 			
+			if (blockProps && blockProps.presentStats) {
+                // Determine which loot table to use
+                const lootTable = blockProps.presentStats;
+                
+                // Pick ONE item from the list based on weights/chance
+                // Normalize chances to pick a winner
+                let totalChance = 0;
+                lootTable.forEach(item => totalChance += item.chance);
+                
+                let roll = Math.random() * totalChance;
+                let selectedDrop = null;
+                
+                for (const drop of lootTable) {
+                    if (roll < drop.chance) {
+                        selectedDrop = drop;
+                        break;
+                    }
+                    roll -= drop.chance;
+                }
+                
+                // Fallback to the first item if math fails (rounding errors)
+                if (!selectedDrop) selectedDrop = lootTable[0];
+
+                const count = selectedDrop.min + Math.floor(Math.random() * (selectedDrop.max - selectedDrop.min + 1));
+                
+                // Try to add to inventory
+                // Note: addToInventory automatically handles "if full, send to void" logic internally in your existing code.
+                // It returns true/false, but since your system uses addToVoidStorage inside addToInventory for overflow,
+                // we just call it directly.
+                addToInventory(selectedDrop.type, count);
+                
+                // Create a particle effect for opening the gift
+                // We use the item's texture for the particles to show what you got!
+                const itemProps = itemTypes[selectedDrop.type] || blockTypes[selectedDrop.type];
+                
+                // Hacky way to inject a "success" particle burst using the dropped item's image
+                if (itemProps) {
+                    // Temporarily store the original particle count
+                    const oldPCount = particleCount;
+                    particleCount = 10; // Burst size
+                    
+                    // We need to pass the TYPE of the item to createBlockBreakParticles, 
+                    // but that function expects a BLOCK type to look up assets.
+                    // If the item has an asset, we can try to use it.
+                    // This assumes createBlockBreakParticles looks at assets[type].
+                    if (assets[selectedDrop.type]) {
+                         createBlockBreakParticles(col, row, selectedDrop.type);
+                    } else {
+                         createBlockBreakParticles(col, row, blockData.type); // Fallback to present particles
+                    }
+                    
+                    particleCount = oldPCount;
+                }
+            }
+			
             // If the block was a chest, drop its contents
             if (blockData && blockData.type === 'chest' && blockData.inventory) {
                 blockData.inventory.forEach(item => {
@@ -9174,7 +9606,7 @@
 				} else if (isSwordBlock && equippedItemProps.swordPower) {
 					// Correct tool (sword) for swordable blocks
 					currentMiningPower = equippedItemProps.swordPower;
-					// unlockAchievement('DUEL');
+					unlockAchievement('DUEL');
 				} else {
 					// It's a tool, but not the right one for this special block, or it's a generic block. Use its base mining power.
                     currentMiningPower = equippedItemProps.miningPower;
@@ -9539,7 +9971,7 @@
 
             // 2. Draw equipped armor over the player
             // We define a render order
-            const renderOrder = ['legGear', 'boots', 'chestGear', 'helmet'];
+            const renderOrder = ['legGear', 'boots', 'chestGear', 'face', 'helmet'];
 
             for (const armorSlot of renderOrder) {
                 // Get the item object DIRECTLY from the player.armor slot
@@ -10315,7 +10747,7 @@
 				const selectedItemIsMossSeeds = selectedItemType === 'moss_seeds';
                 const selectedItemIsPest = selectedItemType === 'pest';
 				const selectedItemIsSword = selectedItemType.endsWith('_sword');
-				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall') || selectedItemType === 'viking_wood_pole';
+				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall') || selectedItemType.endsWith('_present') || selectedItemType === 'viking_wood_pole';
                 const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds' || selectedItemType === 'potato_seeds';
                 const currentBlockAtTarget = getBlockType(targetCol, targetRow);
                 const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
@@ -11268,7 +11700,127 @@
             createBlockBreakParticles(builderCol, builderRow - 1, 'cloud_block'); // Use cloud particles for a magical effect
             particleCount = originalParticleCount;
         }
+		
+		// --- Seasonal Shop Functions ---
 
+		const seasonalShopOverlay = document.getElementById('seasonalShopOverlay');
+
+		function toggleSeasonalShop() {
+			if (seasonalShopOverlay.style.display === 'flex') {
+				seasonalShopOverlay.style.display = 'none';
+				isGamePaused = true; // Keep paused because we go back to XP menu (usually)
+			} else {
+				seasonalShopOverlay.style.display = 'flex';
+				isGamePaused = true;
+			}
+		}
+
+		// Hook up the mobile close button
+		document.querySelector('#seasonalShopOverlay .mobile-close-button').addEventListener('click', toggleSeasonalShop);
+		document.querySelector('#seasonalShopOverlay .mobile-close-button').addEventListener('touchstart', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			toggleSeasonalShop();
+		});
+
+		// Logic to buy items
+		function buySeasonalItem(itemType, xpCost) {
+			if (playerXP >= xpCost) {
+				// Attempt to add to inventory
+				if (addToInventory(itemType, 1)) {
+					// Success
+					playerXP -= xpCost;
+					
+					// Log to console history for anti-cheat/tracking
+					const logMsg = `[SEASONAL SHOP] Purchased ${itemType} for ${xpCost} XP. Remaining XP: ${playerXP}.`;
+					logToConsole(logMsg, 'log-output');
+					
+					// Push to commandHistory so it saves with the world file
+					if (commandHistory) {
+						commandHistory.push(logMsg);
+					}
+
+					// Update displays
+					document.getElementById('xpTotalDisplay').textContent = `${playerXP} XP`;
+					updateXPMenu(); // Refresh visual slots if needed
+					showMessageBox(`Purchased ${itemType.replace('_', ' ')}!`, 'alert');
+				} else {
+					showMessageBox("Inventory Full! Cannot buy.", 'alert');
+				}
+			} else {
+				showMessageBox(`Not enough XP! You need ${xpCost} XP.`, 'alert');
+			}
+		}
+		
+		// --- IMPROVED SNOW VARIABLES ---
+		let SNOW_DENSITY_PER_FRAME = 2; // Spawns up to 2 flakes *every frame* (120/sec)
+		let WIND_VELOCITY_X = 0.8;        // The "rightwardish" push speed
+
+		function updateSnow(dt) {
+			// Only run if season is active
+			if (!isChristmasSeason()) {
+				snowParticles = [];
+				return;
+			}
+
+			// 1. SPAWN: Run a loop to spawn multiple flakes per frame for "TONS" of snow
+			for (let i = 0; i < SNOW_DENSITY_PER_FRAME; i++) {
+				// 50% chance per iteration to randomize density slightly
+				if (Math.random() < 0.5) { 
+					snowParticles.push({
+						// Start X: anywhere across width, plus extra buffer to the left 
+						// so wind blows them into view
+						x: (Math.random() * canvas.width) - 100, 
+						y: -20, // Start above screen
+						// Random fall speed
+						speedY: SNOW_SPEED_MIN + Math.random() * (SNOW_SPEED_MAX - SNOW_SPEED_MIN),
+						// "Rightwardish" wind with slight variation
+						speedX: WIND_VELOCITY_X + (Math.random() - 0.5), 
+						swayOffset: Math.random() * 100, // Random starting sway phase
+						size: 8 + Math.random() * 12 // Variance in flake size (bigger = visible)
+					});
+				}
+			}
+
+			// 2. UPDATE: Move existing flakes
+			const timeScale = dt / 16; // Normalizes speed based on frame time
+			
+			for (let i = snowParticles.length - 1; i >= 0; i--) {
+				const p = snowParticles[i];
+				
+				// Move Down
+				p.y += p.speedY * timeScale; 
+				
+				// Move Right (Wind) + Gentle Sway (Sine wave)
+				p.x += (p.speedX + Math.sin((gameTime / 500) + p.swayOffset)) * timeScale;
+
+				// Remove if off bottom OR too far right
+				if (p.y > canvas.height || p.x > canvas.width) {
+					snowParticles.splice(i, 1);
+				}
+			}
+		}
+
+		function drawSnow() {
+			if (!isChristmasSeason() || snowParticles.length === 0) return;
+			
+			const snowImg = assets['snow_ball'];
+			
+			for (const p of snowParticles) {
+				if (snowImg) {
+					ctx.globalAlpha = 0.8; // Slight transparency
+					ctx.drawImage(snowImg, p.x, p.y, p.size, p.size);
+					ctx.globalAlpha = 1.0;
+				} else {
+					// Fallback if image fails: Draw white circles
+					ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+					ctx.beginPath();
+					ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+					ctx.fill();
+				}
+			}
+		}
+		
         function drawWorld() {
             // Background color change based on depth
             const playerGridY = Math.floor(player.y / tileSize);
@@ -11289,8 +11841,16 @@
             } else if (playerGridY > 10) { // Stone
                 document.body.style.backgroundColor = '#4e626d';
             } else { // Surface / Sky
-                document.body.style.backgroundColor = '#d8fffe';
-            }
+				// --- SEASONAL OVERRIDE ---
+				// Check if a season is active AND it is night
+				if (isChristmasSeason() && isNightTime()) {
+					document.body.style.backgroundColor = '#0a0a14'; // Dark Christmas Night
+				} else {
+					// You can add more specific seasonal background checks here, 
+					// or just revert to the default normal sky color.
+					document.body.style.backgroundColor = '#d8fffe'; // Normal Sky Blue
+				}
+			}
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const startCol = Math.floor(camera.x / tileSize) - 1;
@@ -11529,13 +12089,23 @@
 			// 4. Draw the item image.
 			// We draw it relative to the new, transformed origin.
 			// The offsets from our animation state are applied here.
-			ctx.drawImage(
-				itemImg, 
-				10 + heldItemState.offsetX,  // Base distance from player + animation offset
-				-5 + heldItemState.offsetY, // Base height + animation offset
-				tileSize * 0.8, // Make the item slightly smaller than a full block
-				tileSize * 0.8
-			);
+			if (heldItem.type === 'minigun') {
+				ctx.drawImage(
+					itemImg, 
+					7 + heldItemState.offsetX,  // Base distance from player + animation offset
+					-20 + heldItemState.offsetY, // Base height + animation offset
+					tileSize * 1.2, // Make the item slightly bigger than a full block
+					tileSize * 1.2
+				);
+			} else {
+				ctx.drawImage(
+					itemImg, 
+					10 + heldItemState.offsetX,  // Base distance from player + animation offset
+					-5 + heldItemState.offsetY, // Base height + animation offset
+					tileSize * 0.8, // Make the item slightly smaller than a full block
+					tileSize * 0.8
+				);
+			}
 
 			ctx.restore(); // Restore the canvas to its original state for the next draw operations
 		}
@@ -11798,6 +12368,10 @@
                     closeSkinUploader();
                 } else if (isGamePaused && xpMenuOverlay.style.display === 'flex') {
 					toggleXPMenu();
+					toggleGameMenu();
+					if (seasonalShopOverlay.style.display === 'flex') {
+						toggleSeasonalShop();
+					}
 				} else if (isConsoleOpen) {
 					toggleDevConsole();
                 } else if (isGamePaused && bookReaderOverlay.style.display === 'flex') {
@@ -11822,8 +12396,9 @@
 					toggleVoidChestMenu();
 				} else if (isGamePaused && isTraderMenuOpen === true) {
 					toggleTraderMenu();
-				} else if (isGamePaused && traderLevelUpOverlay.style.display === 'flex') {
-					closeTraderLevelUpMenu();
+					if (traderLevelUpOverlay.style.display === 'flex') {
+						closeTraderLevelUpMenu();
+					}
 				} else if (isGamePaused && gameMenuOverlay.style.display === 'flex') {
 					toggleGameMenu();
 				} else if (isGamePaused && traderLevelUpOverlay.style.display === 'flex') {
@@ -13220,49 +13795,77 @@
             }
             
             // --- NEW: Render Armor Slots ---
-            const armorSlotOrder = ['helmet', 'chestGear', 'legGear', 'boots'];
+            const armorSlotOrder = ['helmet', 'chestGear', 'legGear', 'boots', 'face'];
             let totalProtection = 0;
+			
+			const placeholderMap = {
+			  helmet: 'Helmet Icon.png',
+			  chestGear: 'Chest Gear Icon.png',
+			  legGear: 'Leg Gear Icon.png',
+			  boots: 'Boots Icon.png',
+			  face: 'Face Icon.png'
+			};
 
             for (const slotKey of armorSlotOrder) {
-                const armorItem = player.armor[slotKey];
-                const slotDiv = createInventorySlot(armorItem, slotKey, 'armor');
-                
-                // Add a placeholder background
-                slotDiv.style.backgroundImage = 'Dark Boots.png'; // ... (keep all placeholder styles) ...
-                slotDiv.style.backgroundSize = '32px 32px';
-                slotDiv.style.backgroundPosition = 'center';
-                slotDiv.style.backgroundRepeat = 'no-repeat';
-                slotDiv.style.opacity = '0.7';
-                
-                if (armorItem) {
-                    const itemProps = itemTypes[armorItem.type];
-                    if (itemProps && itemProps.protectionFactor) {
-                        totalProtection += itemProps.protectionFactor;
-                    }
-                    slotDiv.style.opacity = '1.0'; // Full opacity if item is present
+			  const armorItem = player.armor[slotKey];
+			  const slotDiv = createInventorySlot(armorItem, slotKey, 'armor');
 
-                    // --- NEW: Draw armor on paper doll ---
-                    const equippedAssetKey = `${armorItem.type}_equipped`;
-                    const armorImgAsset = assets[equippedAssetKey];
+			  // mark it so we can style placeholder armor slots separately
+			  slotDiv.classList.add('armor-slot');
 
-                    if (armorImgAsset && !failedAssets[equippedAssetKey]) {
-                        const imgElement = document.createElement('img');
-                        imgElement.src = armorImgAsset.src;
-                        imgElement.classList.add('paper-doll-armor');
-						const zForArmorType = {
-						  'helmet': 40,
-						  'chestGear': 30,
-						  'legGear': 10,
-						  'boots': 20
-						};
-						imgElement.style.position = 'absolute';    // ensure z-index works reliably
-						imgElement.style.zIndex = zForArmorType[slotKey] ?? 0;
-                        paperDollDiv.appendChild(imgElement);
-                    }
-                }
-                
-                armorGrid.appendChild(slotDiv);
-            }
+			  // remove any previous background-image set elsewhere
+			  slotDiv.style.backgroundImage = '';
+
+			  if (!armorItem) {
+				// EMPTY slot -> show the appropriate placeholder icon
+				const placeholderFile = placeholderMap[slotKey] || 'Dark Boots.png';
+				const assetKey = placeholderFile.replace('.png',''); // match how your assets are keyed
+				const preloaded = assets[assetKey];
+
+				const img = document.createElement('img');
+				img.className = 'armor-placeholder';
+				img.draggable = false;
+				// Prefer the preloaded asset if available otherwise fall back to filename
+				if (preloaded && !failedAssets[assetKey]) {
+				  img.src = preloaded.src;
+				} else {
+				  // If you use textureOverrides from texture packs this will prefer override
+				  img.src = (typeof textureOverrides !== 'undefined' && textureOverrides[placeholderFile]) ? textureOverrides[placeholderFile] : placeholderFile;
+				}
+
+				// place the placeholder image centered in the slot
+				slotDiv.appendChild(img);
+				slotDiv.style.opacity = '0.65';
+			  } else {
+				// Occupied slot -> keep normal rendering, and update paper doll as before
+				const itemProps = itemTypes[armorItem.type];
+				if (itemProps && itemProps.protectionFactor) {
+				  totalProtection += itemProps.protectionFactor;
+				}
+				slotDiv.style.opacity = '1.0';
+
+				// Draw equipped armor on paper doll (existing behavior)
+				const equippedAssetKey = `${armorItem.type}_equipped`;
+				const armorImgAsset = assets[equippedAssetKey];
+				if (armorImgAsset && !failedAssets[equippedAssetKey]) {
+				  const imgElement = document.createElement('img');
+				  imgElement.src = armorImgAsset.src;
+				  imgElement.classList.add('paper-doll-armor');
+				  const zForArmorType = {
+					'helmet': 50,
+					'face': 40,
+					'chestGear': 30,
+					'legGear': 10,
+					'boots': 20
+				  };
+				  imgElement.style.position = 'absolute';
+				  imgElement.style.zIndex = zForArmorType[slotKey] ?? 0;
+				  paperDollDiv.appendChild(imgElement);
+				}
+			  }
+
+			  armorGrid.appendChild(slotDiv);
+			}
 
             // Update Protection Display
             const protectionDisplay = document.getElementById('totalProtectionDisplay');
@@ -13485,7 +14088,7 @@
 						syncHotbarIndices();
 
                         const a = player.armor;
-                        if (a.helmet && a.chestGear && a.legGear && a.boots) {
+                        if (a.helmet && a.face && a.chestGear && a.legGear && a.boots) {
                             unlockAchievement('FULL_SET');
                             if (a.helmet.type.startsWith('steel_') &&
                                 a.chestGear.type.startsWith('steel_') &&
@@ -15804,7 +16407,7 @@
             // Reset player
             player.x = 0 * tileSize; player.y = 0; player.dx = 0; player.dy = 0; player.onGround = false;
             player.maxHealth = 100; player.health = player.maxHealth; player.bedSpawnPoint = null;
-            player.armor = { helmet: null, chestGear: null, legGear: null, boots: null };
+            player.armor = { helmet: null, face: null, chestGear: null, legGear: null, boots: null };
             deathCount = 0;
             insomnia = 0;
             guanoMined = 0;
@@ -15928,6 +16531,7 @@
                     // Calculate armor slowdown
                     let armorPieces = 0;
                     if (player.armor.helmet) armorPieces++;
+					if (player.armor.face) armorPieces++;
                     if (player.armor.chestGear) armorPieces++;
                     if (player.armor.legGear) armorPieces++;
                     if (player.armor.boots) armorPieces++;
@@ -15982,6 +16586,7 @@
             const playerGridCoords = worldToGrid(player.x + playerWidth / 2, player.y + playerHeight / 2);
             coordsDisplay.textContent = `Coords: (${playerGridCoords.col}, ${playerGridCoords.row})`;
 			deathDisplay.textContent = `Deaths: ${deathCount}`;
+			updateSnow(dt);
         }
 		
 		function drawHellfireIcon() {
@@ -16435,6 +17040,9 @@
             drawDrunkEffect();
 			drawMinimap();
 			drawBlockOutline();
+			if (isChristmasSeason() && isNightTime()) {
+				drawSnow();
+			}
         }
 		
 		function unlockAchievement(id) {
@@ -16523,6 +17131,24 @@
 					`;
 
 				grid.appendChild(slot);
+			}
+			
+			// --- ADD SEASONAL BUTTON LOGIC ---
+			// Remove existing button if present to prevent duplicates on redraw
+			const existingBtn = document.getElementById('seasonalShopButton');
+			if (existingBtn) existingBtn.remove();
+
+			if (isChristmasSeason()) {
+				const shopBtn = document.createElement('button');
+				shopBtn.id = 'seasonalShopButton';
+				shopBtn.textContent = "🎅 Open Seasonal Shop 🎅";
+				shopBtn.onclick = () => {
+					// Close XP menu? Optional, or just overlay on top. 
+					// Let's overlay on top.
+					toggleSeasonalShop();
+				};
+				// Append to the XP Menu container
+				document.getElementById('xpMenu').appendChild(shopBtn);
 			}
 		}
 		
@@ -16834,7 +17460,7 @@
                 player.activeEffects = data.player.eff || [];
                 player.bedSpawnPoint = data.player.bed;
                 player.armor = data.player.armor;
-                player.armor = data.player.armor || { helmet: null, chestGear: null, legGear: null, boots: null };
+                player.armor = data.player.armor || { helmet: null, face: null, chestGear: null, legGear: null, boots: null };
             }
 
             // Load Inventory
@@ -17476,14 +18102,11 @@
 
         function resetPlayerSkin() {
             localStorage.removeItem('customPlayerSkin');
-            playerImg.src = originalPlayerImgSrc;
-        }
-
-        function loadSavedSkin() {
-            const savedSkin = localStorage.getItem('customPlayerSkin');
-            if (savedSkin) {
-                applyCustomSkin(savedSkin);
-            }
+			if (random() < 0.1) {
+				playerImg.src = 'Player Dark.png';
+			} else {
+				playerImg.src = originalPlayerImgSrc;
+			}
         }
         
 		// --- Book UI Functions ---
@@ -17669,37 +18292,6 @@
             closeSkinUploader();
         });
         skinUploadCancelButton.addEventListener('click', closeSkinUploader);
-
-        function setupLoadingScreenListeners() {
-			const loadingScreen = document.getElementById('loadingScreen');
-			if (!loadingScreen) return;
-
-			let tapCount = 0;
-			let lastTapTime = 0;
-			const tapTimeout = 500; // Max 500ms between taps
-
-			loadingScreen.addEventListener('touchstart', (e) => {
-				// Only trigger if the loading screen is visible
-				if (loadingScreen.style.display === 'none') return;
-				
-				e.preventDefault(); // Prevent zoom on triple-tap
-				const currentTime = Date.now();
-
-				if (currentTime - lastTapTime > tapTimeout) {
-					tapCount = 1; // Reset count if too much time has passed
-				} else {
-					tapCount++;
-				}
-				
-				lastTapTime = currentTime;
-
-				if (tapCount === 3) {
-					console.log("Triple-tap detected! Opening texture uploader.");
-					tapCount = 0; // Reset
-					triggerTextureUpload(); // Call your existing function
-				}
-			}, { passive: false });
-		}
 		
         function setupMobileControls() {
             // If this isn't a touch device, don't show the controls
