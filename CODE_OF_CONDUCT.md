@@ -8,8 +8,8 @@ visible or invisible disability, ethnicity, sex characteristics, level of
 experience, education, socio-economic status, nationality, personal appearance,
 race, or religion.
 
-We pledge to act and interact in ways that contribute to an open, welcoming,
-diverse, inclusive, and healthy community.
+We pledge to act and interact in ways that contribute to an open, welcoming, and
+healthy community.
 
 ## Our Standards
 
@@ -27,7 +27,7 @@ community include:
 Examples of unacceptable behavior include:
 
 * The use of sexualized language or imagery, and sexual attention or
-  advances of any kind
+  advances of any kind without
 * Trolling, insulting or derogatory comments, and personal or political attacks
 * Public or private harassment
 * Publishing others' private information, such as a physical or email
