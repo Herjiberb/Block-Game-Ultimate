@@ -892,7 +892,7 @@
 
 
     <div id="top-right-controls">
-        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">The Vibrant Guano Ordinance</span>
+        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">Foundations & Frontiers</span>
         <button id="gallery-button" onclick="openGalleryModal()">
             <img src="Item Frame.png" alt="Block Gallery Icon" class="block-icon"/>
         </button>
@@ -1179,7 +1179,12 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world makers, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes. Added local launcher profile saving with world thumbnails. Added placeable laying players that can be turned into skeletons with... THE SWORD!!! Swords are especially good for bone and living tissue (but not those pesky shovelable meat blocks). Added new recipes. Rebalanced loot and chests. Added soot to ash wastes biomes in the underworld. Added clay grass to marshes that drop potato seeds! Added titanium, silver, and that unobtainable lead to the compacted stone layer.",
+            notes: "",
+		},
+		{ 
+            name: "Foundations & Frontiers (Version ###)", 
+            path: "Snapshot - Foundations & Frontiers.html",
+            notes: "Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world builders, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes. Added local launcher profile saving with world thumbnails. Added placeable laying players that can be turned into skeletons with... THE SWORD!!! Swords are especially good for bone and living tissue (but not those pesky shovelable meat blocks). Added new recipes. Rebalanced loot and chests. Added soot to ash wastes biomes in the underworld. Added clay grass to marshes that drop potato seeds! Added titanium, silver, and that unobtainable lead to the compacted stone layer. Added december exclusive christmas shop and TONS of hidden easter eggs (the real easter eggs will have to wait until march/april). Added player skin presets and a face armor slot. Made heavensteel more common significantly and diviniron rarer significantly to match the underworld chances more properly. Added world gen, items, recipes, textures, and js function support for brand new .bgumod mod files to make a full new experience! Added marble, tuff, and basalt to layers such as compacted stone and to some biomes. Added rose quartz common in the compacted stone layer. Added fool's gold pyrite. Made the stone layer 5 blocks taller. Added sunken libraries to compacted stone and foundries to compressed stone. Added stone PT1, PT2, PT3, and PT4 to the stone layer. Added pine trees to deciduous forests and changed pine needle and pine cone drops towards it, made taiga its own biome from old deciduous forests and added podzol to the new ones. Made redwood forests have silt and surface/forest leaves and ferns instead. Made redwoods generate more smoothly. Added rare fungal growth biome with mycelium and shrooms and new generated huge shrooms. Added cactus and shroom pickaxes equal to wooden ones. Added sandstone changes and base to deserts. Also added new decorative wall-placeable items.",
 		},
 		{ 
             name: "The Vibrant Guano Ordinance (Version ###)", 
@@ -1721,6 +1726,9 @@
 		if (snapshotName.includes('The Vibrant Guano Ordinance (Version ###)')) {
             return 'Snapshot - The Vibrant Guano Ordinance.png';
         }
+		if (snapshotName.includes('Foundations & Frontiers (Version ###)')) {
+            return 'Snapshot - Foundations & Frontiers.png';
+        }
 		if (snapshotName.includes('The Brickening (2025)')) {
             return 'The Brickening (2025).png';
         }
@@ -1769,7 +1777,7 @@
         contentContainer.innerHTML = `
             <button class="modal-close" onclick="closePatchNotesModal()">✕</button>
             <h2 class="modal-title">${snapshot.name} Changelog</h2>
-            <div class="patch-notes-version">Standard Version: The Vibrant Guano Ordinance</div>
+            <div class="patch-notes-version">Standard Version: Foundations & Frontiers</div>
             ${formattedNotes}
         `;
 
