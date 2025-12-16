@@ -127,17 +127,32 @@
             font-size: 14px;
             z-index: 50; /* Ensure it's above the canvas */
         }
+		#hellfireContainer {
+			position: absolute;
+			top: 40px;
+			right: 10px;
+			display: none; /* Hidden by default */
+			align-items: center;
+			gap: 5px;
+			z-index: 50;
+			background-color: rgba(0, 0, 0, 0.3); /* Optional: slight background for readability */
+			padding: 2px 5px;
+			border-radius: 5px;
+		}
+
 		#hellfireIcon {
-            position: absolute;
-            top: 40px; /* Positioned below the coords display */
-            right: 10px;
-            width: 32px;
-            height: 32px;
-            
-            z-index: 50;
-            display: none; /* Hidden by default */
-            transition: filter 0.5s linear; /* Smooths the saturation change */
-        }
+			width: 32px;
+			height: 32px;
+			transition: filter 0.5s linear;
+		}
+
+		#hellfirePercent {
+			color: #ff4500; /* Orange-red text */
+			font-weight: bold;
+			font-family: 'Courier New', monospace;
+			font-size: 16px;
+			text-shadow: 1px 1px 0 #000;
+		}
 		#deathDisplay {
             margin-top: 3px; /* Add some space above the tip */
             padding: 2px;
@@ -304,7 +319,6 @@
             }
         }
 
-        /* Add this new CSS rule anywhere in your <style> tag */
         #gameMenuTipText {
             margin-top: 3px; /* Add some space above the tip */
             padding: 10px;
@@ -2145,7 +2159,10 @@
 		  </div>
         </div>
         <div id="coordsDisplay">Coords: (0, 0)</div>
-		<img id="hellfireIcon" src="Fire Icon.png" style="display: none;">
+		<div id="hellfireContainer">
+			<span id="hellfirePercent">100%</span>
+			<img id="hellfireIcon" src="Fire Icon.png">
+		</div>
 		<div id="debugStats" style="display: none;"></div>
 
         <div id="minimapContainer">
@@ -2841,6 +2858,12 @@
 		let isPlayerInHellfireZone = false;
 		let isPlayerOnHellfire = false; // The permanent fire state
 		
+		// --- NEW GLOBALS FOR HELL UPDATE ---
+		let hellDungeonGenerated = false; // Tracks if the unique dungeon exists
+		let hellDungeonChestKey = null; // Stores the key of the specific hell chest
+		let hellfireCureStage = 0; // 0 = None, 1 = Ate Apple on Snow
+		const desolatePortalColumns = new Set(); // Prevent overlap
+		
 		// --- Seasonal System Variables ---
 		let seasonCycle = true; // Control via dev console
 		let snowParticles = [];
@@ -2915,6 +2938,7 @@
         let currentlyOpenChest = null; // Will store {col, row} of the open chest
 		
 		const particles = [];
+		const bees = []; // Stores active bee entities
 		const activePlants = new Set();
 		const activeSpoilage = new Set();
         const particleGravity = 0.3;
@@ -3729,9 +3753,6 @@
 		});
 
         window.addEventListener('keydown', (e) => {
-            // ... (your existing keydown logic)
-
-            // ADD THIS LOGIC for the ':' key
             if (e.key === ':') { // Shift + ;
                 e.preventDefault();
                 if (canOpenTeleportMenu()) {
@@ -3837,7 +3858,7 @@
         let foundryProbability = 0.00015; // Rare, found deep in compressed stone
         
         // Foliage Probabilities
-		const cowProbability = 0.02; // ADD THIS - 2% chance to spawn on a grass block
+		const cowProbability = 0.02; // 2% chance to spawn on a grass block HAH HAH HAH...
         const grassProbability = 0.4;
         const tallGrassProbability = 0.1;
         const cactusProbability = 0.2;
@@ -3869,7 +3890,7 @@
 		const chasmColumns = new Set();
         const bunkerColumns = new Set();
 		const sandstoneTempleColumns = new Set();
-		const plantationColumns = new Set(); // ADD THIS
+		const plantationColumns = new Set();
 		const redRockColumns = new Set(); // prevent spire/arch overlap in red_rocks biomes
 		const graniteMountainColumns = new Set();
 		const icyHillColumns = new Set();
@@ -3952,6 +3973,9 @@
 			'player_laying_left': { imgSrc: 'Player Laying Left.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
 			'player_laying_middle': { imgSrc: 'Player Laying Middle.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
 			'player_laying_right': { imgSrc: 'Player Laying Right.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
+			'player_hanging_top': { imgSrc: 'Player Hanging Top.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
+			'player_hanging_middle': { imgSrc: 'Player Hanging Middle.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
+			'player_hanging_bottom': { imgSrc: 'Player Hanging Bottom.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true },
 			'skeleton_laying_left': { imgSrc: 'Skeleton Laying Left.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', swordBlock: true },
 			'skeleton_laying_middle': { imgSrc: 'Skeleton Laying Middle.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', swordBlock: true },
 			'skeleton_laying_right': { imgSrc: 'Skeleton Laying Right.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', swordBlock: true },
@@ -3972,6 +3996,7 @@
             'bookshelf_full': { imgSrc: 'Bookshelf Full.png', solid: true, miningHardness: 150, drops: [{item: 'bookshelf_empty', chance: 1, min: 1, max: 1}, {item: 'book', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'world_mover': { imgSrc: 'World Mover.png', solid: true, miningHardness: 250, drops: [{item: 'world_mover', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
 			'world_builder': { imgSrc: 'World Builder.png', solid: true, miningHardness: 250, drops: [{item: 'world_builder', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
+			'beehive': { imgSrc: 'Beehive.png', solid: true, miningHardness: 100, drops: [{item: 'beehive', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
 			'napalm_bomb': { imgSrc: 'Napalm Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#FF4500', bombDamage: 3, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 90 },
 			'dynamite_bomb': { imgSrc: 'Dynamite Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#DC143C', bombDamage: 15, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 220 },
 			'octogen_bomb': { imgSrc: 'Octogen Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#FFD700', bombDamage: 45, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 180 },
@@ -3994,6 +4019,7 @@
 			'stone_stairs_left': { imgSrc: 'Stone Stairs Left.png', solid: true, miningHardness: 500, drops: [{item: 'stone_stairs_left', chance: 1, min: 1, max: 1}], color: '#999999' },
 			'dead_body_chest': { imgSrc: 'Dead Body Chest.png', solid: true, miningHardness: 150, drops: [{item: 'dead_body_block', chance: 1, min: 1, max: 1}], color: '#BC8F8F' },
 			'dead_body_block': { imgSrc: 'Dead Body Chest.png', solid: true, miningHardness: 150, drops: [{item: 'dead_body_block', chance: 1, min: 1, max: 1}], color: '#BC8F8F' },
+			'crisped_body_block': { imgSrc: 'Crisped Body Block.png', solid: true, miningHardness: 150, drops: [{item: 'crisped_body_block', chance: 1, min: 1, max: 1}], color: '#2a2a2a' },
             'seed_dirt_block': { imgSrc: 'Seed Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 3}], color: '#8B4513', shovelBlock: true },
 			'grass_dirt': { imgSrc: 'Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			'overgrown_grass_dirt': { imgSrc: 'Overgrown Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
@@ -4349,6 +4375,7 @@
 			'pure_heaven_debris_block': { imgSrc: 'Pure Heaven Debris Block.png', solid: true, miningHardness: 25000, drops: [{item: 'pure_heaven_debris_block', chance: 1, min: 1, max: 1}], color: '#FDF5E6' },
 			'heaven_gate_brick_block': { imgSrc: 'Heaven Gate Brick Block.png', solid: true, miningHardness: 75000, drops: [{item: 'heaven_gate_brick_block', chance: 1, min: 1, max: 1}], color: '#FFD700' },
 			'ruin_heaven_gate_brick_block': { imgSrc: 'Ruin Heaven Gate Brick Block.png', solid: true, miningHardness: 75000, drops: [{item: 'ruin_heaven_gate_brick_block', chance: 0.9, min: 1, max: 1}, {item: 'corroded_heaven_debris_block', chance: 0.1, min: 1, max: 1}], color: '#FFD700' },
+			'hell_gate_brick_block': { imgSrc: 'Hell Gate Brick Block.png', solid: true, miningHardness: 7500, drops: [{item: 'hell_gate_brick_block', chance: 1, min: 1, max: 1}], color: '#FFD700' },
 			'heaven_portal': { imgSrc: 'Heaven Portal.png', solid: false, miningHardness: 75000, drops: [], color: '#00BFFF' },
 			'meat_block': { imgSrc: 'Meat Block.png', solid: true, miningHardness: 200, drops: [{item: 'meat_block', chance: 0.1, min: 1, max: 1}, {item: 'beef', chance: 0.3, min: 1, max: 3}, {item: 'pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#9e6655', shovelBlock: true },
 			'spoiled_meat_block': { imgSrc: 'Spoiled Meat Block.png', solid: true, miningHardness: 200, drops: [{item: 'spoiled_meat_block', chance: 0.1, min: 1, max: 1}, {item: 'spoiled_beef', chance: 0.3, min: 1, max: 3}, {item: 'spoiled_pork', chance: 0.3, min: 1, max: 3}, {item: 'human_flesh', chance: 0.2, min: 1, max: 3}], color: '#cfd99f', shovelBlock: true },
@@ -4386,6 +4413,14 @@
 			'test_block_test_axe': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', requiredTool: 'test_axe' },
             'test_block_shovel': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', shovelBlock: true },
             'raw_test_block_axe': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999' },
+			// EVIL
+			// --- NEW HELL BLOCKS ---
+			'hell_brick_block': { imgSrc: 'Hell Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'hell_brick_block', chance: 1, min: 1, max: 1}], color: '#5e0000' },
+			'hell_brick_wall': { imgSrc: 'Hell Brick Wall.png', solid: false, miningHardness: 250, drops: [{item: 'hell_brick_wall', chance: 1, min: 1, max: 1}], color: '#3d0000' },
+			'hell_cage': { imgSrc: 'Hell Cage.png', solid: false, miningHardness: 1000, drops: [{item: 'hell_cage', chance: 1, min: 1, max: 1}], color: '#2b0000', nonsolidPlace: true, wallPlace: true },
+			'hell_chain': { imgSrc: 'Hell Chain.png', solid: false, miningHardness: 100, drops: [{item: 'hell_chain', chance: 1, min: 1, max: 1}], color: '#2b0000', nonsolidPlace: true, wallPlace: true },
+			// Special Chest: Unbreakable (-1 hardness)
+			'hell_chest': { imgSrc: 'Hell Chest.png', solid: true, miningHardness: 1000, drops: [], color: '#ff4500', label: 'Hellfire Remnants' },
 			// Walls
             'stone_wall': { imgSrc: 'Stone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'stone_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
             'compacted_stone_wall': { imgSrc: 'Compacted Stone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'compacted_stone_wall', chance: 1, min: 1, max: 1}], color: '#708090' },
@@ -4695,6 +4730,11 @@
 			 'elemental_helmet': { imgSrc: 'Elemental Helmet Icon.png', equippedImgSrc: 'Elemental Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.24, maxDurability: 300 },
 			 'powered_elemental_helmet': { imgSrc: 'Powered Elemental Helmet Icon.png', equippedImgSrc: 'Powered Elemental Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.24, maxDurability: 500 }, // Not Actually Obtainable
 		};
+		
+		let npcTypes = { // Also used for custom particles
+			 'bee': { imgSrc: 'Bee.png', color: '#802600', isParticle: true },
+			 'cow': { imgSrc: 'Cow.png', color: '#802600', isMob: true, height: 2, width: 3 },
+		};
 
         // Breaking stage assets for visual feedback during mining
         const breakingStageAssets = {
@@ -4724,7 +4764,7 @@
         };
 
         // Combine all assets to load
-        const assetsToLoadList = { ...blockTypes, ...itemTypes, ...breakingStageAssets, ...healthAssets, ...fireAssets };
+        const assetsToLoadList = { ...blockTypes, ...itemTypes, ...npcTypes, ...breakingStageAssets, ...healthAssets, ...fireAssets };
         const assets = {};            // will store loaded Image objects keyed by type name (e.g. assets['dirt'])
 		let failedAssets = {};      // track failures
 		let assetsToLoad = 0;
@@ -4792,7 +4832,7 @@
         
 		function getAssetGroups() {
 			// Add any other asset maps you use here
-			return [blockTypes, itemTypes, breakingStageAssets, healthAssets, fireAssets, traderImageAssets]; // NEW: Added traderImageAssets
+			return [blockTypes, itemTypes, npcTypes, breakingStageAssets, healthAssets, fireAssets, traderImageAssets]; // NEW: Added traderImageAssets
 		}
 
 		function loadAssets() {
@@ -5249,10 +5289,6 @@
 			
 			console.log("Mod application complete.");
 		}
-
-		// --- HOOK INTO GAME RESET ---
-		// Find your 'startNewGame' function and add this line right after the variable resets:
-		// startNewGame(seedToUse) { ... [reset logic] ... applyModFeatures(); ... }
 		
 		let skinTriggerSequence = "";
 		
@@ -5677,6 +5713,30 @@
 						if (getBlockType(leafCol, r) === '' && (!worldBlocks[key] || worldBlocks[key].type !== trunkBlockType)) {
 							if (random() < 0.95) {
 								worldBlocks[key] = { type: bushBlockType, mineProg: 0 };
+							}
+						}
+					}
+				}
+			} // Try to spawn a beehive under the leaves we just generated
+			if (bushBlockType && (treeType === 'oak' || treeType === 'birch' || treeType === 'pine' || treeType === 'spruce' || treeType === 'mahogany' || treeType === 'redwood')) {
+				if (random() < 0.1) { // 10% chance per tree to have a hive
+					// Scan the generated area to find a valid spot (Leaf above, Air at spot)
+					const searchHeight = maxTrunkHeight + maxCanopyRadius;
+					for(let scanY = 0; scanY < searchHeight; scanY++) {
+						const checkRow = surfaceRow - scanY;
+						// Check columns slightly left/right of trunk
+						const offsets = [-1, 1, -2, 2]; 
+						
+						for(let offset of offsets) {
+							const checkCol = col + offset;
+							const thisBlock = getBlockType(checkCol, checkRow);
+							const blockAbove = getBlockType(checkCol, checkRow - 1); // Row - 1 is above
+							
+							// If current spot is empty AND block above is leaves (bushBlockType)
+							if (thisBlock === '' && blockAbove === bushBlockType) {
+								worldBlocks[`${checkCol},${checkRow}`] = { type: 'beehive', mineProg: 0 };
+								// console.log("Beehive spawned at", checkCol, checkRow);
+								return; // Only one hive per tree
 							}
 						}
 					}
@@ -6313,7 +6373,6 @@
 							worldBlocks[`${pCol},${pRow}`] = { type: 'heaven_portal', mineProg: 0 };
 						}
 
-						// Add this portal to our global list.
 						// The anchor is the center of the portal blocks.
 						const portalAnchorCol = startCol + pattern.anchorOffset.col;
 						const portalAnchorRow = startRow + pattern.anchorOffset.row;
@@ -6517,13 +6576,14 @@
 
                     } else if (heavenBiome === 'debris_flats' && row < heavenBaseY + 10) { 
                         if (row === heavenBaseY) {
-                            if (random() < 0.005) {
+							const b = random()
+                            if (b < 0.03) {
                                 blockType = 'pure_heaven_debris_block';
                             }
-							else if (random() < 0.05) {
+							else if (b < 0.1) {
                                 blockType = 'strong_heaven_debris_block';
                             }
-							else if (random() < 0.2) {
+							else if (b < 0.3) {
                                 blockType = 'ancient_heaven_debris_block';
                             }
 							else {
@@ -6859,6 +6919,24 @@
 					// existing underworld from 300 up to the void entrance (keep your existing getUnderworldBiome logic)
 					else if (depth >= 300 && depth < 600) {
 						const underworldBiome = getUnderworldBiome(col);
+						// Only spawn between X -100 and 100, on the surface of Hell (depth ~300)
+						if (!hellDungeonGenerated && col >= -100 && col <= 100 && depth === 300) {
+							if (random() < 0.5) {
+								columhwd = -100
+							} else {
+								columhwd = 100
+							}
+							// Ensure flat-ish ground or force it
+							generateHellDungeon(columhwd, row);
+							// Return the block we just placed (or what generateHellDungeon put there)
+							return worldBlocks[key] || { type: 'hellstone', mineProg: 0 };
+						}
+						
+						// --- INSERT DESOLATE PORTAL LOGIC HERE ---
+						// 0.2% Chance on Hell Surface
+						if (depth === 300 && random() < 0.001) {
+							generateDesolateHellPortal(col, row);
+						}
 						if (underworldBiome === 'golden_city' && depth < 315) {
 							if (depth === 300) blockType = 'gilded_grass_dirt_block';
 							else blockType = 'gilded_dirt_block';
@@ -7014,13 +7092,13 @@
                 } else if (random() < mineshaftProbability) {
                     generateMineshaft(col, row);
                     blockType = worldBlocks[key] ? worldBlocks[key].type : getBlockType(col, row);
-                } else if (random() < lavaCaveProbability) { // ADD THIS
+                } else if (random() < lavaCaveProbability) {
                     generateLavaCave(col, row);
                     blockType = worldBlocks[key] ? worldBlocks[key].type : '';
                 } else if (random() < caveProbability) {
                     generateCave(col, row);
                     blockType = worldBlocks[key] ? worldBlocks[key].type : '';
-                } else if (random() < bunkerProbability && !bunkerColumns.has(col)) { // ADD THIS
+                } else if (random() < bunkerProbability && !bunkerColumns.has(col)) {
                     generateBunker(col, row);
                     blockType = worldBlocks[key] ? worldBlocks[key].type : getBlockType(col, row);
                 } else if (random() < sunkenLibraryProbability && !sunkenLibraryColumns.has(col)) {
@@ -7677,7 +7755,6 @@
                 }
             }
 
-            // --- ADD THIS NEW FOLIAGE PASS ---
             // Second pass: Add foliage to the floor
             const guanoProbability = 0.12; // 12% chance for guano
             
@@ -8356,6 +8433,147 @@
 					placedVoid = true;
 				}
 			}
+		}
+		
+		// --- HELL DUNGEON GENERATOR ---
+		function generateHellDungeon(centerX, surfaceRow) {
+			if (hellDungeonGenerated) return; 
+			
+			console.log("Generating THE DUNGEON OF HELL at", centerX, surfaceRow);
+			
+			const width = 40; 
+			const height = 12; 
+			const startX = centerX - Math.floor(width / 2);
+			const startY = surfaceRow - height + 1;
+
+			// 1. Build the Structure Shell & Background
+			for (let x = 0; x < width; x++) {
+				for (let y = 0; y < height; y++) {
+					const col = startX + x;
+					const row = startY + y;
+					const key = `${col},${row}`;
+					
+					const isEdge = x === 0 || x === width - 1 || y === 0 || y === height - 1;
+					const isCage = (x === 1 || x === width - 2) && (y > 1 && y < height - 2);
+
+					if (isCage) {
+						// Wall with Cage Overlay
+						worldBlocks[key] = { type: 'hell_brick_wall', overlay: 'hell_cage', mineProg: 0 };
+					} else if (isEdge) {
+						worldBlocks[key] = { type: 'hell_brick_block', mineProg: 0 };
+					} else {
+						// Background wall (Interior)
+						worldBlocks[key] = { type: 'hell_brick_wall', mineProg: 0 };
+					}
+				}
+			}
+
+			// 2. Place Laying Skeleton (Left side of room)
+			const skelX = startX + 5;
+			const floorY = startY + height - 2; // Sitting on floor
+			worldBlocks[`${skelX},${floorY}`] = { type: 'skeleton_laying_left', mineProg: 0 };
+			worldBlocks[`${skelX+1},${floorY}`] = { type: 'skeleton_laying_middle', mineProg: 0 };
+			worldBlocks[`${skelX+2},${floorY}`] = { type: 'skeleton_laying_right', mineProg: 0 };
+
+			// 3. Place Hanging Players (Right side of room)
+			// We will place 2 of them spaced apart
+			const hangingPositions = [centerX + 8, centerX + 14]; 
+
+			hangingPositions.forEach(hCol => {
+				// Randomize chain length (1 or 2)
+				const chainLength = 1 + Math.floor(Math.random() * 2);
+				
+				// Place Chains (Overlay on Wall)
+				for(let i = 1; i <= chainLength; i++) {
+					const chainRow = startY + i; // Ceiling is startY, so start below it
+					worldBlocks[`${hCol},${chainRow}`] = { 
+						type: 'hell_brick_wall', 
+						overlay: 'hell_chain', 
+						mineProg: 0 
+					};
+				}
+
+				// Place Player Parts below chain
+				const playerStartRow = startY + chainLength + 1;
+				worldBlocks[`${hCol},${playerStartRow}`] = { type: 'player_hanging_top', mineProg: 0 };
+				worldBlocks[`${hCol},${playerStartRow+1}`] = { type: 'player_hanging_middle', mineProg: 0 };
+				worldBlocks[`${hCol},${playerStartRow+2}`] = { type: 'player_hanging_bottom', mineProg: 0 };
+			});
+
+			// 4. Clear center chamber space for chest (ensure no wall overlay interferes)
+			const chestCol = centerX;
+			const chestRow = startY + height - 2; 
+			worldBlocks[`${chestCol},${chestRow}`] = { type: '', mineProg: 0 }; 
+
+			// 5. Place the "Hell Chest"
+			const chestInventory = new Array(chestInventorySize).fill(null);
+
+			hellDungeonChestKey = `${chestCol},${chestRow}`;
+			worldBlocks[hellDungeonChestKey] = {
+				type: 'chest', 
+				cloakedAs: 'hell_chest', 
+				mineProg: 0,
+				inventory: new Array(chestInventorySize).fill(null),
+				label: "Hellfire Remnants",
+				miningHardness: 1000 
+			};
+			const loot = [];
+            loot.push({ type: 'cloud_block', count: 10 });
+			loot.push({ type: 'cobweb', count: 10 });
+            loot.forEach((item, index) => {
+                if (index < chestInventorySize) {
+                    worldBlocks[hellDungeonChestKey].inventory[index] = item;
+                }
+            });
+
+			// 6. Decoration around chest
+			worldBlocks[`${chestCol-1},${chestRow}`] = { type: 'hell_gate_brick_block', mineProg: 0 };
+			worldBlocks[`${chestCol+1},${chestRow}`] = { type: 'hell_gate_brick_block', mineProg: 0 };
+
+			hellDungeonGenerated = true;
+		}
+		// --- DESOLATE PORTAL GENERATOR ---
+		function generateDesolateHellPortal(col, surfaceRow) {
+			// Check constraints
+			for (let i = -5; i <= 5; i++) if (desolatePortalColumns.has(col + i)) return;
+			for (let i = -5; i <= 5; i++) desolatePortalColumns.add(col + i);
+
+			// Variation 1: Obsidian Spike Base (50% chance)
+			// Variation 2: Ash Mound Base (50% chance)
+			const variation = Math.random() < 0.5 ? 'spikes' : 'ash';
+			
+			// 1. Build Base
+			if (variation === 'spikes') {
+				// Jagged Obsidian
+				worldBlocks[`${col-2},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
+				worldBlocks[`${col-1},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
+				worldBlocks[`${col-1},${surfaceRow-1}`] = { type: 'obsidian_block', mineProg: 0 }; // Spike up
+				worldBlocks[`${col},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
+				worldBlocks[`${col+1},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
+				worldBlocks[`${col+2},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
+			} else {
+				// Ash Mound
+				for(let x=-2; x<=2; x++) worldBlocks[`${col+x},${surfaceRow}`] = { type: 'ash_block', mineProg: 0 };
+				worldBlocks[`${col-1},${surfaceRow-1}`] = { type: 'ash_block', mineProg: 0 };
+				worldBlocks[`${col+1},${surfaceRow-1}`] = { type: 'ash_block', mineProg: 0 };
+			}
+
+			// 2. Build Portal Frame (Same shape as Heaven Portal)
+			const frameBaseY = surfaceRow - 1; 
+			// Standard "C" shape: Bottom(2), Left(5), Top(2), Right(Top/Bottom only)
+			const portalBlocks = [
+				[0,0], [1,0], // Bottom
+				[-1,1], [-1,2], [-1,3], [-1,4], [-1,5], // Left Pillar
+				[0,5], [1,5], // Top
+				[2,5], [2,0] // Right ends
+			];
+
+			portalBlocks.forEach(pos => {
+				const pCol = col + pos[0] - 1; // Center it
+				const pRow = frameBaseY - pos[1];
+				// Desolate portals are made of Hell Gate Bricks
+				worldBlocks[`${pCol},${pRow}`] = { type: 'hell_gate_brick_block', mineProg: 0 };
+			});
 		}
 
 		function generateSandstoneDesertTemple(centerCol, baseRow) {
@@ -9393,7 +9611,6 @@
                 }
             }
 
-            // If no overlap, add this moon's bounding box to our list and generate it
             moonRegions.push(boundingBox);
             console.log(`Generating moon at (${centerX}, ${centerY}) with radius ${radius}`);
 
@@ -9499,16 +9716,28 @@
 			respawnPlayer()
 		}
 
-        function respawnPlayer() {
+        function respawnPlayer(deathSource = null) {
 			// --- NEW: Death Chest Logic ---
 			deathCount += 1;
-			const playerHasItems = inventorySlots.some(item => item !== null);
+			let playerHasItems = inventorySlots.some(item => item !== null);
 			const deathCol = Math.floor((player.x + playerWidth / 2) / tileSize);
 			const deathRow = Math.floor((player.y + playerHeight) / tileSize) - 1; // Place it at the player's feet
 			const deathKey = `${deathCol},${deathRow}`;
 			const biomeAtDeath = getBiome(deathCol);
 			
 			console.log(`Player died at ${deathKey}`);
+			
+			// --- HELLFIRE DEATH MECHANIC ---
+			// Some callers call respawnPlayer() without a deathSource.  Use explicit flags
+			// as a fallback so hellfire deaths are detected reliably.
+			const diedFromHellfire = ((deathSource && deathSource.type === 'hellfire')
+				|| !!isPlayerOnHellfire
+				|| !!player.onFire)
+				&& deathRow > 200;
+
+			if (!playerHasItems && diedFromHellfire) {
+				worldBlocks[deathKey] = { type: 'crisped_body_block', mineProg: 0 };
+			}
 			if (playerHasItems) {
 				// Create a new inventory for the chest with 50 slots
 				const deathChestInventory = new Array(50).fill(null);
@@ -9603,62 +9832,55 @@
 			
 			player.bloodAlcohol = 0;
             player.activeEffects = [];
-            const vignette = document.getElementById('drunkVignette'); // --- ADD THIS ---
+            const vignette = document.getElementById('drunkVignette');
             if (canvas) canvas.style.filter = 'none';
-            if (canvas) canvas.classList.remove('vibrating'); // --- ADD THIS ---
-            if (vignette) vignette.style.display = 'none'; // --- ADD THIS ---
+            if (canvas) canvas.classList.remove('vibrating');
+            if (vignette) vignette.style.display = 'none';
             
 			player.onFire = false;
+			hellfireCureStage = 0;
 			player.fireDuration = 0;
 			player.fireDamageTimer = 0;
 			/*player.armor = { helmet: null, chestGear: null, legGear: null, boots: null };*/
 		}
 
-        function applyDamage(amount) {
-            if (amount <= 0) return;
+        function applyDamage(amount, sourceMeta = null) {
+			if (amount <= 0) return false;
 
-            let damageToApply = amount;
-            let totalReduction = 0;
+			let damageToApply = amount;
+			let totalReduction = 0;
 
-            // Iterate over equipped armor directly from the player.armor object
-            for (const armorSlot in player.armor) { // 'helmet', 'chestGear', 'legGear', 'boots', 'face'
-                const armorItem = player.armor[armorSlot]; // This is the item object, e.g., { type: 'trader_mask', ... }
-                
-                if (armorItem === null) continue; // Nothing in this slot
+			// Armor reduction logic (Existing logic)
+			for (const armorSlot in player.armor) {
+				const armorItem = player.armor[armorSlot];
+				if (armorItem === null) continue;
+				const itemProps = itemTypes[armorItem.type];
+				if (!itemProps || !itemProps.protectionFactor || !itemProps.isTool) continue;
+				const reductionAmount = amount * itemProps.protectionFactor;
+				totalReduction += reductionAmount;
+				const durabilityDamage = reductionAmount;
+				if (armorItem.durability !== undefined) {
+					armorItem.durability -= durabilityDamage;
+					if (armorItem.durability <= 0) {
+						player.armor[armorSlot] = null;
+					}
+				}
+			}
+			
+			damageToApply -= totalReduction;
+			if (damageToApply < 0) damageToApply = 0;
 
-                const itemProps = itemTypes[armorItem.type];
-                if (!itemProps || !itemProps.protectionFactor || !itemProps.isTool) continue;
+			player.health -= damageToApply;
 
-                // Calculate damage reduction for this piece
-                const reductionAmount = amount * itemProps.protectionFactor;
-                totalReduction += reductionAmount;
-
-                // Apply durability damage to the item object itself
-                const durabilityDamage = reductionAmount; // You can scale this if needed
-                if (armorItem.durability !== undefined) {
-                    armorItem.durability -= durabilityDamage;
-
-                    // Check if armor broke
-                    if (armorItem.durability <= 0) {
-                        player.armor[armorSlot] = null; // The armor breaks and disappears
-                    }
-                }
-            }
-            
-            // Apply the reduced damage to the player
-            damageToApply -= totalReduction;
-            if (damageToApply < 0) damageToApply = 0; // Can't heal the player
-
-            player.health -= damageToApply;
-
-            // Check for death
-            if (player.health <= 0) {
-                respawnPlayer();
-                return true; // Player died
-            }
-            
-            return false; // Player did not die
-        }
+			// Check for death
+			if (player.health <= 0) {
+				// Pass the source metadata to respawn logic
+				respawnPlayer(sourceMeta);
+				return true; 
+			}
+			
+			return false;
+		}
 
         function updatePlayer(dt) {
             const factor = isGameActive ? dt / 1000 * 60 : 0;
@@ -9805,7 +10027,7 @@
 					player.fireDamageTimer -= dt;
 					if (player.fireDamageTimer <= 0) {
 						player.fireDamageTimer = PLAYER_FIRE_DAMAGE_TICK; // Reset tick timer
-						if (applyDamage(PLAYER_FIRE_DAMAGE)) return; // Player died
+						if (applyDamage(PLAYER_FIRE_DAMAGE, { type: 'hellfire' })) return;
 					}
 					// This ensures the player *looks* on fire
 					player.onFire = true; 
@@ -9843,8 +10065,8 @@
             }
 
             // 4. Apply environmental modifiers (Cobweb, Asphalt, etc.)
-            const currentSpeed = isInCobweb ? effectiveSpeed * 0.2 : isOnAsphalt ? effectiveSpeed * 1.5 : isOnThickMud ? effectiveSpeed * 0.5 : effectiveSpeed;
-            const currentJumpStrength = isInCobweb ? effectiveJump * 0.2 : isOnThickMud ? effectiveJump * 0 : effectiveJump;
+            const currentSpeed = isOnThickMud && isInCobweb ? effectiveSpeed * 0.1 : isInCobweb ? effectiveSpeed * 0.2 : isOnAsphalt ? effectiveSpeed * 1.5 : isOnThickMud ? effectiveSpeed * 0.5 : effectiveSpeed;
+            const currentJumpStrength = isOnThickMud ? effectiveJump * 0 : isInCobweb ? effectiveJump * 0.2 : effectiveJump;
             const currentGravity = isInCobweb ? effectiveGravity * 0.1 : effectiveGravity;
 
             // 5. Apply gravity
@@ -10003,6 +10225,12 @@
             const [col, row] = targetKey.split(',').map(Number); // Get coords for spawning
 			const blockData = worldBlocks[targetKey];
 			
+			if (blockData && blockData.type === 'beehive') {
+				// Calculate center world coordinates for the spawn
+				const worldX = col * tileSize + tileSize / 2;
+				const worldY = row * tileSize + tileSize / 2;
+				spawnBeeSwarm(worldX, worldY);
+			}
 			if (blockData && blockData.type === 'void_crystal' && player.y > 600 * tileSize) {
 				unlockAchievement('REALM_NOTHINGNESS');
 			}
@@ -10613,7 +10841,7 @@
 					if (blockData.type !== 'bed') {
 						worldBlocks[targetKey] = { type: '', mineProg: 0 };
 					}
-                    exploredMap[targetKey] = '#000000'; // --- ADD THIS: Set broken block to "air" color ---
+                    exploredMap[targetKey] = '#000000';
 					const brokenBlockType = blockData.type;
                     const mechageezerComponents = ['lever_off', 'lever_on', 'chest_lever_off', 'chest_lever_on', 'reactant', 'trailer', 'lit_trailer', 'stone_trailer'];
                     if (mechageezerComponents.includes(brokenBlockType)) {
@@ -10784,7 +11012,7 @@
                 const armorItem = player.armor[armorSlot]; 
                 
                 // If there's no item, skip to the next slot
-                if (armorItem === null) continue; 
+                if (!armorItem || typeof armorItem.type !== 'string') continue;
 
                 // Get the *equipped* asset key (e.g., "dark_helmet_equipped")
                 const equippedAssetKey = `${armorItem.type}_equipped`;
@@ -10854,6 +11082,105 @@
 				// 4. Update position based on velocity
 				p.x += p.dx;
 				p.y += p.dy;
+			}
+		}
+		
+		function spawnBeeSwarm(centerX, centerY) {
+			const swarmSize = 20 + Math.floor(random() * 281); // 20 to 300 bees
+			
+			for (let i = 0; i < swarmSize; i++) {
+				bees.push({
+					x: centerX,
+					y: centerY,
+					// Gritty movement: High speed jitter
+					dx: (Math.random() - 0.5) * 10, 
+					dy: (Math.random() - 0.5) * 10,
+					life: 5000 + Math.random() * 5000, // 5-10 seconds
+					speed: 3 + Math.random() * 2, // Base speed
+					wobbleOffset: Math.random() * 100, // For sine wave buzz
+					targetUpdateTimer: 0 // Retarget player occasionally
+				});
+			}
+			// showMessageBox("NOT THE BEES!", 'alert'); // Optional funny alert
+		}
+
+		function updateBees(dt) {
+			const playerCenterX = player.x + playerWidth / 2;
+			const playerCenterY = player.y + playerHeight / 2;
+			const beeSize = 6; // Hitbox size
+
+			for (let i = bees.length - 1; i >= 0; i--) {
+				const bee = bees[i];
+				bee.life -= dt;
+
+				if (bee.life <= 0) {
+					bees.splice(i, 1);
+					continue;
+				}
+
+				// --- Gritty Movement Logic ---
+				// 1. Calculate vector to player
+				const dx = playerCenterX - bee.x;
+				const dy = playerCenterY - bee.y;
+				const dist = Math.sqrt(dx*dx + dy*dy);
+
+				// 2. Normalize and apply speed
+				if (dist > 0) {
+					bee.dx += (dx / dist) * 0.5; // Acceleration towards player
+					bee.dy += (dy / dist) * 0.5;
+				}
+
+				// 3. Add "Gritty" Jitter (Random bursts of movement)
+				if (Math.random() < 0.1) {
+					bee.dx += (Math.random() - 0.5) * 5;
+					bee.dy += (Math.random() - 0.5) * 5;
+				}
+
+				// 4. Cap Speed & Apply Friction (prevents them flying off infinitely)
+				bee.dx *= 0.92; 
+				bee.dy *= 0.92;
+
+				// 5. Update Position
+				bee.x += bee.dx;
+				bee.y += bee.dy;
+
+				// --- Collision Logic ---
+				// Simple circle/rect collision check
+				if (bee.x > player.x && bee.x < player.x + playerWidth &&
+					bee.y > player.y && bee.y < player.y + playerHeight) {
+					
+					// Deal random damage 0.2 - 0.7
+					const damage = 0.2 + (Math.random() * 0.5);
+					applyDamage(damage);
+					
+					// Bee dies on impact
+					bees.splice(i, 1);
+				}
+			}
+		}
+
+		function drawBees() {
+			// Use the existing 'bee' asset defined in npcTypes if available, or fallback
+			const beeImg = assets['bee']; 
+			
+			for (const bee of bees) {
+				if (beeImg) {
+					// Draw sprite
+					// Add a jitter to the draw position for extra visual "buzz"
+					const drawX = bee.x - camera.x + (Math.random() * 2 - 1);
+					const drawY = bee.y - camera.y + (Math.random() * 2 - 1);
+					
+					// Flip sprite based on direction
+					ctx.save();
+					ctx.translate(drawX, drawY);
+					if (bee.dx < 0) ctx.scale(-1, 1); // Face left
+					ctx.drawImage(beeImg, -6, -6, 12, 12); // Draw 12x12 bee centered
+					ctx.restore();
+				} else {
+					// Fallback: Yellow/Black pixel
+					ctx.fillStyle = '#FFD700';
+					ctx.fillRect(bee.x - camera.x, bee.y - camera.y, 4, 4);
+				}
 			}
 		}
 		
@@ -11047,7 +11374,7 @@
 						const blockProps = blockTypes[blockData.type];
 						// Skip indestructible or non-mineable blocks
 						if (!blockProps || blockProps.miningHardness === 0 || blockProps.miningHardness > 250000) continue;
-                        if (blockProps.requiredTool) continue; // --- ADD THIS FIX ---
+                        if (blockProps.requiredTool) continue;
 						
 						// Apply damage based on the distance layer
 
@@ -11389,6 +11716,35 @@
 				  mouse.rightDown = false;
 				  return; // Stop block placement
 				}
+				if (isPlayerOnHellfire) {
+					// Check block directly under feet (using floor)
+					const feetCol = Math.floor((player.x + playerWidth/2) / tileSize);
+					const feetRow = Math.floor((player.y + playerHeight) / tileSize);
+					const blockBelow = getBlockType(feetCol, feetRow);
+
+					if (blockBelow === 'snow_block') {
+						// Sequence Step 1: Eat Golden Apple
+						if (selectedItemType === 'golden_apple') {
+							hellfireCureStage = 1;
+							showMessageBox("The apple chills your burning soul... Now wash it down.", 'info');
+						}
+						// Sequence Step 2: Drink Milk (if stage is 1)
+						else if (selectedItemType === 'cup_of_milk' && hellfireCureStage === 1) {
+							// CURE!
+							isPlayerOnHellfire = false;
+							hellfireLevel = 1.0; // Reset saturation
+							player.onFire = false;
+							hellfireCureStage = 0;
+							showMessageBox("The Hellfire has been extinguished!", 'alert');
+						}
+					} else {
+						// Reset stage if not on snow
+						if (hellfireCureStage > 0) {
+							hellfireCureStage = 0;
+							showMessageBox("You stepped off the snow! Cure failed.", 'info');
+						}
+					}
+				}
 			const blockProps = blockTypes[blockAtTarget.type];
 			// --- NEW: World Builder Item-Use Logic (Tree Growing) ---
                 if (selectedItemType === 'world_builder') {
@@ -11478,7 +11834,7 @@
             } else if (blockAtTarget.type === 'trader') {
                 toggleTraderMenu(targetCol, targetRow);
                 mouse.rightDown = false;
-                return; // <-- ADD THIS LINE
+                return;
             } else if (blockAtTarget.type === 'bed') {
                 player.bedSpawnPoint = { x: (targetCol - 1) * tileSize, y: (targetRow - playerHeightBlocks) * tileSize };
                 mouse.rightDown = false;
@@ -13237,7 +13593,7 @@
                     toggleWorldMoverMenu();
                 } else if (isGamePaused && worldMoverTeleportOverlay.style.display === 'flex') {
                     toggleTeleportMenu();
-                } else if (isGamePaused && anvilOverlay.style.display === 'flex') { // ADD THIS
+                } else if (isGamePaused && anvilOverlay.style.display === 'flex') {
                     toggleAnvilMenu();
                 } else if (isGamePaused && voidChestOverlay.style.display === 'flex') {
 					toggleVoidChestMenu();
@@ -13890,22 +14246,26 @@
             },
 			{ name: "Ancient Heaven Debris Blocks",
                 input: { 0: { type: 'corroded_heaven_debris_block', count: 1 }, 1: { type: 'corroded_heaven_debris_block', count: 1 }, 2: { type: 'corroded_heaven_debris_block', count: 1 }, 3: { type: 'corroded_heaven_debris_block', count: 1 }, 4: { type: 'corroded_heaven_debris_block', count: 1 }, 5: { type: 'corroded_heaven_debris_block', count: 1 }, 6: { type: 'corroded_heaven_debris_block', count: 1 }, 7: { type: 'corroded_heaven_debris_block', count: 1 }, 8: { type: 'corroded_heaven_debris_block', count: 1 }, 9: { type: 'corroded_heaven_debris_block', count: 1 }, 10: { type: 'corroded_heaven_debris_block', count: 1 }, 11: { type: 'corroded_heaven_debris_block', count: 1 }, 12: { type: 'corroded_heaven_debris_block', count: 1 }, 13: { type: 'corroded_heaven_debris_block', count: 1 }, 14: { type: 'corroded_heaven_debris_block', count: 1}, 15: { type: 'corroded_heaven_debris_block', count: 1 } },
-                output: 'ancient_heaven_debris_block', outputCount: 2
+                output: 'ancient_heaven_debris_block', outputCount: 7
             },
 			{ name: "Strong Heaven Debris Blocks",
                 input: { 0: { type: 'ancient_heaven_debris_block', count: 1 }, 1: { type: 'ancient_heaven_debris_block', count: 1 }, 2: { type: 'ancient_heaven_debris_block', count: 1 }, 3: { type: 'ancient_heaven_debris_block', count: 1 }, 4: { type: 'ancient_heaven_debris_block', count: 1 }, 5: { type: 'ancient_heaven_debris_block', count: 1 }, 6: { type: 'ancient_heaven_debris_block', count: 1 }, 7: { type: 'ancient_heaven_debris_block', count: 1 }, 8: { type: 'ancient_heaven_debris_block', count: 1 }, 9: { type: 'ancient_heaven_debris_block', count: 1 }, 10: { type: 'ancient_heaven_debris_block', count: 1 }, 11: { type: 'ancient_heaven_debris_block', count: 1 }, 12: { type: 'ancient_heaven_debris_block', count: 1 }, 13: { type: 'ancient_heaven_debris_block', count: 1 }, 14: { type: 'ancient_heaven_debris_block', count: 1}, 15: { type: 'ancient_heaven_debris_block', count: 1 } },
-                output: 'strong_heaven_debris_block', outputCount: 2
+                output: 'strong_heaven_debris_block', outputCount: 7
             },
 			{ name: "Pure Heaven Debris Block",
                 input: { 0: { type: 'corroded_heaven_debris_block', count: 1 }, 1: { type: 'ancient_heaven_debris_block', count: 1 }, 2: { type: 'ancient_heaven_debris_block', count: 1 }, 3: { type: 'corroded_heaven_debris_block', count: 1 }, 4: { type: 'ancient_heaven_debris_block', count: 1 }, 5: { type: 'strong_heaven_debris_block', count: 1 }, 6: { type: 'strong_heaven_debris_block', count: 1 }, 7: { type: 'ancient_heaven_debris_block', count: 1 }, 8: { type: 'ancient_heaven_debris_block', count: 1 }, 9: { type: 'strong_heaven_debris_block', count: 1 }, 10: { type: 'strong_heaven_debris_block', count: 1 }, 11: { type: 'ancient_heaven_debris_block', count: 1 }, 12: { type: 'corroded_heaven_debris_block', count: 1 }, 13: { type: 'ancient_heaven_debris_block', count: 1 }, 14: { type: 'ancient_heaven_debris_block', count: 1}, 15: { type: 'corroded_heaven_debris_block', count: 1 } },
-                output: 'pure_heaven_debris_block', outputCount: 1
+                output: 'pure_heaven_debris_block', outputCount: 3
             },
 			{ name: "Heaven Gate Brick Block",
                 input: { 0: { type: 'pure_heaven_debris_block', count: 1 }, 1: { type: 'pure_heaven_debris_block', count: 1 }, 2: { type: 'pure_heaven_debris_block', count: 1 }, 3: { type: 'pure_heaven_debris_block', count: 1 }, 4: { type: 'pure_heaven_debris_block', count: 1 }, 5: { type: 'pure_heaven_debris_block', count: 1 }, 6: { type: 'pure_heaven_debris_block', count: 1 }, 7: { type: 'pure_heaven_debris_block', count: 1 }, 8: { type: 'pure_heaven_debris_block', count: 1 }, 9: { type: 'pure_heaven_debris_block', count: 1 }, 10: { type: 'pure_heaven_debris_block', count: 1 }, 11: { type: 'pure_heaven_debris_block', count: 1 }, 12: { type: 'pure_heaven_debris_block', count: 1 }, 13: { type: 'pure_heaven_debris_block', count: 1 }, 14: { type: 'pure_heaven_debris_block', count: 1}, 15: { type: 'pure_heaven_debris_block', count: 1 } },
-                output: 'heaven_gate_brick_block', outputCount: 1
+                output: 'heaven_gate_brick_block', outputCount: 3
             },
 			{ name: "Heaven Gate Brick Block",
                 input: { 0: { type: 'pure_heaven_debris_block', count: 1 }, 1: { type: 'pure_heaven_debris_block', count: 1 }, 2: { type: 'pure_heaven_debris_block', count: 1 }, 3: { type: 'pure_heaven_debris_block', count: 1 }, 4: { type: 'pure_heaven_debris_block', count: 1 }, 5: { type: 'mighterrum_nugget', count: 1 }, 6: { type: 'mighterrum_nugget', count: 1 }, 7: { type: 'pure_heaven_debris_block', count: 1 }, 8: { type: 'pure_heaven_debris_block', count: 1 }, 9: { type: 'mighterrum_nugget', count: 1 }, 10: { type: 'mighterrum_nugget', count: 1 }, 11: { type: 'pure_heaven_debris_block', count: 1 }, 12: { type: 'pure_heaven_debris_block', count: 1 }, 13: { type: 'pure_heaven_debris_block', count: 1 }, 14: { type: 'pure_heaven_debris_block', count: 1}, 15: { type: 'pure_heaven_debris_block', count: 1 } },
+                output: 'heaven_gate_brick_block', outputCount: 3
+            },
+			{ name: "Heaven Gate Brick Block",
+                input: { 0: { type: 'hell_gate_brick_block', count: 1 }, 1: { type: 'hell_gate_brick_block', count: 1 }, 2: { type: 'hell_gate_brick_block', count: 1 }, 3: { type: 'hell_gate_brick_block', count: 1 }, 4: { type: 'hell_gate_brick_block', count: 1 }, 5: { type: 'gold_nugget', count: 1 }, 6: { type: 'gold_nugget', count: 1 }, 7: { type: 'hell_gate_brick_block', count: 1 }, 8: { type: 'hell_gate_brick_block', count: 1 }, 9: { type: 'gold_nugget', count: 1 }, 10: { type: 'gold_nugget', count: 1 }, 11: { type: 'hell_gate_brick_block', count: 1 }, 12: { type: 'hell_gate_brick_block', count: 1 }, 13: { type: 'hell_gate_brick_block', count: 1 }, 14: { type: 'hell_gate_brick_block', count: 1}, 15: { type: 'hell_gate_brick_block', count: 1 } },
                 output: 'heaven_gate_brick_block', outputCount: 1
             },
 			{ name: "Heaven Gate Brick Block",
@@ -15037,7 +15397,7 @@
                     // --- Handle right-click splitting for other containers ---
                     let sourceArray;
                     if (sourceType === 'crafting') sourceArray = craftingGridSlots;
-                    else if (sourceType === 'anvil') sourceArray = anvilGridSlots; // ADD THIS
+                    else if (sourceType === 'anvil') sourceArray = anvilGridSlots;
                     else if (sourceType === 'chest') sourceArray = worldBlocks[`${currentlyOpenChest.col},${currentlyOpenChest.row}`]?.inventory;
                     else if (craftingStations[sourceType]) sourceArray = worldBlocks[`${currentlyOpenFurnace.col},${currentlyOpenFurnace.row}`]?.inventory;
                     else if (sourceType === 'world_mover_fuel') sourceArray = worldBlocks[`${currentlyOpenWorldMover.col},${currentlyOpenWorldMover.row}`]?.inventory;
@@ -15126,7 +15486,7 @@
                     sourceItem = sourceArray ? sourceArray[sourceSlotNumericIndex] : null;
                 } else if (craftingStations[sourceType]) {
                     sourceArray = worldBlocks[`${currentlyOpenFurnace.col},${currentlyOpenFurnace.row}`]?.inventory;
-                } else if (sourceType === 'anvil') { // ADD THIS
+                } else if (sourceType === 'anvil') {
                     sourceArray = anvilGridSlots;
                 } else if (sourceType === 'armor') {
                     sourceSlotNumericIndex = parseInt(slotIndex);
@@ -15156,7 +15516,7 @@
                             moved = true;
                         }
                         // Note: We don't handle swapping with shift-click, just equipping to empty slot.
-                    } else if (currentlyOpenAnvil) { // ADD THIS BLOCK
+                    } else if (currentlyOpenAnvil) {
                         // Move between player inventory and anvil grid
                         const destinationArray = (sourceType === 'inventory') ? anvilGridSlots : inventorySlots;
                         if (addToInventory(sourceItem.type, sourceItem.count, sourceItem.durability, sourceItem.acquiredTimes, destinationArray)) {
@@ -16161,7 +16521,7 @@
             isVoidChestOpen = isGamePaused;
             if (isVoidChestOpen) {
                 voidChestOverlay.style.display = 'flex';
-                voidCharacterContainer.style.display = 'flex'; // ADD THIS LINE to show the character
+                voidCharacterContainer.style.display = 'flex';
         
                 if (!currentVoidTrade && voidStorage.length > 0) {
                     generateVoidTradeOffer();
@@ -16217,22 +16577,31 @@
 		}
 
         function toggleChestMenu(col, row) {
-            isGamePaused = !isGamePaused;
-            if (isGamePaused) {
-                currentlyOpenChest = { col, row };
-                chestOverlay.style.display = 'flex';
-                updateChestMenu();
-            } else {
-                chestOverlay.style.display = 'none';
-                currentlyOpenChest = null;
-                if (heldItem) {
-                    addToInventory(heldItem.type, heldItem.count, heldItem.durability);
-                    heldItem = null;
-                    heldItemSource = { type: null, index: -1 };
-                }
-                lastTime = performance.now();
-            }
-        }
+			isGamePaused = !isGamePaused;
+			if (isGamePaused) {
+				currentlyOpenChest = { col, row };
+				const chestKey = `${col},${row}`;
+				const block = worldBlocks[chestKey];
+
+				chestOverlay.style.display = 'flex';
+				updateChestMenu();
+			} else {
+				// Closing the menu
+				if (currentlyOpenChest) {
+					const chestKey = `${currentlyOpenChest.col},${currentlyOpenChest.row}`;
+					const block = worldBlocks[chestKey];
+				}
+
+				chestOverlay.style.display = 'none';
+				currentlyOpenChest = null;
+				if (heldItem) {
+					addToInventory(heldItem.type, heldItem.count, heldItem.durability);
+					heldItem = null;
+					heldItemSource = { type: null, index: -1 };
+				}
+				lastTime = performance.now();
+			}
+		}
 		
 		let isTraderMenuOpen = false;
 		let traderBob = 0;
@@ -16487,7 +16856,46 @@
 			const chestInventory = chestData.inventory;
 			const playerInventory = inventorySlots;
 
-			// Loop through each slot in the chest
+			// --- STEP 1: CHECK IF CHEST IS EMPTY ---
+			let isChestEmpty = true;
+			for (let i = 0; i < chestInventory.length; i++) {
+				if (chestInventory[i] !== null) {
+					isChestEmpty = false;
+					break;
+				}
+			}
+
+			// --- MODE A: REVERSE TRANSFER (DEPOSIT ALL) ---
+			// If chest is empty, move items FROM Player TO Chest
+			if (isChestEmpty) {
+				// Start from hotbarSize to skip hotbar (optional, but usually preferred)
+				// Change 'hotbarSize' to '0' if you want to deposit hotbar items too.
+				for (let i = hotbarSize; i < playerInventory.length; i++) {
+					let playerItem = playerInventory[i];
+					if (!playerItem) continue;
+
+					// Find an empty slot in the chest
+					let deposited = false;
+					for (let j = 0; j < chestInventory.length; j++) {
+						if (chestInventory[j] === null) {
+							// COPY ALL DATA using spread operator
+							chestInventory[j] = { ...playerItem };
+							playerInventory[i] = null;
+							deposited = true;
+							break;
+						}
+					}
+					if (!deposited) break; // Chest is full
+				}
+				
+				// Refresh UI
+				updateChestMenu();
+				syncHotbarIndices();
+				return; // Done
+			}
+
+			// --- MODE B: LOOT ALL (Chest -> Player) ---
+			
 			for (let i = 0; i < chestInventory.length; i++) {
 				let chestItem = chestInventory[i];
 				if (!chestItem) continue;
@@ -16496,8 +16904,8 @@
 				const isSpoilable = itemProps?.spoilable;
 				const isTool = itemProps?.isTool;
 
-				// --- Pass 1: Add to existing stacks in player's inventory ---
-				if (!isTool) { // Tools don't stack
+				// 1. Add to existing stacks (Non-tools)
+				if (!isTool) {
 					for (let j = 0; j < playerInventory.length; j++) {
 						if (chestItem.count <= 0) break;
 						let playerSlot = playerInventory[j];
@@ -16512,50 +16920,44 @@
 								const timestampsToMove = _takeTimestamps(chestItem, amountToMove);
 								_pushTimestampsIntoSlot(playerSlot, timestampsToMove);
 							}
-							chestItem.count -= amountToMove; // This must be after _takeTimestamps
+							chestItem.count -= amountToMove;
 						}
 					}
 				}
 
-				// --- Pass 2: Add remaining items or tools to empty slots ---
+				// 2. Add to empty slots
 				while (chestItem.count > 0) {
 					let foundEmptySlot = false;
 					for (let j = 0; j < playerInventory.length; j++) {
-						if (!playerInventory[j]) { // Found an empty slot
+						if (!playerInventory[j]) { // Found empty slot
 							const amountToMove = isTool ? 1 : Math.min(chestItem.count, maxStackSize);
-							
 							const timestampsToMove = isSpoilable ? _takeTimestamps(chestItem, amountToMove) : null;
 							
-							// Create the new item in the player's inventory
+							// --- BUG FIX: USE SPREAD OPERATOR ---
+							// This copies 'content', 'title', 'cover', etc. automatically
 							playerInventory[j] = {
-								type: chestItem.type,
+								...chestItem, // Copy all metadata
 								count: amountToMove,
-								durability: chestItem.durability, 
-								maxDurability: chestItem.maxDurability,
 								acquiredTimes: timestampsToMove
 							};
+							// ------------------------------------
 							
 							chestItem.count -= amountToMove;
 							foundEmptySlot = true;
 							
-							// If the original stack is gone or we moved a tool, break to the next chest slot
 							if (isTool || chestItem.count <= 0) break;
 						}
 					}
-					// If we looped through the entire inventory and found no empty slot, stop trying to move this item.
-					if (!foundEmptySlot) break;
+					if (!foundEmptySlot) break; // Inventory full
 				}
 
-
-				// If the chest stack is now empty, nullify it
 				if (chestItem.count <= 0) {
 					chestInventory[i] = null;
 				}
 			}
 
-			// Refresh the UI to show the changes
 			updateChestMenu();
-			syncHotbarIndices(); // Updates hotbar and hotbar display
+			syncHotbarIndices(); 
 		}
         
         chestLabelInput.addEventListener('change', () => {
@@ -16826,7 +17228,6 @@
 
             // 3. Add to Output
             const outputSlot = furnaceData.inventory[10];
-            // --- ADD THIS LINE ---
             const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output]; 
             
             if (!outputSlot) {
@@ -17261,6 +17662,8 @@
             isGamePaused = false;
         
             setSeed(seedToUse);
+			
+			bees.length = 0;
             
             // Clear all world data
             Object.keys(worldBlocks).forEach(key => delete worldBlocks[key]);
@@ -17277,13 +17680,13 @@
             lastBiomeEndCol = -1;
             firstBiomeStartCol = 0;
 
-            Object.keys(underworldBiomes).forEach(key => delete underworldBiomes[key]); // <-- Add this
-            lastUnderworldBiomeEndCol = -1; // <-- Add this
-            firstUnderworldBiomeStartCol = 0; // <-- Add this
+            Object.keys(underworldBiomes).forEach(key => delete underworldBiomes[key]);
+            lastUnderworldBiomeEndCol = -1;
+            firstUnderworldBiomeStartCol = 0;
 
-            Object.keys(heavenBiomes).forEach(key => delete heavenBiomes[key]); // <-- Add this
-            lastHeavenBiomeEndCol = -1; // <-- Add this
-            firstHeavenBiomeStartCol = 0; // <-- Add this
+            Object.keys(heavenBiomes).forEach(key => delete heavenBiomes[key]);
+            lastHeavenBiomeEndCol = -1;
+            firstHeavenBiomeStartCol = 0;
             // --- END OF FIX ---
             
             // Clear all feature tracking sets
@@ -17303,6 +17706,8 @@
             jungleTempleColumns.clear();
             doomShackColumns.clear();
 			ruinedPortalColumns.clear();
+			desolatePortalColumns.clear();
+			hellDungeonGenerated = false;
 
             // Reset player
             player.x = 0 * tileSize; player.y = 0; player.dx = 0; player.dy = 0; player.onGround = false;
@@ -17321,10 +17726,10 @@
 			
 			player.bloodAlcohol = 0;
             player.activeEffects = [];
-            const vignette = document.getElementById('drunkVignette'); // --- ADD THIS ---
+            const vignette = document.getElementById('drunkVignette');
             if (canvas) canvas.style.filter = 'none';
-            if (canvas) canvas.classList.remove('vibrating'); // --- ADD THIS ---
-            if (vignette) vignette.style.display = 'none'; // --- ADD THIS ---
+            if (canvas) canvas.classList.remove('vibrating');
+            if (vignette) vignette.style.display = 'none';
 			
             // Reset inventory
             inventorySlots.fill(null); 
@@ -17459,6 +17864,7 @@
             handleBlockPlacement();
 			updateAnimatedDrops(dt);
 			updateFire(dt);
+			updateBees(dt);
 			updateBullets(dt);
             plantSpoilageAccumulator += dt;
 			if (plantSpoilageAccumulator >= PLANT_SPOILAGE_INTERVAL) {
@@ -17492,16 +17898,32 @@
         }
 		
 		function drawHellfireIcon() {
-            const icon = document.getElementById('hellfireIcon');
-            if (hellfireOn && (isPlayerInHellfireZone || isPlayerOnHellfire)) {
-                icon.style.display = 'block';
-                // Update the saturation filter
-                icon.style.filter = `saturate(${hellfireLevel * 100}%)`;
+			const container = document.getElementById('hellfireContainer');
+			const icon = document.getElementById('hellfireIcon');
+			const text = document.getElementById('hellfirePercent');
+
+			if (hellfireOn && (isPlayerInHellfireZone || isPlayerOnHellfire)) {
+				container.style.display = 'flex';
+				
+				// Calculate percentage (0.0 to 1.0 -> 0% to 100%)
+				const percentage = Math.floor(hellfireLevel * 100);
+				text.textContent = `${percentage}%`;
+
+				// Update the saturation filter on the icon
+				icon.style.filter = `saturate(${hellfireLevel * 100}%)`;
+				
+				// Optional: Make text red/blinking when critical (< 20%)
+				if (percentage < 20) {
+					text.style.color = 'red';
+				} else {
+					text.style.color = '#ff4500';
+				}
+
 				unlockAchievement('DEATH_CATALYST');
-            } else {
-                icon.style.display = 'none';
-            }
-        }
+			} else {
+				container.style.display = 'none';
+			}
+		}
 		
 		function drawMinimap() {
             if (!showMinimap) return;
@@ -17910,12 +18332,10 @@
 					// Rotate by the angle calculated during firing
 					ctx.rotate(bullet.angle); 
 					
-					// --- ADD THIS FLIP LOGIC ---
 					const isAimingLeft = Math.abs(bullet.angle) > (Math.PI / 2);
 					if (isAimingLeft) {
 						ctx.scale(1, -1); // Flip sprite vertically
 					}
-					// --- END OF ADDITION ---
 					
 					// Draw the image centered on the new (0,0) origin
 					ctx.drawImage(bulletImg, -BULLET_SIZE / 2, -BULLET_SIZE / 2, BULLET_SIZE, BULLET_SIZE);
@@ -17930,6 +18350,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawWorld();
 			drawAnimatedDrops();
+			drawBees();
 			drawBullets();
 			drawParticles();
             drawPlayer();
@@ -18201,7 +18622,9 @@
                 guanoMined: guanoMined,
 				xp: playerXP,
 				achievements: earnedAchievements,
-				consoleHistory: commandHistory
+				consoleHistory: commandHistory,
+				hellDungeonGenerated: hellDungeonGenerated,
+				bees: bees,
             };
 
             const json = JSON.stringify(worldData);
@@ -18272,7 +18695,13 @@
 		    jungleTempleColumns.clear();
             doomShackColumns.clear();
 			ruinedPortalColumns.clear();
+			hellDungeonGenerated = data.hellDungeonGenerated || false;
 			exploredMap = {};
+			bees.length = 0;
+			// Load Bees
+            if (data.bees) {
+                data.bees.forEach(b => bees.push(b));
+            }
 
             // Load new data
             setSeed(data.seed || Date.now());
@@ -18605,7 +19034,9 @@
               guanoMined: guanoMined,
 			  xp: playerXP,
 			  achievements: earnedAchievements,
-			  consoleHistory: commandHistory
+			  consoleHistory: commandHistory,
+			  hellDungeonGenerated: hellDungeonGenerated,
+			  bees: bees,
             };
         
             const json = JSON.stringify(worldData);
@@ -18833,7 +19264,9 @@
 					guanoMined: guanoMined,
 					xp: playerXP,
 					achievements: earnedAchievements,
-					consoleHistory: commandHistory
+					consoleHistory: commandHistory,
+					hellDungeonGenerated: hellDungeonGenerated,
+					bees: bees,
 				};
 
 				const json = JSON.stringify(worldData);
