@@ -278,6 +278,21 @@
     #music-button:hover {
         background-color: #059669;
     }
+	#mods-button {
+        position: relative; 
+        top: auto; 
+        right: auto;
+        padding: 0.5rem;
+        border-radius: 9999px;
+        background-color: #047857;
+        transition: all 0.15s ease-in-out;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        border: none;
+        cursor: pointer;
+    }
+    #mods-button:hover {
+        background-color: #059669;
+    }
     .block-icon {
         width: 2.5rem;
         height: 2.5rem;
@@ -907,6 +922,9 @@
 		<button id="music-button" onclick="openMusicModal()">
             <img src="Book.png" alt="Block Music Icon" class="block-icon"/>
         </button>
+		<button id="mods-button" onclick="openModsModal()">
+            <img src="Reactant.png" alt="Block Mods Icon" class="block-icon"/>
+        </button>
         
         </div>
 </div>
@@ -958,6 +976,22 @@
             style="width: 100%; padding: 1rem;" 
             onclick="launchContent('Block Music.html')">
             Open Music
+        </button>
+    </div>
+</div>
+
+<div id="mods-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <button class="modal-close" onclick="closeModsModal()">✕</button>
+        <div class="modal-title">Launch Marketplace</div>
+        <p style="margin-bottom: 2rem; font-size: 1.1rem; color: #ccc;">
+            The Block Game Ultimate Marketplace is your destination for quality community mods!
+        </p>
+        <button 
+            class="launcher-button play-button" 
+            style="width: 100%; padding: 1rem;" 
+            onclick="launchContent('Marketplace.html')">
+            Open Marketplace
         </button>
     </div>
 </div>
@@ -1179,12 +1213,12 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "",
+            notes: "Vastly changed heaven debris recipes to give more results, and added better chances to heaven debris flats. Added desolate hell portals that can be used to make heaven gate brick blocks. Added hellfire dungeon that is hideous and also made burnt players drop crispy heads. Want some sweet, sweet honey from a beehive on a tree? Then make sure there's room to run because they WILL kill you!",
 		},
 		{ 
             name: "Foundations & Frontiers (Version ###)", 
             path: "Snapshot - Foundations & Frontiers.html",
-            notes: "Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world builders, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes. Added local launcher profile saving with world thumbnails. Added placeable laying players that can be turned into skeletons with... THE SWORD!!! Swords are especially good for bone and living tissue (but not those pesky shovelable meat blocks). Added new recipes. Rebalanced loot and chests. Added soot to ash wastes biomes in the underworld. Added clay grass to marshes that drop potato seeds! Added titanium, silver, and that unobtainable lead to the compacted stone layer. Added december exclusive christmas shop and TONS of hidden easter eggs (the real easter eggs will have to wait until march/april). Added player skin presets and a face armor slot. Made heavensteel more common significantly and diviniron rarer significantly to match the underworld chances more properly. Added world gen, items, recipes, textures, and js function support for brand new .bgumod mod files to make a full new experience! Added marble, tuff, and basalt to layers such as compacted stone and to some biomes. Added rose quartz common in the compacted stone layer. Added fool's gold pyrite. Made the stone layer 5 blocks taller. Added sunken libraries to compacted stone and foundries to compressed stone. Added stone PT1, PT2, PT3, and PT4 to the stone layer. Added pine trees to deciduous forests and changed pine needle and pine cone drops towards it, made taiga its own biome from old deciduous forests and added podzol to the new ones. Made redwood forests have silt and surface/forest leaves and ferns instead. Made redwoods generate more smoothly. Added rare fungal growth biome with mycelium and shrooms and new generated huge shrooms. Added cactus and shroom pickaxes equal to wooden ones. Added sandstone changes and base to deserts. Also added new decorative wall-placeable items.",
+            notes: "Confirmed Completion Date: 12/14/2025. Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world builders, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes. Added local launcher profile saving with world thumbnails. Added placeable laying players that can be turned into skeletons with... THE SWORD!!! Swords are especially good for bone and living tissue (but not those pesky shovelable meat blocks). Added new recipes. Rebalanced loot and chests. Added soot to ash wastes biomes in the underworld. Added clay grass to marshes that drop potato seeds! Added titanium, silver, and that unobtainable lead to the compacted stone layer. Added december exclusive christmas shop and TONS of hidden easter eggs (the real easter eggs will have to wait until march/april). Added player skin presets and a face armor slot. Made heavensteel more common significantly and diviniron rarer significantly to match the underworld chances more properly. Added world gen, items, recipes, textures, and js function support for brand new .bgumod mod files to make a full new experience! Added marble, tuff, and basalt to layers such as compacted stone and to some biomes. Added rose quartz common in the compacted stone layer. Added fool's gold pyrite. Made the stone layer 5 blocks taller. Added sunken libraries to compacted stone and foundries to compressed stone. Added stone PT1, PT2, PT3, and PT4 to the stone layer. Added pine trees to deciduous forests and changed pine needle and pine cone drops towards it, made taiga its own biome from old deciduous forests and added podzol to the new ones. Made redwood forests have silt and surface/forest leaves and ferns instead. Made redwoods generate more smoothly. Added rare fungal growth biome with mycelium and shrooms and new generated huge shrooms. Added cactus and shroom pickaxes equal to wooden ones. Added sandstone changes and base to deserts. Also added new decorative wall-placeable items.",
 		},
 		{ 
             name: "The Vibrant Guano Ordinance (Version ###)", 
@@ -1341,6 +1375,7 @@
         closeSnapshotsModal();
         closeGalleryModal();
 		closeMusicModal();
+		closeModsModal();
         closeArtistModal();
         closePatchNotesModal();
         closeUpdatesModal();
@@ -1522,7 +1557,7 @@
         gameIframe.title = contentPath.split('/').pop().split('.')[0]; // Set title dynamically from file name
 
         // Show the exit button only for the Gallery and Snapshots/Experiments, hide for the main game
-        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Block Music.html') || contentPath.includes('Block Game Artist.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
+        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Block Music.html') || contentPath.includes('Marketplace.html') || contentPath.includes('Block Game Artist.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
             exitButton.style.display = 'flex';
         } else {
             // For the main game, the user is typically expected to be there longer
@@ -1833,6 +1868,15 @@
             modal.classList.add('open');
         }, 10);
     }
+	
+	function openModsModal() {
+        closeAllModals();
+        const modal = document.getElementById('mods-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
 
     /**
      * Hides the Gallery modal.
@@ -1849,6 +1893,16 @@
 	
 	function closeMusicModal() {
         const modal = document.getElementById('music-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+	
+	function closeModsModal() {
+        const modal = document.getElementById('mods-modal');
         modal.classList.remove('open');
         setTimeout(() => {
             if (!modal.classList.contains('open')) {
