@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLOCK GAME ULTIMATE LAUNCHER</title>
+<link href="Stone Block.png" rel="icon" type="image/x-icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+
+<style>
+    /* Global Styles and Layout */
+    body {
+        font-family: 'Space Grotesk', sans-serif;
+        background-color: #152111; /* Fallback color */
+        /* --- NEW: Background Image for the Launcher --- */
+        background-image: url('Background.png'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        /* --------------------------------------------- */
+        color: white;
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+    #launcher-ui {
+        position: relative;
+        display: flex;
+        height: 100vh;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 1rem;
+        /* NEW: Add transition for when sidebar opens/closes */
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    /* NEW: Push main UI over when sidebar is open */
+    body.sidebar-open #launcher-ui {
+        transform: translateX(280px); /* Must match sidebar width */
+    }
+
+    main {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        text-align: center;
+        /* Add a subtle dark overlay for better text contrast over the background image */
+        background-color: rgba(0, 0, 0, 0.2); 
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* --- Logo Image Styles (Replaces H1) --- */
+    .main-logo-image {
+        width: 100%;
+        max-width: 400px; /* Limit size on mobile */
+        height: auto;
+        margin-bottom: 0.5rem; /* Space before splash text */
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7)); /* Stronger shadow for image */
+    }
+    @media (min-width: 768px) {
+        .main-logo-image {
+            max-width: 600px;
+        }
+    }
+
+    /* --- Konami Code Easter Egg Style --- */
+    @keyframes color-cycle {
+        0%   { filter: hue-rotate(0deg) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7)); }
+        50%  { filter: hue-rotate(180deg) drop-shadow(0 4px 16px rgba(255, 255, 100, 0.9)); }
+        100% { filter: hue-rotate(360deg) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7)); }
+    }
+    .main-logo-image.konami-active {
+        animation: color-cycle 1s linear infinite;
+    }
+
+
+    /* Title and Splash Text */
+    .title-container {
+        position: relative;
+        margin-bottom: 3rem;
+    }
+    
+    .splash-text {
+        position: absolute;
+        /* Positioned slightly off the bottom right corner of the logo container */
+        bottom: -0.25rem;
+        right: -1rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #facc15; /* Yellow */
+        transform-origin: center;
+        transition: transform 0.3s ease-in-out;
+        animation: splash-idle 2s ease-in-out infinite alternate;
+        white-space: nowrap;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.9);
+    }
+    @media (min-width: 768px) {
+        .splash-text {
+            font-size: 1.8rem;
+            bottom: -0.5rem;
+            right: -1.5rem;
+        }
+    }
+    @keyframes splash-idle {
+        0% { transform: rotate(-5deg) scale(1.0); }
+        50% { transform: rotate(5deg) scale(1.05); }
+        100% { transform: rotate(-5deg) scale(1.0); }
+    }
+
+    /* Button Container */
+    .button-container {
+        width: 100%;
+        max-width: 320px;
+        display: flex; 
+        flex-direction: column;
+        gap: 0.75rem; 
+    }
+
+    /* Shared Button Style */
+    .launcher-button {
+        width: 100%;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease-in-out;
+        border: none;
+        cursor: pointer;
+    }
+    .launcher-button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
+    }
+    .launcher-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Play Button Specifics */
+    .play-button {
+        font-size: 1.5rem; 
+        padding: 1rem 2rem;
+        /* Blue Gradient */
+        background: linear-gradient(to bottom, #2563eb, #1e40af); 
+    }
+    .play-button:hover {
+        background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+        transform: scale(1.05);
+    }
+
+    /* Snapshots Button Specifics */
+    .snapshots-button {
+        /* Green/Cyan Gradient */
+        background: linear-gradient(to bottom, #10b981, #065f46);
+    }
+    .snapshots-button:hover {
+        background: linear-gradient(to bottom, #14b8a6, #0d9488);
+    }
+    
+    /* Iframe and Exit Button */
+    #game-iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        z-index: 50;
+        display: none;
+    }
+    #exit-button {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 3rem;
+        height: 3rem;
+        background-color: #ef4444; /* Red */
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        border-radius: 9999px; /* Circle */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        z-index: 60;
+        display: none;
+        transition: background-color 0.15s, transform 0.15s;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+    #exit-button:hover {
+        background-color: #dc2626;
+        transform: scale(1.05);
+    }
+
+    /* Top Right Controls Container (Version Name + Gallery Button) */
+    #top-right-controls {
+        /* FIX: Change position from 'absolute' to 'fixed' */
+        position: fixed; /* Fixes the element relative to the viewport */
+        top: 1rem;
+        right: 1rem;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem; /* Spacing between version name and button */
+    }
+	
+	/* Top Left Controls Container (Artist Button) */
+    #top-left-controls {
+        /* FIX: Change position from 'absolute' to 'fixed' */
+        position: fixed; /* Fixes the element relative to the viewport */
+        top: 1rem;
+        left: 1rem;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem; /* Spacing between version name and button */
+    }
+
+    /* Style the Version Name Text */
+    #version-name {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #90ee90; /* Light green highlight */
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+        transition: background-color 0.2s;
+    }
+    #version-name:hover {
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+    
+    /* Gallery Launch Button */
+    #gallery-button,
+    #sidebar-open-button /* NEW: Style sidebar button the same */ {
+        position: relative; 
+        top: auto; 
+        right: auto;
+        padding: 0.5rem;
+        border-radius: 9999px;
+        background-color: #047857;
+        transition: all 0.15s ease-in-out;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        border: none;
+        cursor: pointer;
+    }
+    #gallery-button:hover,
+    #sidebar-open-button:hover /* NEW: Style sidebar button the same */ {
+        background-color: #059669;
+    }
+	#music-button {
+        position: relative; 
+        top: auto; 
+        right: auto;
+        padding: 0.5rem;
+        border-radius: 9999px;
+        background-color: #047857;
+        transition: all 0.15s ease-in-out;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        border: none;
+        cursor: pointer;
+    }
+    #music-button:hover {
+        background-color: #059669;
+    }
+    .block-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+    }
+
+    /* --- NEW: Bottom Right Logo Style --- */
+    .bottom-right-logo {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        width: 200px; /* Small size */
+        height: auto;
+        opacity: 1; /* Slightly transparent */
+        z-index: 5; /* Below the main UI elements */
+        pointer-events: none; /* Allows clicks to pass through */
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        transition: opacity 0.3s;
+    }
+    .bottom-right-logo:hover {
+        opacity: 1; /* Slight increase on hover, though pointer-events is none */
+    }
+    @media (max-width: 600px) {
+        .bottom-right-logo {
+            width: 100px; /* Even smaller on mobile */
+            bottom: 0.5rem;
+            right: 0.5rem;
+        }
+    }
+    /* --- End Bottom Right Logo Style --- */
+
+    /* --- NEW: Bottom Left Logo Style --- */
+    .bottom-left-logo {
+        position: fixed;
+        bottom: 1rem;
+        left: 1rem;
+        width: 200px; /* Small size */
+        height: auto;
+        opacity: 1;
+        z-index: 5; /* Below the main UI elements */
+        pointer-events: none; /* Allows clicks to pass through */
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        transition: opacity 0.3s;
+    }
+    @media (max-width: 600px) {
+        .bottom-left-logo {
+            width: 100px; /* Even smaller on mobile */
+            bottom: 0.5rem;
+            left: 0.5rem;
+        }
+    }
+    /* --- End Bottom Left Logo Style --- */
+
+
+    /* --- Modal Styles (Snapshots, Gallery, Patch Notes) --- */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85); /* Darker backdrop */
+        backdrop-filter: blur(5px);
+        z-index: 40;
+        display: none; /* Controlled by JS */
+        align-items: center;
+        justify-content: center;
+    }
+    /* Base style for modal content boxes */
+    .modal-content {
+        background-color: #2c3a27; /* Slightly lighter green than body */
+        border-radius: 1rem;
+        padding: 2rem;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        transform: scale(0.95);
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+        position: relative;
+    }
+    .modal-overlay.open .modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+    .modal-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #90ee90; /* Light green highlight */
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .snapshot-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 0.5rem;
+        border: 1px solid #444;
+    }
+    .snapshot-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s;
+        border-bottom: 1px solid #444;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .snapshot-item:last-child {
+        border-bottom: none;
+    }
+    .snapshot-item:hover {
+        background-color: #3e5039;
+    }
+    .snapshot-item span {
+        font-size: 1.1rem;
+    }
+    .snapshot-path {
+        font-size: 0.8rem;
+        color: #ccc;
+    }
+    .modal-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #fff;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: background-color 0.1s;
+    }
+    .modal-close:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* --- NEW: Patch Notes Specific Styles --- */
+    #patch-notes-modal {
+        /* Full-screen background takeover */
+        /* UPDATE: Background is less darkened */
+        background-color: rgba(0, 0, 0, 0.8);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-blend-mode: multiply; /* Helps ensure text is readable over busy backgrounds */
+    }
+    #patch-notes-modal .modal-content {
+        max-width: 800px; /* Wider content area for notes */
+        max-height: 80%;
+        background-color: rgba(44, 58, 39, 0.9); /* Semi-transparent content card */
+        overflow-y: auto;
+        padding: 3rem;
+        border: 2px solid #90ee90;
+    }
+    .patch-notes-version {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: #facc15; /* Yellow */
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .patch-notes-paragraph {
+        margin-bottom: 1.25rem;
+        line-height: 1.6;
+        font-size: 1.05rem;
+        text-align: left;
+    }
+
+    /* Patch Notes Button on Snapshot List Items */
+    .patch-notes-button {
+        background-color: #10b981; /* Teal */
+        border: 2px solid #065f46;
+        border-radius: 0.25rem;
+        padding: 0.25rem;
+        cursor: pointer;
+        transition: background-color 0.15s;
+        line-height: 0; /* Important for centering the image */
+    }
+    .patch-notes-button:hover {
+        background-color: #0d9488;
+    }
+    .patch-notes-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        display: block;
+    }
+	.patch-notes-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: block;
+        }
+
+    /* --- NEW: Sidebar Styles --- */
+    #sidebar-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100%;
+        background-color: #222e1d; /* Darker green */
+        z-index: 30;
+        border-right: 2px solid #90ee90;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        padding: 1.5rem;
+        box-sizing: border-box;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+    #sidebar-nav.open {
+        transform: translateX(0);
+    }
+    .sidebar-close {
+        /* Use modal-close style */
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #fff;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: background-color 0.1s;
+    }
+    .sidebar-close:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-title {
+        /* Use modal-title style */
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #90ee90;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .sidebar-button {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: white;
+        background-color: #3e5039;
+        border: none;
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.15s, transform 0.15s;
+        text-align: left;
+    }
+    .sidebar-button:hover {
+        background-color: #4a5e44;
+        transform: scale(1.02);
+    }
+    .sidebar-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /* --- NEW: FAQ Modal Styles --- */
+    .faq-item {
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #444;
+    }
+    .faq-item:last-child {
+        border-bottom: none;
+    }
+    .faq-item summary {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #facc15; /* Yellow */
+        padding: 0.5rem 0;
+        cursor: pointer;
+        list-style: none; /* Remove default triangle */
+        position: relative;
+    }
+    .faq-item summary::-webkit-details-marker {
+        display: none; /* Chrome */
+    }
+    .faq-item summary::before {
+        content: '+';
+        font-weight: bold;
+        position: absolute;
+        right: 5px;
+        color: #90ee90;
+    }
+    .faq-item[open] summary::before {
+        content: '−';
+    }
+    .faq-item p {
+        font-size: 1rem;
+        color: #ccc;
+        line-height: 1.5;
+        padding: 0.5rem 0 1rem 0;
+        margin: 0;
+    }
+
+    /* --- NEW: Settings Modal Styles --- */
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #444;
+    }
+    .setting-item span {
+        font-size: 1.1rem;
+    }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 28px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555;
+        transition: .4s;
+        border-radius: 28px;
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+        background-color: #10b981;
+    }
+    input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+    }
+    /* --- END NEW STYLES --- */
+
+
+        /* === PASTE NEW MOBILE CSS HERE === */
+        /* NEW: This query now applies styles if the screen is NARROW (portrait) OR SHORT (landscape) */
+        @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+            /* Adjust main container for small screens */
+            main {
+                padding: 0.5rem;
+                background-color: rgba(0, 0, 0, 0.4); /* Slightly more background for contrast */
+            }
+
+            /* Make logo smaller */
+            .main-logo-image {
+                max-width: 300px;
+                margin-bottom: 0rem;
+            }
+
+            /* Make splash text smaller and reposition */
+            .splash-text {
+                font-size: 1rem;
+                bottom: 0.5rem;
+                right: -0.5rem;
+            }
+
+            .title-container {
+                margin-bottom: 1rem; /* Reduced margin to fit on short landscape screens */
+            }
+            
+            /* Make top corner controls smaller and give them space */
+            #top-right-controls,
+            #top-left-controls {
+                gap: 0.25rem;
+            }
+            #version-name {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+            .block-icon {
+                width: 2rem;
+                height: 2rem;
+            }
+
+            /* --- Mobile Button Styles --- */
+            .launcher-button {
+                font-size: 1.1rem;
+                padding: 0.8rem 1rem;
+                /* Make buttons more rectangular (less rounded) */
+                border-radius: 0.25rem; 
+            }
+
+            .play-button {
+                font-size: 1.3rem;
+                /* New Mobile Color: Bright Green */
+                background: linear-gradient(to bottom, #28a745, #1e7e34);
+            }
+            .play-button:hover {
+                background: linear-gradient(to bottom, #218838, #155724);
+            }
+
+            .snapshots-button {
+                /* New Mobile Color: Bright Orange */
+                background: linear-gradient(to bottom, #fd7e14, #d35400);
+            }
+            .snapshots-button:hover {
+                background: linear-gradient(to bottom, #e67e22, #a04000);
+            }
+            /* --- End Mobile Button Styles --- */
+
+            /* Make modals fit better */
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+            .modal-title {
+                font-size: 1.5rem;
+            }
+            .snapshot-list {
+                max-height: 250px;
+            }
+            .snapshot-item span {
+                font-size: 1rem;
+            }
+
+            /* NEW: Adjust sidebar for mobile */
+            #sidebar-nav {
+                width: 240px; /* Make sidebar slightly narrower */
+            }
+            body.sidebar-open #launcher-ui {
+                transform: translateX(240px); /* Match new width */
+            }
+        }
+		/* 1. Theme overlay (for triple-click) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 50% darken */
+            z-index: -1; /* Behind content, over background */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        body.theme-active::before {
+            opacity: 1; /* Show the overlay */
+            z-index: -1;
+        }
+
+        /* 2. "Reset Theme" button style */
+        #reset-theme-button {
+            position: relative;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            background-color: #78350f; /* Brown */
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        #reset-theme-button:hover {
+            background-color: #9a3412;
+        }
+        
+        /* 3. "HACK" Easter Egg Theme */
+        body.matrix-theme {
+            background: #000 !important; /* Force black background */
+        }
+        .matrix-theme main {
+            background-color: rgba(0, 20, 0, 0.3);
+            border: 1px solid #00ff00;
+        }
+        .matrix-theme #launcher-ui * {
+            color: #00ff00 !important; /* Green text everywhere */
+            font-family: 'Courier New', monospace; /* Hacker font */
+            text-shadow: 0 0 5px #00ff00, 0 0 2px #000;
+        }
+        .matrix-theme .launcher-button {
+            background: linear-gradient(to bottom, #003300, #001100) !important;
+            border: 1px solid #00ff00;
+        }
+        .matrix-theme .main-logo-image {
+            /* Green-ify the logo */
+            filter: hue-rotate(120deg) brightness(1.5) drop-shadow(0 0 10px #00ff00);
+        }
+        .matrix-theme .block-icon,
+        .matrix-theme .bottom-right-logo,
+        .matrix-theme .bottom-left-logo {
+            filter: hue-rotate(120deg) brightness(1.2) drop-shadow(0 0 5px #00ff00);
+        }
+		.save-card {
+			background-color: #3e5039;
+			border: 2px solid #555;
+			border-radius: 0.5rem;
+			overflow: hidden;
+			transition: transform 0.2s, border-color 0.2s;
+			display: flex;
+			flex-direction: column;
+		}
+		.save-card:hover {
+			transform: translateY(-2px);
+			border-color: #90ee90;
+		}
+		.save-thumb {
+			width: 100%;
+			height: 120px;
+			object-fit: cover;
+			background-color: #000;
+		}
+		.save-info {
+			padding: 0.75rem;
+			flex-grow: 1;
+		}
+		.save-name {
+			font-weight: bold;
+			font-size: 1.1rem;
+			color: #facc15;
+			margin-bottom: 0.25rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.save-date {
+			font-size: 0.8rem;
+			color: #bbb;
+			margin-bottom: 0.75rem;
+		}
+		.save-actions {
+			display: flex;
+			gap: 0.5rem;
+			justify-content: space-between;
+		}
+		.save-btn {
+			padding: 0.4rem;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-weight: bold;
+			font-size: 0.8rem;
+			flex-grow: 1;
+		}
+		.btn-play { background-color: #28a745; color: white; }
+		.btn-edit { background-color: #ffc107; color: black; }
+		.btn-del { background-color: #dc3545; color: white; }
+</style>
+</head>
+<body>
+
+<div id="sidebar-nav">
+    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+    <div class="sidebar-title">Menu</div>
+    
+    <button class="sidebar-button" onclick="openSettingsModal()">
+        <img src="Settings Icon.png" alt="Settings" class="sidebar-icon"/> Settings
+    </button>
+    
+    <button class="sidebar-button" onclick="openFAQModal()">
+        <img src="FAQ Icon.png" alt="FAQ" class="sidebar-icon"/> FAQ
+    </button>
+    
+    <button class="sidebar-button" onclick="openAboutModal()">
+        <img src="About Icon.png" alt="About" class="sidebar-icon"/> About
+    </button>
+	
+	<button class="sidebar-button" onclick="openProfileModal()">
+		<img src="Elemental Helmet.png" alt="Profile" class="sidebar-icon"/> Profile / Saves
+	</button>
+</div>
+
+
+<div id="launcher-ui">
+    <main>
+        
+        <div class="title-container">
+            <img src="Logo 2025.png" alt="BLOCK GAME ULTIMATE Logo" id="main-logo" class="main-logo-image" onclick="setRandomLogo()" style="cursor: pointer;"/> <!-- Normally Logo.png -->
+            <span id="splash-text" class="splash-text">
+                Loading fun...
+            </span>
+        </div>
+
+        <div class="button-container">
+            <button onclick="launchContent('Block Game Ultimate.html')" class="launcher-button play-button">
+                PLAY BGU NOW!
+            </button>
+            
+            <button onclick="openSnapshotsModal()" class="launcher-button snapshots-button">
+                Snapshots / Versions
+            </button>
+        </div>
+
+    </main>
+    
+    <img src="Logo Full Deep.png" alt="Deep Logo" class="bottom-right-logo"/>
+    <img src="Logo Full.png" alt="Full Logo" class="bottom-left-logo"/>
+
+
+    <div id="top-right-controls">
+        <span id="version-name" onclick="openUpdatesModal()" style="cursor: pointer;" title="See Future Updates!">Foundations & Frontiers</span>
+        <button id="gallery-button" onclick="openGalleryModal()">
+            <img src="Item Frame.png" alt="Block Gallery Icon" class="block-icon"/>
+        </button>
+    </div>
+	<div id="top-left-controls">
+        <button id="sidebar-open-button" onclick="openSidebar()" title="Open Menu">
+            <img src="Menu Icon.png" alt="Menu Icon" class="block-icon"/>
+        </button>
+        <button id="gallery-button" onclick="openArtistModal()">
+            <img src="Paper.png" alt="Block Artist Icon" class="block-icon"/>
+        </button>
+		<button id="music-button" onclick="openMusicModal()">
+            <img src="Book.png" alt="Block Music Icon" class="block-icon"/>
+        </button>
+        
+        </div>
+</div>
+
+<iframe id="game-iframe" title="Game Content"></iframe>
+
+<button id="exit-button" onclick="exitContent()">X</button>
+
+<div id="snapshots-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeSnapshotsModal()">✕</button>
+        <div class="modal-title">Available Snapshots</div>
+        <ul id="snapshot-list" class="snapshot-list">
+            </ul>
+    </div>
+</div>
+
+<div id="patch-notes-modal" class="modal-overlay">
+    <div id="patch-notes-content" class="modal-content">
+        <button class="modal-close" onclick="closePatchNotesModal()">✕</button>
+        </div>
+</div>
+
+<div id="gallery-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <button class="modal-close" onclick="closeGalleryModal()">✕</button>
+        <div class="modal-title">Launch Block Gallery</div>
+        <p style="margin-bottom: 2rem; font-size: 1.1rem; color: #ccc;">
+            The Block Gallery is a separate application that shows off all the available block types and textures!
+        </p>
+        <button 
+            class="launcher-button play-button" 
+            style="width: 100%; padding: 1rem;" 
+            onclick="launchContent('Block Gallery.html')">
+            Open Gallery
+        </button>
+    </div>
+</div>
+
+<div id="music-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <button class="modal-close" onclick="closeMusicModal()">✕</button>
+        <div class="modal-title">Launch Block Music</div>
+        <p style="margin-bottom: 2rem; font-size: 1.1rem; color: #ccc;">
+            The Block Music is a separate application that shows off all the available soundtracks and sounds!
+        </p>
+        <button 
+            class="launcher-button play-button" 
+            style="width: 100%; padding: 1rem;" 
+            onclick="launchContent('Block Music.html')">
+            Open Music
+        </button>
+    </div>
+</div>
+
+<div id="artist-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <button class="modal-close" onclick="closeArtistModal()">✕</button>
+        <div class="modal-title">Launch Block Game Artist</div>
+        <p style="margin-bottom: 2rem; font-size: 1.1rem; color: #ccc;">
+            The Block Game Artist is a separate application that can be used for making block art!
+        </p>
+        <button 
+            class="launcher-button play-button" 
+            style="width: 100%; padding: 1rem;" 
+            onclick="launchContent('Block Game Artist.html')">
+            Open Artist
+        </button>
+    </div>
+</div>
+
+<div id="updates-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px; max-height: 80%">
+        <button class="modal-close" onclick="closeUpdatesModal()">✕</button>
+        <div class="modal-title">Make The Launcher YOURS!</div>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">I want YOU to submit a new launcher and UI to ME and I will pay up if it's good, and gladly use it as the new design. This design is getting a bit outdated.</p>
+        </ul>
+		<div class="modal-title">Future Update Ideas!</div>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">Here are some cool ideas we're kicking around for future versions of Block Game Ultimate:</p>
+        <ul style="list-style-type: square; text-align: left; padding-left: 20px; line-height: 1.6;">
+            <li style="margin-bottom: 1rem;"><strong>Explosions:</strong> Explode instead of mining. Isn't that fun?!</li>
+            <li style="margin-bottom: 1rem;"><strong>Contraptions:</strong> Create chain reactions and light off bombs!</li>
+            <li style="margin-bottom: 1rem;"><strong>Folklore & Fables:</strong> Delve into a world of myth by discovering hidden dungeons based on ancient legends. Fight new boss creatures, find powerful magical artifacts, and maybe even build your own Golems from different materials.</li>
+            <li><strong>Dynamic Seasons:</strong> Experience a living world with changing seasons that affect gameplay. Crops grow faster in summer, water sources freeze over in winter, and new weather patterns like thunderstorms or blizzards present new challenges and opportunities.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="settings-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeSettingsModal()">✕</button>
+        <div class="modal-title">Settings</div>
+        
+        <div class="setting-item">
+            <span>Disable Splash Text Animation</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-splash-anim" onchange="toggleSplashAnimation(this.checked)">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        
+        <div class="setting-item">
+            <span>Disable Logo Clicking</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-logo-click" onchange="toggleLogoClick(this.checked)">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <button 
+            class="launcher-button snapshots-button" 
+            style="width: 100%; padding: 1rem; margin-top: 2rem;" 
+            onclick="resetLauncherTheme()">
+            Reset Launcher Theme
+        </button>
+    </div>
+</div>
+
+<div id="profile-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 800px; max-height: 85vh; overflow-hidden; display:flex; flex-direction:column;">
+        <button class="modal-close" onclick="closeProfileModal()">✕</button>
+        <div class="modal-title">My Worlds</div>
+        
+        <div id="storage-usage" style="text-align:right; color:#aaa; font-size:0.9rem; margin-bottom:10px;">Storage: Calculating...</div>
+
+        <div id="save-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; overflow-y: auto; padding: 10px;">
+            </div>
+        
+        <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 10px;">
+            <p style="font-size: 0.9rem; color: #ccc;">Note: Saves are stored in your browser. Clearing browser data will delete them.</p>
+        </div>
+    </div>
+</div>
+
+<div id="faq-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 700px; max-height: 80%; overflow-y: auto;">
+        <button class="modal-close" onclick="closeFAQModal()">✕</button>
+        <div class="modal-title">Frequently Asked Questions</div>
+
+        <details class="faq-item">
+            <summary>How do I play a snapshot or older version?</summary>
+            <p>Click the "Snapshots / Versions" button on the main screen. This will open a list. Click any version to launch it. Note: some versions are experimental and may be unstable.</p>
+        </details>
+        
+        <details class="faq-item">
+            <summary>My game is lagging. What can I do?</summary>
+            <p>This is a browser-based game, so performance can vary. Try closing other browser tabs and applications. The "Current Development Build" often includes lag-reduction features, so make sure you're playing the latest version!</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>What is the "Geobotanical Combustion Thesis"?</summary>
+            <p>That's the codename for the current version of the game. It's just a fun name! You can click it to see ideas for future updates.</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>Are there any secrets?</summary>
+            <p>...Try typing 'hack' on the main launcher screen. Or, if you remember old video games, try the Konami code (Up, Up, Down, Down, Left, Right, Left, Right, B, A, Enter).</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>How do I change the launcher theme?</summary>
+            <p>On the "Snapshots / Versions" list, try <strong>triple-clicking< (clicking three times fast) on a version name instead of single-clicking. This will set the launcher background to that version's banner. You can reset it from the Settings menu.</p>
+        </details>
+    </div>
+</div>
+
+<div id="about-modal" class="modal-overlay">
+    <div class="modal-content" style="text-align: center;">
+        <button class="modal-close" onclick="closeAboutModal()">✕</button>
+        <div class="modal-title">About Block Game Ultimate</div>
+        
+        <img src="Logo Full Deep.png" alt="Deep Logo" style="width: 80%; max-width: 300px; height: auto; margin-bottom: 1rem;">
+        
+        <p style="font-size: 1.1rem; color: #ccc; line-height: 1.6;">
+            This launcher and game started as a passion project, but quickly developed into much more. A game where anything (except a few infinity things) is possible! Inspired by Skyrim, Terraria, Minecraft, Zelda, and so much more.
+            <br><br>
+            Thanks for playing!
+        </p>
+    </div>
+</div>
+
+<script>
+    // --- Configuration and Initialization ---
+
+    // Define the list of splash messages for the launcher.
+    const SPLASH_MESSAGES = [
+        "Find dirt and place it!",
+        "Now mostly legal!",
+        "Freedom in the form of blocks!",
+        "Less government, more mining!",
+        "So many layers and layers!",
+        "No opting out for block structures!",
+        "Don't worry about block taxes!",
+        "It's about time for fun!",
+        "Ultimate!",
+        "Check your inventory for cheese!",
+        "Works in your browser, just not great!",
+        "Build a big, fat wall of bricks!",
+        "There's nothing else to kill!",
+        "The best blocks since 2024!",
+		"All your copper are belong to us!",
+        "Yes, we have a void chest. No, we can't explain it!",
+        "99% lead-free... probably!",
+        "Did you try hitting F5? Wait, don't!",
+		"Did you try hitting Alt+F4? Wait, don't!",
+        "It's dangerous to go alone! Take a magical chest!",
+        "You're going to need a bigger refrigerator!",
+        "TAB to complete your life decisions!",
+        "Press % to reveal the truth!",
+        "We promise the oxidized copper won't judge your base!",
+        "Still waiting for that unobtainable lead until December 2025!",
+        "Where we're going, we don't need inventory slots!",
+        "Power like a Powertower!",
+		"Now with 100% less Creepers. Wait, wrong game!",
+        "It only costs $3.50. Wait, no!",
+        "The only thing we don't store is regret!",
+        "Behold! A perfectly preserved pickle!",
+        "Don't tell me what to build, you're not my supervisor!",
+		"Our sky is #70b6d5. What's yours?",
+		"Can you find the legendary dirt plateau?",
+        "I used to be an adventurer like you, then I took a dirt block to the knee!",
+        "Don't get fourth degree sunburns in the clouds!",
+        "A neck tourniquet may be required!",
+		"Hasta la vista, gravel!",
+		"In space, no one can hear you mine!",
+		"One block to rule them all, one block to find them!",
+		"One block to bring them, and in the darkness block them!",
+		"Do or do not. There is no craft!",
+		"I am inevitable… and made of blocks!",
+		"Touch grass!",
+		"Enter sandstone block!",
+		"I NEED TO FIND MY QUIET PLACE!",
+		"Spank you very much!",
+		"I like pizza. I LIKE IT! By Steve! Go party! I like Steve.",
+		"That leg's gonna have to come off!",
+		"60% of the time it blocks every time!",
+		"Eat the food, Tina! I farmed it myself!",
+		"I bet I can throw this block over those mountains!",
+		"Don't press * if you value progress!",
+		"Red sand gives you wings!",
+		"Strange players lying in mud distributing axes is no basis for a biome!",
+		"This guy's got the right idea. He brought the brown blocks!",
+		"GET TO DA BLOCKPA! THE GRASS IS SPREADING TOO FAST!",
+		"And you must be the monopoly guy. Do not pass go! Do not collect $200!",
+		"Ree-heee-heee-heeeeally?!",
+		"Kinda hot in these rhinos…",
+		"For a skeleton, you've got a lot to say!",
+		"Now that, that is some good brisket!",
+		"Minor miner versus major miner. Modest miner wins.",
+		"BGU actually stands for Butt Gallery Unique!",
+		"Created by Bryant Reitzel ",
+		"Ideas and mechanics all from the mind of Bryant Reitzel",
+    ];
+
+    // --- NEW: Logo Weights Configuration ---
+    const LOGO_WEIGHTS = [
+        { path: "Logo Desert.png", weight: 12.5 },
+        { path: "Logo Overgrown.png", weight: 12.5 },
+        { path: "Logo Rock.png", weight: 12.5 },
+        { path: "Logo Jungle.png", weight: 12.5 },
+        { path: "Logo Basic.png", weight: 12.5 },
+        { path: "Logo Taiga.png", weight: 12.5 },
+        { path: "Logo Anthill.png", weight: 12.5 },
+        { path: "Logo Apple.png", weight: 12.5 },
+    ];
+    // --- END NEW CONFIGURATION ---
+    
+    // UPDATED: SNAPSHOT_DATA now includes detailed changelog notes.
+    const SNAPSHOT_DATA = [
+        { 
+            name: "Current Development Build (Default)", 
+            path: "Block Game Ultimate.html",
+            notes: "Vastly changed heaven debris recipes to give more results, and added better chances to heaven debris flats. Added desolate hell portals that can be used to make heaven gate brick blocks. Added hellfire dungeon that is hideous and also made burnt players drop crispy heads. Want some sweet, sweet honey from a beehive on a tree? Then make sure there's room to run because they WILL kill you!",
+		},
+		{ 
+            name: "Foundations & Frontiers (Version ###)", 
+            path: "Snapshot - Foundations & Frontiers.html",
+            notes: "Confirmed Completion Date: 12/14/2025. Added trader leveling up and different types of new traders. Added pure condensed fuel, which can be used inside new world builders, which are blocks that can be used to farm resources. Added SOIL, STONE, and FOLIAGE keys to world builders. Added elemental helmet crafted with super good resources. Added the hidden BGU of creation at coordinates 0,-1500 at the bottom of the world and 3 powerful recipes. Added local launcher profile saving with world thumbnails. Added placeable laying players that can be turned into skeletons with... THE SWORD!!! Swords are especially good for bone and living tissue (but not those pesky shovelable meat blocks). Added new recipes. Rebalanced loot and chests. Added soot to ash wastes biomes in the underworld. Added clay grass to marshes that drop potato seeds! Added titanium, silver, and that unobtainable lead to the compacted stone layer. Added december exclusive christmas shop and TONS of hidden easter eggs (the real easter eggs will have to wait until march/april). Added player skin presets and a face armor slot. Made heavensteel more common significantly and diviniron rarer significantly to match the underworld chances more properly. Added world gen, items, recipes, textures, and js function support for brand new .bgumod mod files to make a full new experience! Added marble, tuff, and basalt to layers such as compacted stone and to some biomes. Added rose quartz common in the compacted stone layer. Added fool's gold pyrite. Made the stone layer 5 blocks taller. Added sunken libraries to compacted stone and foundries to compressed stone. Added stone PT1, PT2, PT3, and PT4 to the stone layer. Added pine trees to deciduous forests and changed pine needle and pine cone drops towards it, made taiga its own biome from old deciduous forests and added podzol to the new ones. Made redwood forests have silt and surface/forest leaves and ferns instead. Made redwoods generate more smoothly. Added rare fungal growth biome with mycelium and shrooms and new generated huge shrooms. Added cactus and shroom pickaxes equal to wooden ones. Added sandstone changes and base to deserts. Also added new decorative wall-placeable items.",
+		},
+		{ 
+            name: "The Vibrant Guano Ordinance (Version ###)", 
+            path: "Snapshot - The Vibrant Guano Ordinance.html",
+            notes: "Confirmed Completion Date: 11/29/2025. Added texture pack support by quickly clicking the t key during the loading asset menu. Fixed MAJOR lag bug that occurred when you used delete slot/inventory. Added support to grow leaf plants by using moss seeds on grass dirt. Adjusted some biomes. Fixed stupid bug where you could take items out of void chests across multiple versions. Added a miniature map triggered with the buttons M and P at the same time. Added fullscreen map by pressing map. Added touch screen control support game. Added rock, iron, tungsten, and brass anvils to create heavy duty blocks. Added guano to caves. Added saltpeter recipes to make bullets for new gun tools. Increased mythicalithium pickaxe durability and power to be more worthwhile. Update: Normal compressed stone requires 0.3+ mining power, but compressed stone with nuggets/ore requires 0.5+. Added MAJOR code revisions and possible lag reduction! Added an achievement system and tons of achievements. Fixed some bugs and fixed single item place only working in crafting grids. Added milkweed, tall grass, and dead trees to muddy swamps. Added find and replace functions for cheat support. Added 8 different colors of concrete made using colored flower varieties with dark and light concrete variants. Blue Purple Pink Red Orange Yellow Green Cyan. Added world loss prevention tab closing and an automatic saving option (exports on close). Added more shovels and axes with materials like infinitungsten. Completely remade super heaven with super minerals and infinitungsten ores. Added heaven gate brick blocks to normal heaven chests. Added 3 types of destroyed heaven gate portals to the surface rarely. Added skip to game to skip asset loading temporarily and mobile triple click texture pack loading.",
+			specialSplash: "Mine with machine guns! And, yes, it's lots of fun!"
+		},
+        { 
+            name: "Geobotanical Combustion Thesis (Version ###)", 
+            path: "Snapshot - Geobotanical Combustion Thesis.html",
+            notes: "Confirmed Completion Date: 11/12/2025. Added health particle effects rendering! Added better seed drop chances for plants, and plant-to-seed salvage recipes. Added ways to obtain more seeds! Added clay marshes with hard-to-break clay, and update clay brick block recipe. In the underworld, players now suffer from hellfire, which basically after 120 seconds, which can be extended with food and armor, they will eternally catch on fire. Added drunkness as a consequence from drinking too much alcoholic food, which is definitely a worthwhile excuse to avoid the stuff in-game. Added geothermal power. When a furnace of any sort is aboe a magma stone block, it has a 20% chance not to use any pure fuel. Food can be placed in item frames now. Implemented effects on gravity curds, jump juice, and speed snacks. Added mouse scroll hotbar switching support. Added books made with rubber and paper that have titles and covers that can be used to spread info in your world and put in chests. Also added skin support for custom player sprites by typing SKIN! consecutively. To remove a skin, equip one with improper dimensions (non 1:3). Added getOp() function for easy cheating. Added books to structures with lore and story. Added orange, purple, and green flowers to the grass field and made flowers more abundant. Greatly adjusted and often increased many heal amounts. Added orange trees and oranges to apple groves. Added nitro powder (nitroglycerin) and crude oil for more accurate explosives. Flowers can be placed in grass dirt, soil, mud, and their dark variants now!",
+			specialSplash: "Yes, scotch tape would work."
+        },
+		{ 
+            name: "Molten Sun Edict (Version ###)", 
+            path: "Snapshot - Molten Sun Edict.html",
+            notes: "Confirmed Completion Date: 11/6/2025. Added new muddy swamp biome with new thick mud block. Thick mud slows the player down a ton and makes them unable to jump! Added new mighterrum ore to the underworld as a diviniron counterpart with its own pickaxe. Using mighterrum and infinitungsten, create mythicalithium and create the new BEST pickaxe using scrapped diviniron pickaxes! Some drop adjustments and required mining power added to MANY blocks. Menus are now more supportive of controls. World borders now enablable, not defaulted though. Some lag reduction has been added. Fixed chest typing glitch. Added wall blocks, overlay blocks, and cloaked blocks. Added new desert temple structures. Added lighters and fire! Players can catch on fire, and fire spreads. Added armor and armor menus to the player inventory. Armor doesn't drop on death if equipped. Armor reduces a percentage of damage, but loses durability in the process. Added power forge to make armor using supplies! You can now search in your inventory, filtering by name and ingredients, and toggle a grid view. In the armor menu, it renders your visual character! Added doom shack structures with dark armor ingredients and added treasure chests with light armor ingredients to heaven. Use diviniron armor and jump from as high as you want, it might break the armor but it surely won't do a thing to you with a full set!"
+        },
+        { 
+            name: "New UI And Menus (Fun Snapshot)", 
+            path: "Snapshot Fun - New UI And Menus.html",
+            notes: "Confirmed Completion Date: 11/5/2025. Now with a new classy look that you can play with!"
+        },
+		{ 
+            name: "The Economic Codex (Version ###)", 
+            path: "Snapshot - The Economic Codex.html",
+            notes: "Confirmed Completion Date: 10/15/2025. Respawn y reset from -320 (high up) to 0, to prevent immediate damage. Fall damage intensified from 3x to 4x. When magma stone touches any form of ice, it turns to solid obsidian. New bombs are added to the game with exciting explosions. Be careful though, bombs do not value the contents of any chests! You might ask: how to set bombs off? The answer is mechageezer contraptions. These contraptions allow for simple and complex binary computing systems and in-game signalling. Create new contraptions with levers, reactants, trailers, and of course, bombs. Bombs send EVERYTHING to the void! New void bargainer available to buy items back from. He doesn't offer pretty prices, but he will be willing to reconsider his bargain if you sacrifice 10+ bronze coins or 5+ gold coins to the void! New traders added that spawn across the world and offer unique items and trades! Remove them with bombs. More block names reduced for speed, lowered past compatibility. Stone layer greatly changed with limestone! Concrete recipe added using limestone, gravel, sand, and a magma furnace!"
+        },
+        { 
+            name: "Photosynthetic Mandate (Version ###)", 
+            path: "Snapshot - Photosynthetic Mandate.html",
+            notes: "Confirmed Completion Date: 10/8/2025.Harness the power of grass with new grass seeds items which can be used to spread grass into mud, dirt, and soil! Using ice blocks, grass seeds, moss seeds, and pest, spread dark and light moss and grass and also spread pest across your ever-growing world. Some durabilities have been fixed and adjusted. You can officially place cobweb in empty spaces now to harness the power! Some things renamed and growth updated. Exported worlds are not be compatible with past versions unless modified. New lush grasslands biome added full of wet soils, mud, grasses, and fertilizer. Onions, garlic, and red peppers have been added along with new recipes like noodles and more oven dishes. Water can be purified from ice and urine! Foods include noodles, spaghetti, ramen noodles, and pumpkin pie! Cinnamon trees added to the rainforest and cinnamon usable in recipes."
+        },
+		{ 
+            name: "Posthumous Hydration Protocol (Version ###)", 
+            path: "Snapshot - Posthumous Hydration Protocol.html",
+            notes: "Confirmed Completion Date: 10/6/2025. Fixes and features! Tool damage, rather than being time-based has been adjusted so it is now based on mining power and time combined, which makes tools more proportional. Durabilities have been adjusted accordingly! Salt rock drops have been adjusted and balanced more. Salt flats biomes have gotten limestone, and redwood biomes are completely remodeled from the ground up. New chasms form on the surface down to the underneath depths with brand new chasm magma stone blocks! Powertower stone blocks added. Raw rubber can beheated to make vulcanized rubber blocks! When you die with cups there is a likely chance, if there is room, one will fill up with urine in the dead body. Don't die in a rainforest or verically aligned with one or you WILL have ALL of your paper turn into a new item called soggy paper which must be cooked to be solidified again. Sugar cane, which can be cooked into raw sugar, is obtainable in jungles now!"
+        },
+		{ 
+            name: "The Prudent Index (Version ###)", 
+            path: "Snapshot - The Prudent Index.html",
+            notes: "Confirmed Completion Date: 10/5/2025. New feature overload! The in game console has new features such as TAB to autofill, and you can use arrows to access history! New oxidized copper bricks are added. Powertowers are added and are a rare source of copper bricks, materials and palladium! New chests added including magical chests which have 50 instead of 27 slots, and void chests which display every removed item! Refrigerator stoarge has been reduced to 18 rather than 27. Fixes added, and new tips added. Use % to open up a new debugging overlay. Lead and nickel bricks are added and nuggets are given images. Lead is still unobtainable. Surface variation and heights have been updated and enhanced."
+        },
+		{ 
+            name: "Meaty Madness (Version ###)", 
+            path: "Snapshot - Meaty Madness.html",
+            notes: "An old version of BGU located! I found this one inside my school Google Drive. It is suspected that these were the new features of this version: New meat world biome is added to the underworld along with new ways to obtain meat. Destroy meat trees and blocks, but not the spoiled ones... This old version may seem quite plain, but older versions will continue to be excavated!"
+        },
+		{ 
+            name: "Watch For Towers (Version ###)", 
+            path: "Snapshot - Watch For Towers.html",
+            notes: "This is an ancient version of the game. I found this one on my Windows 10 desktop from when I downloaded it from the outdated Onedrive folder. The underworld goes forever with no end, heaven was just added, and watchtowers are new-ish. No underworld biomes of heaven biomes, and only a few surface ones. Ancient and well-loading!"
+        },
+		{ 
+            name: "Free Version 1", 
+            path: "Snapshot - Free Version 1.html",
+            notes: "Worlds incompatible with other versions."
+        },
+		{ 
+            name: "Free Version 2", 
+            path: "Snapshot - Free Version 2.html",
+            notes: "Worlds incompatible with other versions. This version is based off of a version shortly after The Economic Codex."
+        },
+		{ 
+            name: "ZZZ AI (Experimental)", 
+            path: "ZZZ AI.html",
+            notes: "WARNING: This experimental version introduces features not regulated for the standard game version. Why control your game when you can let a REALLY dumb robot play. It will look for wood and mindlessly stay still while occasionally moving and wandering. It will even sometimes hit blocks and craft things strangely!"
+        },
+		{ 
+            name: "ZZZ Laggy Cows (Experimental)", 
+            path: "ZZZ Laggy Cows.html",
+            notes: "WARNING: This experimental version introduces features not regulated for the standard game version. Behold laggy cows, they move and interact with hits but also make your game lag heavily. They drop beef though..."
+        },
+		{ 
+            name: "ZZZ Lasers (Experimental)", 
+            path: "ZZZ Lasers.html",
+            notes: "WARNING: This experimental version introduces features not regulated for the standard game version. Behold the laser miner and hyper laser miner. Using cheats, give yourself a destrcutive item and destroy everything! Shape your world!"
+        }, 
+        { 
+            name: "The Brickening (2025)", 
+            path: "The Brickening (2025).html",
+            notes: "Confirmed Completion Date: 12/1/2025. A massive industrial update. The primary focus of The Brickening is the introduction of advanced masonry and large-scale manufacturing tools. New features include automated assembly lines, high-capacity brick presses, and a comprehensive overhaul of all stone-based recipes. This update rewards hard work and large-scale enterprise. To be perfectly honest: it adds some static decorative items. Offers some retextures such as chests and grass dirt blocks.",
+			specialSplash: "Industrialize your loadout!"
+        },
+        { 
+            name: "Viking Block Ship Prototype", 
+            path: "Viking Block Ship Prototype.html",
+            notes: "Confirmed Completion Date: 11/30/2025. This is a specialized, single-purpose prototype build focusing on large viking ship structures and a weird new block palette. The only goal is to build, launch, and sail a Viking Longship constructed entirely of standard wood blocks. Note: Due to resource limitations, sailing may be unstable near coastlines. Has a hidden buried chest close at spawn! Offers some retextures such as chests.",
+			specialSplash: "Congrats! Make yer-self a vikin' ship!"
+        },
+		{ 
+            name: "Try The 3D BGU 2! (May Not Work Completely)", 
+            path: "Block Game Ultimate 2.html",
+            notes: "",
+        },
+    ];
+
+    /**
+     * Sets a random splash message on the title screen.
+     */
+    function setRandomSplash() {
+        const splashElement = document.getElementById('splash-text');
+        if (splashElement) {
+            const randomIndex = Math.floor(Math.random() * SPLASH_MESSAGES.length);
+            splashElement.textContent = SPLASH_MESSAGES[randomIndex];
+        }
+    }
+
+    /**
+     * Finds a random path based on its weight.
+     * @returns {string} The selected logo image path.
+     */
+    function getWeightedRandomLogoPath() {
+        let totalWeight = 0;
+        // 1. Calculate the sum of all weights
+        LOGO_WEIGHTS.forEach(item => {
+            totalWeight += item.weight;
+        });
+
+        // 2. Pick a random value up to the total weight
+        let random = Math.random() * totalWeight;
+
+        // 3. Find the item that corresponds to the random value
+        for (let i = 0; i < LOGO_WEIGHTS.length; i++) {
+            const item = LOGO_WEIGHTS[i];
+            if (random < item.weight) {
+                return item.path;
+            }
+            // Subtract the current item's weight from the random value to check the next range
+            random -= item.weight;
+        }
+
+        // Fallback (should not be reached if weights sum to 100)
+        return "Logo.png"; 
+    }
+
+    /**
+     * Sets a random logo image source based on the defined weights.
+     */
+    function setRandomLogo() {
+        const logoElement = document.getElementById('main-logo');
+        if (logoElement && logoElement.style.cursor !== 'default') {
+            const newPath = getWeightedRandomLogoPath();
+            logoElement.src = newPath;
+            console.log(`[Logo Change]: Set logo to ${newPath}`);
+        }
+    }
+    
+    /**
+    * Closes all currently open modals.
+    */
+    function closeAllModals() {
+        closeSidebar(); // NEW: Close sidebar as well
+        closeSnapshotsModal();
+        closeGalleryModal();
+		closeMusicModal();
+        closeArtistModal();
+        closePatchNotesModal();
+        closeUpdatesModal();
+        closeSettingsModal(); // NEW
+        closeFAQModal(); // NEW
+        closeAboutModal(); // NEW
+    }
+
+	// --- PROFILE SYSTEM ---
+
+	function openProfileModal() {
+		closeAllModals();
+		const modal = document.getElementById('profile-modal');
+		modal.style.display = 'flex';
+		setTimeout(() => modal.classList.add('open'), 10);
+		renderProfileSaves();
+	}
+
+	function closeProfileModal() {
+		const modal = document.getElementById('profile-modal');
+		modal.classList.remove('open');
+		setTimeout(() => { 
+			if(!modal.classList.contains('open')) modal.style.display = 'none'; 
+		}, 300);
+	}
+
+	function renderProfileSaves() {
+		const grid = document.getElementById('save-grid');
+		grid.innerHTML = '';
+		
+		// Find all BGU saves
+		const saves = [];
+		let totalBytes = 0;
+
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key.startsWith('bgu_save_')) {
+				try {
+					const raw = localStorage.getItem(key);
+					totalBytes += raw.length * 2; // Approx char size
+					const data = JSON.parse(raw);
+					saves.push(data);
+				} catch(e) { console.error("Corrupt save", key); }
+			}
+		}
+
+		// Update storage usage text
+		const mbUsed = (totalBytes / 1024 / 1024).toFixed(2);
+		document.getElementById('storage-usage').textContent = `Local Storage Used: ~${mbUsed} MB`;
+
+		// Sort by date (newest first)
+		saves.sort((a, b) => b.date - a.date);
+
+		if (saves.length === 0) {
+			grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 2rem; color: #888;">No saved worlds found.<br>Play the game and use "Save to Profile" in the menu!</div>';
+			return;
+		}
+
+		saves.forEach(save => {
+			const card = document.createElement('div');
+			card.className = 'save-card';
+			
+			const dateStr = new Date(save.date).toLocaleDateString() + ' ' + new Date(save.date).toLocaleTimeString();
+
+			card.innerHTML = `
+				<img src="${save.thumbnail || 'Stone Block.png'}" class="save-thumb" alt="World">
+				<div class="save-info">
+					<div class="save-name" title="${save.name}">${save.name}</div>
+					<div class="save-date">${dateStr}</div>
+					<div class="save-actions">
+						<button class="save-btn btn-play" onclick="launchProfileSave('${save.id}')">PLAY</button>
+						<button class="save-btn btn-edit" onclick="renameSave('${save.id}')">EDIT</button>
+						<button class="save-btn btn-del" onclick="deleteSave('${save.id}')">DEL</button>
+					</div>
+					<input type="file" id="thumb-${save.id}" accept="image/*" style="display:none" onchange="updateSaveThumbnail('${save.id}', this)">
+				</div>
+			`;
+			grid.appendChild(card);
+		});
+	}
+
+	function launchProfileSave(saveId) {
+		// Set a flag that the Game will check upon initialization
+		localStorage.setItem('bgu_load_request', saveId);
+		
+		// Launch the game (Assuming Main Build)
+		// You might want to store which "version" created the save, 
+		// but for now we assume standard BGU.
+		launchContent('Block Game Ultimate.html');
+	}
+
+	function deleteSave(saveId) {
+		if(confirm("Are you sure you want to delete this world permanently?")) {
+			localStorage.removeItem(saveId);
+			renderProfileSaves();
+		}
+	}
+
+	function renameSave(saveId) {
+		const raw = localStorage.getItem(saveId);
+		if (!raw) return;
+		const data = JSON.parse(raw);
+		
+		const newName = prompt("Rename World:", data.name);
+		if (newName) {
+			data.name = newName;
+			localStorage.setItem(saveId, JSON.stringify(data));
+			renderProfileSaves();
+		}
+		
+		// Also offer to change thumbnail
+		if(confirm("Do you want to upload a custom thumbnail image for this world?")) {
+			document.getElementById(`thumb-${saveId}`).click();
+		}
+	}
+
+	function updateSaveThumbnail(saveId, inputElement) {
+		const file = inputElement.files[0];
+		if (!file) return;
+		
+		const reader = new FileReader();
+		reader.onload = function(e) {
+			// Resize image to save space (Max 200px width)
+			const img = new Image();
+			img.onload = function() {
+				const canvas = document.createElement('canvas');
+				const scale = 200 / img.width;
+				canvas.width = 200;
+				canvas.height = img.height * scale;
+				const ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+				
+				const thumbData = canvas.toDataURL('image/jpeg', 0.7);
+				
+				// Update Save
+				const raw = localStorage.getItem(saveId);
+				if(raw) {
+					const data = JSON.parse(raw);
+					data.thumbnail = thumbData;
+					localStorage.setItem(saveId, JSON.stringify(data));
+					renderProfileSaves();
+				}
+			};
+			img.src = e.target.result;
+		};
+		reader.readAsDataURL(file);
+	}
+	
+    /**
+     * Hides the launcher UI and loads the content (game, gallery, or snapshot) into the iframe.
+     * @param {string} contentPath - The filename to load (e.g., "Block Game Ultimate.html").
+     */
+    function launchContent(contentPath) {
+		resetLauncherTheme();
+        const gameIframe = document.getElementById('game-iframe');
+        const launcherUI = document.getElementById('launcher-ui');
+        const exitButton = document.getElementById('exit-button');
+        
+        // Always close any active modals
+        closeAllModals();
+
+        // --- Path Check for Subdirectories (Console Warning) ---
+        if (contentPath.includes('Versions/')) {
+            console.warn(
+                `[SNAPSHOT WARNING]: Loading game from subdirectory: ${contentPath}. 
+                If images/assets fail to load, ensure all file paths inside the loaded HTML 
+                file start with '../' (e.g., change 'Stone Block.png' to '../Stone Block.png') 
+                to point back to the main folder.`
+            );
+        }
+        // ---------------------------------------------
+
+        // Hide the launcher UI elements
+        launcherUI.style.display = 'none';
+
+        // Show the iframe and load the new content file into it
+        gameIframe.style.display = 'block';
+        gameIframe.src = contentPath;
+        gameIframe.title = contentPath.split('/').pop().split('.')[0]; // Set title dynamically from file name
+
+        // Show the exit button only for the Gallery and Snapshots/Experiments, hide for the main game
+        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Block Music.html') || contentPath.includes('Block Game Artist.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
+            exitButton.style.display = 'flex';
+        } else {
+            // For the main game, the user is typically expected to be there longer
+            exitButton.style.display = 'none'; 
+        }
+
+        // Focus the iframe for immediate keyboard input
+        setTimeout(() => {
+            gameIframe.focus();
+        }, 50);
+    }
+    
+    /**
+     * Exits the loaded content, hides the iframe, and returns to the launcher UI.
+     */
+    function exitContent() {
+        const gameIframe = document.getElementById('game-iframe');
+        const launcherUI = document.getElementById('launcher-ui');
+        const exitButton = document.getElementById('exit-button');
+
+        // Hide the iframe and the exit button
+        gameIframe.style.display = 'none';
+        gameIframe.src = 'about:blank'; // Clear the content
+        exitButton.style.display = 'none';
+		
+		resetLauncherTheme();
+        closeSidebar(); // NEW: Ensure sidebar is closed
+        // Show the launcher UI
+        launcherUI.style.display = 'flex';
+        launcherUI.focus(); // Focus the launcher UI
+    }
+
+    /**
+     * Finds the snapshot data by name.
+     * @param {string} name 
+     * @returns {object | undefined}
+     */
+    function getSnapshotByName(name) {
+        return SNAPSHOT_DATA.find(s => s.name === name);
+    }
+
+    // --- NEW: Sidebar Functions ---
+    /**
+     * Opens the sidebar.
+     */
+    function openSidebar() {
+        closeAllModals(); // Close any open modals first
+        document.getElementById('sidebar-nav').classList.add('open');
+        document.body.classList.add('sidebar-open');
+    }
+
+    /**
+     * Closes the sidebar.
+     */
+    function closeSidebar() {
+        document.getElementById('sidebar-nav').classList.remove('open');
+        document.body.classList.remove('sidebar-open');
+    }
+
+
+    // --- Snapshots Modal Functions ---
+
+    /**
+     * Dynamically renders the list of snapshots in the modal.
+     */
+    function renderSnapshots() {
+        const listElement = document.getElementById('snapshot-list');
+        listElement.innerHTML = ''; // Clear previous entries
+
+        SNAPSHOT_DATA.forEach(snapshot => {
+            const listItem = document.createElement('li');
+            listItem.className = 'snapshot-item';
+            
+            // --- NEW: Triple-click logic ---
+            let clickTimer = null;
+            let clickCount = 0;
+            const tripleClickDelay = 500; // 500ms window for 3 clicks
+
+            const clickHandler = (event) => {
+				if (event.target.closest('.patch-notes-button')) {
+                    if (clickTimer) {
+                        clearTimeout(clickTimer);
+                    }
+                    clickCount = 0;
+                    return; // Stop processing the click for the li (game launch)
+                }
+				// Stop the mobile browser's default behavior (like scroll or zoom) 
+				// from cancelling the launch timer, preserving the triple-click logic.
+				if (event.type === 'touchstart') {
+					event.preventDefault(); 
+				}
+                clickCount++;
+
+                if (clickTimer) {
+                    clearTimeout(clickTimer);
+                }
+
+                clickTimer = setTimeout(() => {
+                    clickCount = 0; // Reset after delay
+                }, tripleClickDelay);
+
+                if (clickCount === 1) {
+                    // On the first click, set a timer to launch the game
+                    // This creates a small delay, but allows triple-click to cancel it.
+                    clickTimer = setTimeout(() => {
+                        launchContent(snapshot.path);
+                        clickCount = 0;
+                    }, tripleClickDelay);
+                } else if (clickCount === 3) {
+                    // TRIPLE CLICK!
+                    event.stopPropagation();
+                    event.preventDefault();
+                    clearTimeout(clickTimer); // Cancel the game launch
+                    clickCount = 0;
+                    applyLauncherTheme(snapshot); // Apply theme instead
+                }
+            };
+
+            listItem.addEventListener('mousedown', clickHandler);
+            listItem.addEventListener('touchstart', clickHandler);
+            // --- END of Triple-click logic ---
+
+            // Structure includes the new Patch Notes button
+            listItem.innerHTML = `
+				<div style="flex-grow: 1;">
+					<span>${snapshot.name}</span><br>
+					<span class="snapshot-path">Path: ${snapshot.path}</span>
+				</div>
+				<div style="display: flex; gap: 0.5rem; align-items: center;">
+					<button class="patch-notes-button" 
+							onclick="event.stopPropagation(); openPatchNotesModal('${snapshot.name}')" 
+							title="View Patch Notes">
+						<img src="Planked Oak Block.png" alt="Notes Icon" class="patch-notes-icon"/>
+					</button>
+					</div>
+			`;
+            listElement.appendChild(listItem);
+        });
+    }
+
+    /**
+     * Shows the Snapshots modal.
+     */
+    function openSnapshotsModal() {
+        closeAllModals();
+        renderSnapshots();
+
+        const modal = document.getElementById('snapshots-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+
+    /**
+     * Hides the Snapshots modal.
+     */
+    function closeSnapshotsModal() {
+        const modal = document.getElementById('snapshots-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+
+    // --- Patch Notes Modal Functions ---
+
+    /**
+     * Generates the dynamic background path based on the snapshot name.
+     * @param {string} snapshotName 
+     * @returns {string} The path for the background image.
+     */
+    function getBackgroundPath(snapshotName) {
+        // Special case for ZZZ Lasers: it uses spaces in the filename.
+        if (snapshotName.includes('Current Development Build (Default)')) {
+            return 'Background 1.png';
+        }
+		if (snapshotName.includes('ZZZ Lasers')) {
+            return 'ZZZ Lasers Background.png';
+        }
+        if (snapshotName.includes('The Prudent Index (Version ###)')) {
+            return 'Snapshot - The Prudent Index Background.png';
+        }
+		if (snapshotName.includes('Posthumous Hydration Protocol (Version ###)')) {
+            return 'Snapshot - Posthumous Hydration Protocol.png';
+        }
+		if (snapshotName.includes('Photosynthetic Mandate (Version ###)')) {
+            return 'Snapshot - Photosynthetic Mandate.png';
+        }
+		if (snapshotName.includes('The Economic Codex (Version ###)')) {
+            return 'Snapshot - The Economic Codex.png';
+        }
+		if (snapshotName.includes('Molten Sun Edict (Version ###)')) {
+            return 'Snapshot - Molten Sun Edict.png';
+        }
+        if (snapshotName.includes('Geobotanical Combustion Thesis (Version ###)')) {
+            return 'Snapshot - Geobotanical Combustion Thesis.png';
+        }
+		if (snapshotName.includes('The Vibrant Guano Ordinance (Version ###)')) {
+            return 'Snapshot - The Vibrant Guano Ordinance.png';
+        }
+		if (snapshotName.includes('Foundations & Frontiers (Version ###)')) {
+            return 'Snapshot - Foundations & Frontiers.png';
+        }
+		if (snapshotName.includes('The Brickening (2025)')) {
+            return 'The Brickening (2025).png';
+        }
+		if (snapshotName.includes('Viking Block Ship Prototype')) {
+            return 'Viking Block Ship Prototype.png';
+        }
+
+        // Clean the name: remove parentheses and contents, replace spaces with underscores.
+        let baseName = snapshotName.replace(/\s+\(.*?\)/g, '').trim();
+        baseName = baseName.replace(/[^a-zA-Z0-9_]/g, '_'); // Replace spaces and non-alpha/numeric/underscore with underscore
+
+        // Default naming convention: "[Cleaned Name] Background.png"
+        return `${baseName}Background.png`; 
+    }
+
+    /**
+     * Shows the Patch Notes modal for a selected snapshot.
+     * @param {string} snapshotName - The name of the snapshot to look up.
+     */
+    function openPatchNotesModal(snapshotName) {
+        const snapshot = getSnapshotByName(snapshotName);
+        if (!snapshot) {
+            console.error('Snapshot data not found for:', snapshotName);
+            return;
+        }
+
+        // Close other modals
+        closeAllModals();
+
+        const modal = document.getElementById('patch-notes-modal');
+        const contentContainer = document.getElementById('patch-notes-content');
+        const backgroundPath = getBackgroundPath(snapshot.name);
+        
+        // Set dynamic background. Fallback is the default body background.
+        modal.style.backgroundImage = `url('${backgroundPath}')`;
+        modal.style.backgroundSize = 'cover';
+        modal.style.backgroundPosition = 'center';
+
+        // Populate content
+        // Replaces \n with new <p> tags for paragraph formatting
+        const formattedNotes = snapshot.notes.split('\n').map(p => 
+            `<p class="patch-notes-paragraph">${p.trim()}</p>`
+        ).join('');
+
+
+        contentContainer.innerHTML = `
+            <button class="modal-close" onclick="closePatchNotesModal()">✕</button>
+            <h2 class="modal-title">${snapshot.name} Changelog</h2>
+            <div class="patch-notes-version">Standard Version: Foundations & Frontiers</div>
+            ${formattedNotes}
+        `;
+
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+
+    /**
+     * Hides the Patch Notes modal.
+     */
+    function closePatchNotesModal() {
+        const modal = document.getElementById('patch-notes-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+                modal.style.backgroundImage = ''; // Clear background to prevent image overlap
+            }
+        }, 300); 
+    }
+
+
+    // --- Gallery Modal Functions ---
+
+    /**
+     * Shows the Gallery modal.
+     */
+    function openGalleryModal() {
+        closeAllModals();
+        const modal = document.getElementById('gallery-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+	
+	function openArtistModal() {
+        closeAllModals();
+        const modal = document.getElementById('artist-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+	
+	function openMusicModal() {
+        closeAllModals();
+        const modal = document.getElementById('music-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+
+    /**
+     * Hides the Gallery modal.
+     */
+    function closeGalleryModal() {
+        const modal = document.getElementById('gallery-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+	
+	function closeMusicModal() {
+        const modal = document.getElementById('music-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+	
+	function closeArtistModal() {
+        const modal = document.getElementById('artist-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+    
+    // --- Future Updates Modal Functions ---
+    
+    /**
+     * Shows the Future Updates modal.
+     */
+    function openUpdatesModal() {
+        closeAllModals();
+        const modal = document.getElementById('updates-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+    
+    /**
+     * Hides the Future Updates modal.
+     */
+    function closeUpdatesModal() {
+        const modal = document.getElementById('updates-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+
+    // --- NEW: Settings/FAQ/About Modal Functions ---
+
+    /**
+     * Shows the Settings modal.
+     */
+    function openSettingsModal() {
+        closeAllModals();
+        const modal = document.getElementById('settings-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+
+    /**
+     * Hides the Settings modal.
+     */
+    function closeSettingsModal() {
+        const modal = document.getElementById('settings-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300);
+    }
+
+    /**
+     * Shows the FAQ modal.
+     */
+    function openFAQModal() {
+        closeAllModals();
+        const modal = document.getElementById('faq-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+
+    /**
+     * Hides the FAQ modal.
+     */
+    function closeFAQModal() {
+        const modal = document.getElementById('faq-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300);
+    }
+
+    /**
+     * Shows the About modal.
+     */
+    function openAboutModal() {
+        closeAllModals();
+        const modal = document.getElementById('about-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
+
+    /**
+     * Hides the About modal.
+     */
+    function closeAboutModal() {
+        const modal = document.getElementById('about-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300);
+    }
+
+    // --- NEW: Settings Toggle Functions ---
+    function toggleSplashAnimation(isDisabled) {
+        const splashElement = document.getElementById('splash-text');
+        if (isDisabled) {
+            splashElement.style.animation = 'none';
+            splashElement.style.transform = 'rotate(-5deg) scale(1.0)'; // Set to default state
+        } else {
+            splashElement.style.animation = 'splash-idle 2s ease-in-out infinite alternate';
+        }
+    }
+
+    function toggleLogoClick(isDisabled) {
+        const logoElement = document.getElementById('main-logo');
+        if (isDisabled) {
+            logoElement.style.cursor = 'default';
+        } else {
+            logoElement.style.cursor = 'pointer';
+        }
+    }
+
+
+    // --- Konami Code Easter Egg ---
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a', 'Enter'];
+    let konamiIndex = 0;
+	
+	const hackCode = ['h', 'a', 'c', 'k'];
+    let hackIndex = 0;
+
+    document.addEventListener('keydown', (event) => {
+        // Ignore key presses when a modal is open OR sidebar is open
+        if (document.querySelector('.modal-overlay[style*="display: flex"]') || document.body.classList.contains('sidebar-open')) {
+            return;
+        }
+
+        const requiredKey = konamiCode[konamiIndex];
+        
+        // Check if the pressed key matches the required key in the sequence
+        if (event.key.toLowerCase() === requiredKey.toLowerCase()) {
+            konamiIndex++;
+            // If the sequence is complete, activate the easter egg
+            if (konamiIndex === konamiCode.length) {
+                activateKonami();
+                konamiIndex = 0; // Reset for next time
+            }
+        } else {
+            // Reset if the wrong key is pressed
+            konamiIndex = 0;
+        }
+		
+		const requiredHackKey = hackCode[hackIndex];
+        if (event.key.toLowerCase() === requiredHackKey) {
+            hackIndex++;
+            if (hackIndex === hackCode.length) {
+                activateHackTheme();
+                hackIndex = 0;
+            }
+        } else {
+            hackIndex = 0;
+        }
+    });
+
+    function activateKonami() {
+        const splashElement = document.getElementById('splash-text');
+        const logoElement = document.getElementById('main-logo');
+        
+        if (splashElement) {
+            splashElement.textContent = "Everything Has Changed...";
+            splashElement.style.color = "#00ff00"; // Hacker green
+            splashElement.style.transform = "rotate(0deg) scale(1.1)";
+        }
+        
+        if (logoElement) {
+            logoElement.classList.add('konami-active');
+        }
+        console.log("KONAMI CODE ACTIVATED!");
+    }
+	
+	/**
+     * Resets all launcher themes and splash text.
+     */
+    function resetLauncherTheme() {
+        document.body.classList.remove('theme-active');
+        document.body.classList.remove('matrix-theme');
+        document.body.style.backgroundImage = "url('Background.png')"; // Reset to default
+        setRandomSplash(); // Get a new random splash
+        setRandomLogo();   // Get a new random logo
+
+        // NEW: Reset Konami effects
+        const splashElement = document.getElementById('splash-text');
+        if (splashElement) {
+            splashElement.style.color = "#facc15"; // Yellow
+            if (document.getElementById('toggle-splash-anim').checked === false) {
+                splashElement.style.animation = 'splash-idle 2s ease-in-out infinite alternate';
+            }
+        }
+        const logoElement = document.getElementById('main-logo');
+        if (logoElement) {
+            logoElement.classList.remove('konami-active');
+        }
+    }
+
+    /**
+     * Applies the "HACK" easter egg theme.
+     */
+    function activateHackTheme() {
+        resetLauncherTheme(); // Clear other themes first
+        document.body.classList.add('matrix-theme');
+        const splashElement = document.getElementById('splash-text');
+        if (splashElement) {
+            splashElement.textContent = "SYSTEM BREACHED";
+            splashElement.style.animation = 'none';
+        }
+    }
+
+    /**
+     * Applies a theme based on a snapshot.
+     * @param {object} snapshot - The snapshot data object.
+     */
+    function applyLauncherTheme(snapshot) {
+        closeAllModals(); // Close the snapshots window
+        resetLauncherTheme(); // Clear any existing theme
+
+        const bgPath = getBackgroundPath(snapshot.name);
+        document.body.style.backgroundImage = `url('${bgPath}')`;
+        document.body.classList.add('theme-active'); // This adds the 50% darken overlay
+
+        if (snapshot.specialSplash) {
+            const splashElement = document.getElementById('splash-text');
+            splashElement.textContent = snapshot.specialSplash;
+        }
+    }
+    
+    // Run the initial setup when the page loads
+    window.onload = () => {
+        setRandomSplash();
+        // Check if the reset-theme-button exists before adding an onclick
+        const resetButton = document.getElementById('reset-theme-button');
+        if (resetButton) {
+		    resetButton.onclick = resetLauncherTheme;
+        }
+    };
+</script>
+
+</body>
+</html>

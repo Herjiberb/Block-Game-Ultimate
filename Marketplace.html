@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Game Ultimate Marketplace</title>
+    <link rel="icon" type="image/png" href="Trailer.png">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --accent: #00dc82;
+            --text-main: #ffffff;
+            --text-dim: #b3b3b3;
+            --transition: 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background: #000;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-area img {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+        }
+
+        .search-bar {
+            flex-grow: 0.5;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #222;
+            color: white;
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+
+        /* --- Main Content --- */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* --- Mod Cards --- */
+        .mod-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid #333;
+            cursor: pointer;
+        }
+
+        .mod-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .mod-banner {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #252525;
+        }
+
+        .mod-info {
+            padding: 15px;
+        }
+
+        .mod-title {
+            font-size: 1.2rem;
+            margin: 0 0 5px 0;
+            font-weight: bold;
+        }
+
+        .mod-author {
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        /* --- Project Page (Details View) --- */
+        #mod-details {
+            display: none;
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .details-header {
+            display: flex;
+            gap: 30px;
+            align-items: start;
+            margin-bottom: 30px;
+        }
+
+        .details-logo {
+            width: 200px;
+            height: 200px;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .gallery img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: var(--accent);
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        .download-btn:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area" onclick="showHome()">
+        <img src="Trailer.png" alt="Logo" onerror="this.src='https://via.placeholder.com/40'">
+        <h2 style="margin: 0;">BGU Marketplace</h2>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search mods..." onkeyup="searchMods()">
+    </div>
+</header>
+
+<div class="container">
+    <div id="home-view">
+        <h1 id="view-title">Featured Mods</h1>
+        <div class="grid" id="mods-grid"></div>
+    </div>
+
+    <div id="mod-details">
+        <button class="back-btn" onclick="showHome()">← Back to Marketplace</button>
+        <div id="details-content"></div>
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 Block Game Ultimate Marketplace. All mod files are property of their respective creators.
+</footer>
+
+<script>
+    /**
+     * MOD DATA ARRAY
+     * Updated paths to use forward slashes (/) for universal compatibility.
+     */
+    const mods = [
+        {
+            id: 1,
+            title: "IntenseCraft",
+            author: "BGU Dev Team",
+            description: "Experience the game like never before with all new intensity. Punching down stone and wood is no longer a simple task. Collect grass and flint and sticks and other resources to build tools, and find curious altars and structures along the way.",
+            logo: "Marketplace/IntenseCraft.png",
+            gallery: ["Marketplace/IntenseCraft 1.png", "Marketplace/IntenseCraft 2.png"],
+            fileUrl: "Marketplace/IntenseCraft.zip",
+            category: "Overhaul",
+            version: "v1.0.0"
+        },
+        {
+            id: 2,
+            title: "Block Game Minecraft",
+            author: "BGU Dev Team",
+            description: "Do you prefer 2D Minecraft over Block Game Ultimate? If so, this is the place for you! Block textures are changed to match Minecraft, and its style. Recipes are changed to use Minecraft's 3x3 grid. Everything is more like Minecraft, with many renames too!",
+            logo: "Marketplace/Block Game Minecraft.png",
+            gallery: ["Marketplace/Block Game Minecraft 1.png"],
+            fileUrl: "Marketplace/Block Game Minecraft.zip",
+            category: "Overhaul",
+            version: "v1.0.0"
+        }
+    ];
+
+    const modsGrid = document.getElementById('mods-grid');
+    const homeView = document.getElementById('home-view');
+    const detailsView = document.getElementById('mod-details');
+    const detailsContent = document.getElementById('details-content');
+    const searchInput = document.getElementById('searchInput');
+
+    // Initial Load
+    renderMods(mods);
+
+    function renderMods(data) {
+        modsGrid.innerHTML = '';
+        data.forEach(mod => {
+            const card = document.createElement('div');
+            card.className = 'mod-card';
+            card.onclick = () => openMod(mod.id);
+            card.innerHTML = `
+                <img src="${mod.logo}" class="mod-banner" alt="${mod.title}" 
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x160?text=${mod.title}'">
+                <div class="mod-info">
+                    <div class="mod-title">${mod.title}</div>
+                    <div class="mod-author">by ${mod.author}</div>
+                    <div style="color: var(--text-dim); font-size: 0.85rem;">${mod.description.substring(0, 80)}...</div>
+                </div>
+            `;
+            modsGrid.appendChild(card);
+        });
+    }
+
+    function searchMods() {
+        const query = searchInput.value.toLowerCase();
+        const filtered = mods.filter(mod => 
+            mod.title.toLowerCase().includes(query) || 
+            mod.description.toLowerCase().includes(query)
+        );
+        
+        document.getElementById('view-title').innerText = query ? `Search Results for "${query}"` : "Featured Mods";
+        renderMods(filtered);
+    }
+
+    function openMod(id) {
+        const mod = mods.find(m => m.id === id);
+        if (!mod) return;
+
+        detailsContent.innerHTML = `
+            <div class="details-header">
+                <img src="${mod.logo}" class="details-logo" 
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/200?text=No+Logo'">
+                <div>
+                    <h1>${mod.title}</h1>
+                    <p class="mod-author">Created by ${mod.author} • ${mod.version}</p>
+                    <p>${mod.description}</p>
+                    <a href="${mod.fileUrl}" class="download-btn" download>Download .zip</a>
+                </div>
+            </div>
+            
+            <h3>Gallery</h3>
+            <div class="gallery">
+                ${mod.gallery.map(img => `
+                    <img src="${img}" alt="Screenshot" 
+                         onerror="this.style.display='none'">
+                `).join('')}
+            </div>
+
+            <div style="margin-top: 40px; padding: 20px; background: #222; border-radius: 8px;">
+                <h3>Installation Instructions</h3>
+                <p>1. Download the file above.</p>
+                <p>2. If it is a ZIP, select it after hitting 'g' in the loading menu. (Coming Soon, for now extract the .zip into a folder and open the .bgumod inside!)</p>
+                <p>3. If it is a .bgumod file, open the .bgumod and if needed upload the texture folder.</p>
+            </div>
+        `;
+
+        homeView.style.display = 'none';
+        detailsView.style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function showHome() {
+        detailsView.style.display = 'none';
+        homeView.style.display = 'block';
+        searchInput.value = '';
+        renderMods(mods);
+    }
+</script>
+
+</body>
+</html>
