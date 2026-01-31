@@ -7,14 +7,14 @@
 	<link rel="icon" type="image/png" href="Grass Dirt Block.png">
 	<input type="file" id="worldFileInput" accept=".bgu1" style="display: none;">
     <input type="file" id="texturePackInput" webkitdirectory directory multiple style="display: none;">
-	<input type="file" id="modFileInput" accept=".bgumod" style="display: none;">
+	<input type="file" id="modFileInput" accept=".bgumod, .zip" style="display: none;">
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #70b6d5; /* Set body background to sky blue */
+            background-color: #d8fffe; /* Set body background to sky blue, OG color is 70b6d5 */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -2135,11 +2135,36 @@
 		#skinViewPresetsButton:hover {
 			background-color: #5a32a3;
 		}
+		/* --- Background Layer Styles for Fading --- */
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -10; /* Behind everything */
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            transition: opacity 1.0s ease-in-out; /* Smooth 1.0s fade */
+        }
+        
+        #bgLayer1 {
+            z-index: -10;
+            opacity: 1;
+        }
+        
+        #bgLayer2 {
+            z-index: -9; /* Sits on top of layer 1 when fading in */
+            opacity: 0;
+        }
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
 </head>
 <body>
+	<div id="bgLayer1" class="bg-layer" style="background-color: #d8fffe;"></div> <!-- OG color is 70b6d5 -->
+    <div id="bgLayer2" class="bg-layer" style="background-color: #d8fffe;"></div> <!-- OG color is 70b6d5 -->
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="drunkVignette"></div>
@@ -2741,6 +2766,8 @@
 			"If you get caught in a Cobweb block, your movement speed, jump strength, and gravity are all reduced by 80% or more, effectively halting all movement. Use a tool to quickly cut yourself free.",
             "Press 't' in the loading screen to upload a texture pack and reimagine the looks of the game!",
             "Press 'g' in the loading screen to upload a mod and to add new features and textures and much more with a simple .bgumod file and a texture folder!",
+			"The stripe lands end at (9007199254740912, 0)! Anything beyond that right crashes the game! (1801439850948198,0) is the final block before the stripe lands start!",
+			"If a block is glowing when you mine it, you probably need to find a better tool! There's even a chance it won't drop anything!",
 			// Vital Tip
 			"This Game And Mechanics Were Made By BPR! Also, THIS GAME IS NOT JUST '2D MINECRAFT,' So Don't Call It That!"
         ];
@@ -3776,6 +3803,15 @@
 		// --- particle count persisted in localStorage ---
         // put this before any code that uses `particleCount`
         const DEFAULT_PARTICLE_COUNT = 15; // change default as you like
+		
+		// --- DROP LOCKING SETTINGS ---
+        const ENABLE_BLOCK_HIGHLIGHT = true; // Use color change instead of shake
+        const HIGHLIGHT_BRIGHTNESS = 150;    // 100 is normal, 150 is 50% brighter
+        const HIGHLIGHT_SATURATION = 180;    // 100 is normal, 180 is very vibrant
+        const HIGHLIGHT_HUE_SHIFT = 0;      // 0 to 360 degrees (changes the actual color)
+        const HIGHLIGHT_FLICKER = true;      // Makes the brightness "stutter" like the shake did
+		const UNBREAKABLE_BY_DEFAULT = false; // Set to true to make blocks unbreakable by default if power is low
+        const INSUFFICIENT_POWER_PENALTY = 10; // How much slower mining is when using the wrong/weak tool (3x slower)
         
         function loadSavedParticleCount() {
           const saved = localStorage.getItem('gameParticles');
@@ -3824,7 +3860,9 @@
 		const opalVeinProbability = rareMineralProbability / 13;
 		const sapphireVeinProbability = rareMineralProbability / 13;
 		const emeraldVeinProbability = rareMineralProbability / 14;
-		const rubyVeinProbability = rareMineralProbability / 16; 
+		const rubyVeinProbability = rareMineralProbability / 16;
+		const ametrineVeinProbability = rareMineralProbability / 16;
+		const painiteVeinProbability = rareMineralProbability / 25;
 		const hellsteelVeinProbability = 0.005;
 		const mighterrumVeinProbability = 0.0007;
         const obsidianVeinProbability = 0.008;
@@ -3834,6 +3872,7 @@
 		const graniteVeinProbability = 0.004;
         const slateVeinProbability = 0.003;
         const schistVeinProbability = 0.002;
+		const shaleVeinProbability = 0.004;
 		const tuffVeinProbability = 0.001;
 		const marbleVeinProbability = 0.002;
 		const saltVeinProbability = 0.0005;
@@ -3959,10 +3998,15 @@
             currentSeed = seed;
             random = mulberry32(seed);
         }*/
+        
+        let theSeed
 
+        let seedControl
+        
         // Sets the seed for the PRNG
         function setSeed(seed) {
             currentSeed = seed;
+            theSeed = seed;
             random = mulberry64_bigint(seed);
         }
 
@@ -3990,6 +4034,8 @@
             'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#483D8B' },
 			'refrigerator': { imgSrc: 'Refrigerator.png', solid: true, miningHardness: 150, drops: [{item: 'refrigerator', chance: 1, min: 1, max: 1}], color: '#E6E8FA' },
 			'enchanter': { imgSrc: 'Enchanter.png', solid: true, miningHardness: 300, drops: [{item: 'enchanter', chance: 1, min: 1, max: 1}], color: '#696969', isEnchanter: true, shovelBlock: true },
+			'saw_table': { imgSrc: 'Saw Table.png', solid: true, miningHardness: 500, drops: [{item: 'saw_table', chance: 1, min: 1, max: 1}], color: '#696969' },
+			'cracked_saw_table': { imgSrc: 'Cracked Saw Table.png', solid: true, miningHardness: 500, drops: [{item: 'cracked_saw_table', chance: 1, min: 1, max: 1}], color: '#696969' },
 			'rock_anvil': { imgSrc: 'Rock Anvil.png', solid: true, miningHardness: 1000, drops: [{item: 'rock_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 1 },
 			'iron_anvil': { imgSrc: 'Iron Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'iron_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
 			'tungsten_anvil': { imgSrc: 'Tungsten Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'tungsten_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
@@ -4125,6 +4171,7 @@
 			'hellsteel_hellstone': { imgSrc: 'Hellsteel Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'hellsteel_nugget', chance: 1, min: 1, max: 3}], color: '#E62020' },
 			'mighterrum_hellstone': { imgSrc: 'Mighterrum Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'mighterrum_nugget', chance: 1, min: 1, max: 1}], color: '#B22222' },
 			'coal_block': { imgSrc: 'Coal Block.png', solid: true, miningHardness: 500, drops: [{item: 'coal', chance: 1, min: 1, max: 9}], color: '#343434' },
+			'cobbled_stone': { imgSrc: 'Cobbled Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'cobbled_stone', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'stone_brick_block': { imgSrc: 'Stone Brick Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone_brick_block', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'clay_brick_block': { imgSrc: 'Clay Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'clay_brick_block', chance: 1, min: 1, max: 1}], color: '#B22222' },
             'steel_brick_block': { imgSrc: 'Steel Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'steel_brick_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9' },
@@ -4170,6 +4217,8 @@
             'opal_compacted_stone': { imgSrc: 'Opal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'opal_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7', requiredMiningPower: 0.2 },
 			'rose_quartz_compacted_stone': { imgSrc: 'Rose Quartz Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'rose_quartz_nugget', chance: 1, min: 1, max: 1}], color: '#9966CC', requiredMiningPower: 0.2 },
 			'jade_compacted_stone': { imgSrc: 'Jade Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'jade_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
+			'ametrine_compacted_stone': { imgSrc: 'Ametrine Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ametrine_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
+			'painite_compacted_stone': { imgSrc: 'Painite Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'painite_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
             'aluminum_granite': { imgSrc: 'Aluminum Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.15 },
 			'aluminum_compressed_stone': { imgSrc: 'Aluminum Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.5 },
 			'palladium_compressed_stone': { imgSrc: 'Palladium Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'palladium_nugget', chance: 1, min: 1, max: 1}], color: '#E6E8FA', requiredMiningPower: 0.5 },
@@ -4185,6 +4234,7 @@
 			'raw_oak': { imgSrc: 'Raw Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
             'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22', swordBlock: true },
             'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'] },
+			'refined_planked_oak': { imgSrc: 'Refined Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'] },
 			'raw_apple': { imgSrc: 'Raw Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_apple', chance: 1, min: 1, max: 1}], color: '#654321' },
             'apple_bush': { imgSrc: 'Apple Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22', swordBlock: true },
 			'apple_bush_fruit': { imgSrc: 'Apple Bush Block Fruit.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}, {item: 'apple', chance: 1, min: 1, max: 3}], color: '#FF0000', swordBlock: true },
@@ -4192,9 +4242,11 @@
             'raw_birch': { imgSrc: 'Raw Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_birch', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'birch_bush': { imgSrc: 'Birch Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'birch_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
             'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3', breakSound: ['plank_break_1', 'plank_break_2'] },
+			'refined_planked_birch': { imgSrc: 'Refined Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3', breakSound: ['plank_break_1', 'plank_break_2'] },
             'raw_spruce': { imgSrc: 'Raw Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_spruce', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'spruce_bush', chance: 0.05, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
 			'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'] },
+			'refined_planked_spruce': { imgSrc: 'Refined Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'] },
 			'raw_pine': { imgSrc: 'Raw Pine Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_pine', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'pine_bush': { imgSrc: 'Pine Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'pine_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.6, min: 1, max: 5}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
 			'planked_pine': { imgSrc: 'Planked Pine Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_pine', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'] },
@@ -4263,12 +4315,21 @@
             'anthill_sand_mound': { imgSrc: 'Anthill Sand Mound.png', solid: false, miningHardness: 10, drops: [], color: '#D2B48C' },
 			'guano': { imgSrc: 'Guano.png', solid: false, miningHardness: 10, drops: [{item: 'guano', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
             // Special Rock Start
-			'slate': { imgSrc: 'Slate Block.png', solid: true, miningHardness: 600, drops: [{item: 'slate', chance: 1, min: 1, max: 1}], color: '#708090' },
-            'schist': { imgSrc: 'Schist Block.png', solid: true, miningHardness: 400, drops: [{item: 'schist', chance: 1, min: 1, max: 1}], color: '#848482' },
+			'shale': { imgSrc: 'Shale Block.png', solid: true, miningHardness: 350, drops: [{item: 'shale', chance: 1, min: 1, max: 1}], color: '#708090' },
+            'slate': { imgSrc: 'Slate Block.png', solid: true, miningHardness: 450, drops: [{item: 'slate', chance: 1, min: 1, max: 1}], color: '#708090' },
+            'schist': { imgSrc: 'Schist Block.png', solid: true, miningHardness: 600, drops: [{item: 'schist', chance: 1, min: 1, max: 1}], color: '#848482' },
             'granite': { imgSrc: 'Granite Block.png', solid: true, miningHardness: 700, drops: [{item: 'granite', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'polished_granite': { imgSrc: 'Polished Granite Block.png', solid: true, miningHardness: 700, drops: [{item: 'polished_granite', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
 			'tuff': { imgSrc: 'Tuff Block.png', solid: true, miningHardness: 500, drops: [{item: 'tuff', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
 			'marble': { imgSrc: 'Marble Block.png', solid: true, miningHardness: 600, drops: [{item: 'marble', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'polished_marble': { imgSrc: 'Polished Marble Block.png', solid: true, miningHardness: 600, drops: [{item: 'polished_marble', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'marble_pillar': { imgSrc: 'Marble Pillar.png', solid: false, miningHardness: 600, drops: [{item: 'marble_pillar', chance: 1, min: 1, max: 1}], color: '#D3B8B1', nonsolidPlace: true },
 			'basalt': { imgSrc: 'Basalt Block.png', solid: true, miningHardness: 700, drops: [{item: 'basalt', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'amethyst': { imgSrc: 'Amethyst Block.png', solid: true, miningHardness: 300, drops: [{item: 'amethyst', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'rose_quartz': { imgSrc: 'Rose Quartz Block.png', solid: true, miningHardness: 300, drops: [{item: 'rose_quartz', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'diamond': { imgSrc: 'Diamond Block.png', solid: true, miningHardness: 300, drops: [{item: 'diamond', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+			'emerald': { imgSrc: 'Emerald Block.png', solid: true, miningHardness: 300, drops: [{item: 'emerald', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
+            'amber': { imgSrc: 'Amber Block.png', solid: true, miningHardness: 300, drops: [{item: 'amber', chance: 1, min: 1, max: 1}], color: '#D3B8B1' },
 			// Special Rock End
 			'asphalt': { imgSrc: 'Asphalt Block.png', solid: true, miningHardness: 600, drops: [{item: 'asphalt_fragment', chance: 1, min: 1, max: 4}], color: '#36454F' },
 			'concrete': { imgSrc: 'Concrete Block.png', solid: true, miningHardness: 600, drops: [{item: 'concrete', chance: 1, min: 1, max: 1}], color: '#BEBEBE' },
@@ -4418,18 +4479,18 @@
 			'infinitungsten_super_mineral': { imgSrc: 'Infinitungsten Super Mineral Block.png', solid: true, miningHardness: 1500, drops: [{item: 'impure_infinitungsten_nugget', chance: 0.3, min: 1, max: 3}], color: '#D3D3D3', shovelBlock: true },
 			// IMPLEMENTED
 			'bone_block': { imgSrc: 'Bone Block.png', solid: true, miningHardness: 500, drops: [{item: 'bone_block', chance: 1, min: 1, max: 1}], color: '#F5F5DC', swordBlock: true },
-			'obsidian_block': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian_block', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
-			'ash_block': { imgSrc: 'Ash Block.png', solid: true, miningHardness: 40, drops: [{item: 'ash_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
-			'soot_block': { imgSrc: 'Soot Block.png', solid: true, miningHardness: 30, drops: [{item: 'soot_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
+			'obsidian': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
+			'ash': { imgSrc: 'Ash Block.png', solid: true, miningHardness: 40, drops: [{item: 'ash', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
+			'soot': { imgSrc: 'Soot Block.png', solid: true, miningHardness: 30, drops: [{item: 'soot', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true },
 			'ant_larva_block': { imgSrc: 'Ant Larva Block.png', solid: true, miningHardness: 30, drops: [/*ADD_DROPS*/], color: '#F5F5DC', shovelBlock: true },
 			'blueglow_grass_dirt_block': { imgSrc: 'Blueglow Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
             'blueglow_dirt_block': { imgSrc: 'Blueglow Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_dirt_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
 			'blueglow_grass_soil_block': { imgSrc: 'Blueglow Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'blueglow_soil_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
             'blueglow_soil_block': { imgSrc: 'Blueglow Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'blueglow_soil_block', chance: 1, min: 1, max: 1}], color: '#00BFFF', shovelBlock: true },
 			// BGU!
-			'b_of_creation': { imgSrc: 'B Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'b_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22 },
-			'g_of_creation': { imgSrc: 'G Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'g_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22 },
-			'u_of_creation': { imgSrc: 'U Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'u_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22 },
+			'b_of_creation': { imgSrc: 'B Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'b_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22, unbreak: true },
+			'g_of_creation': { imgSrc: 'G Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'g_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22, unbreak: true },
+			'u_of_creation': { imgSrc: 'U Of Creation.png', solid: true, miningHardness: 50000, drops: [{item: 'u_of_creation', chance: 1, min: 1, max: 1}], color: '#FFC0CB', requiredMiningPower: 22, unbreak: true },
 			// To Be Implemented Into Future Biomes
 			// Experimental And In Waiting
 			'flesh_grass_dirt_block': { imgSrc: 'Flesh Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#FFC0CB', shovelBlock: true },
@@ -4464,13 +4525,23 @@
 			'planked_birch_wall': { imgSrc: 'Planked Birch Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_birch_wall', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
 			'planked_spruce_wall': { imgSrc: 'Planked Spruce Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_spruce_wall', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'hellstone_wall': { imgSrc: 'Hellstone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'hellstone_wall', chance: 1, min: 1, max: 1}], color: '#B22222' },
+			'amethyst_wall': { imgSrc: 'Amethyst Wall.png', solid: false, miningHardness: 150, drops: [{item: 'amethyst_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'rose_quartz_wall': { imgSrc: 'Rose Quartz Wall.png', solid: false, miningHardness: 150, drops: [{item: 'rose_quartz_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'diamond_wall': { imgSrc: 'Diamond Wall.png', solid: false, miningHardness: 150, drops: [{item: 'diamond_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'emerald_wall': { imgSrc: 'Emerald Wall.png', solid: false, miningHardness: 150, drops: [{item: 'emerald_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'polished_marble_wall': { imgSrc: 'Polished Marble Wall.png', solid: false, miningHardness: 300, drops: [{item: 'polished_marble_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
 			// Decorative Blocks
-			'wood_cabinet': { imgSrc: 'Wood Cabinet.png', solid: false, miningHardness: 50, drops: [{item: 'top_hat', chance: 0.1, min: 1, max: 1}, {item: 'tuxedo', chance: 0.1, min: 1, max: 1}, {item: 'dress_pants', chance: 0.1, min: 1, max: 1}, {item: 'dress_shoes', chance: 0.1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
+			'white_cake_block': { imgSrc: 'White Cake Block.png', solid: true, miningHardness: 50, drops: [{item: 'white_cake_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'pink_cake_block': { imgSrc: 'Pink Cake Block.png', solid: true, miningHardness: 50, drops: [{item: 'pink_cake_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'cake_block': { imgSrc: 'Cake Block.png', solid: true, miningHardness: 50, drops: [{item: 'cake_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'wood_cabinet': { imgSrc: 'Wood Cabinet.png', solid: false, miningHardness: 50, drops: [{item: 'top_hat', chance: 0.1, min: 1, max: 1}, {item: 'tuxedo', chance: 0.1, min: 1, max: 1}, {item: 'dress_pants', chance: 0.1, min: 1, max: 1}, {item: 'veil', chance: 0.1, min: 1, max: 1}, {item: 'bodice', chance: 0.1, min: 1, max: 1}, {item: 'skirt', chance: 0.1, min: 1, max: 1}, {item: 'dress_shoes', chance: 0.1, min: 1, max: 1} ], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'wood_table': { imgSrc: 'Wood Table.png', solid: false, miningHardness: 50, drops: [{item: 'wood_table', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'wood_table_legs': { imgSrc: 'Wood Table Legs.png', solid: false, miningHardness: 50, drops: [{item: 'wood_table_legs', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'wooden_cross': { imgSrc: 'Wooden Cross.png', solid: false, miningHardness: 50, drops: [{item: 'wooden_cross', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
+			'balloon': { imgSrc: 'Balloon.png', solid: false, miningHardness: 1, drops: [{item: 'balloon', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'lamp': { imgSrc: 'Lamp.png', solid: false, miningHardness: 50, drops: [{item: 'lamp', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'silver_chandelier': { imgSrc: 'Silver Chandelier.png', solid: false, miningHardness: 50, drops: [{item: 'silver_chandelier', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
+			'candle': { imgSrc: 'Candle.png', solid: false, miningHardness: 50, drops: [{item: 'candle', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'teddy_bear': { imgSrc: 'Teddy Bear.png', solid: false, miningHardness: 50, drops: [{item: 'teddy_bear', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'dead_teddy_bear': { imgSrc: 'Dead Teddy Bear.png', solid: false, miningHardness: 50, drops: [{item: 'dead_teddy_bear', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'ketchup_bottle': { imgSrc: 'Ketchup Bottle.png', solid: false, miningHardness: 50, drops: [{item: 'ketchup_bottle', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
@@ -4570,6 +4641,8 @@
 			 'rose_quartz_nugget': { imgSrc: 'Rose Quartz Nugget.png', color: '#9966CC' },
              'opal_nugget': { imgSrc: 'Opal Nugget.png', color: '#E0E9E7' },
 			 'jade_nugget': { imgSrc: 'Jade Nugget.png', color: '#00A86B' },
+			 'ametrine_nugget': { imgSrc: 'Ametrine Nugget.png', color: '#00A86B' },
+			 'painite_nugget': { imgSrc: 'Painite Nugget.png', color: '#00A86B' },
 			 // ---FARMING SECTION---
 			 'plant_mush': { imgSrc: 'Plant Mush.png', color: '#556B2F', isFood: true, healAmount: 1 },
 			 'grass_seeds': { imgSrc: 'Grass Seeds.png', color: '#32CD32' },
@@ -4730,9 +4803,16 @@
 			 'happy_face': { imgSrc: 'Armor/Happy Face Icon.png', equippedImgSrc: 'Armor/Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'face', protectionFactor: 0, maxDurability: 1 },
 			 'santa_face': { imgSrc: 'Armor/Santa Face Icon.png', equippedImgSrc: 'Armor/Santa Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'face', protectionFactor: 0, maxDurability: 1 },
 			 'santa_coat': { imgSrc: 'Armor/Santa Coat Icon.png', equippedImgSrc: 'Armor/Santa Coat.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0, maxDurability: 1 },
+			 'top_hat': { imgSrc: 'Armor/Top Hat Icon.png', equippedImgSrc: 'Armor/Top Hat.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
+			 'veil': { imgSrc: 'Armor/Veil Icon.png', equippedImgSrc: 'Armor/Veil.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
 			 'tuxedo': { imgSrc: 'Armor/Tuxedo Icon.png', equippedImgSrc: 'Armor/Tuxedo.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0, maxDurability: 1 },
+			 'bodice': { imgSrc: 'Armor/Bodice Icon.png', equippedImgSrc: 'Armor/Bodice.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0, maxDurability: 1 },
+			 'dress_pants': { imgSrc: 'Armor/Dress Pants Icon.png', equippedImgSrc: 'Armor/Dress Pants.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0, maxDurability: 1 },
+			 'skirt': { imgSrc: 'Armor/Skirt Icon.png', equippedImgSrc: 'Armor/Skirt.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0, maxDurability: 1 },
+			 'dress_shoes': { imgSrc: 'Armor/Dress Shoes Icon.png', equippedImgSrc: 'Armor/Dress Shoes.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0, maxDurability: 1 },
 			 'farmer_trader_mask': { imgSrc: 'Armor/Farmer Trader Mask Icon.png', equippedImgSrc: 'Armor/Farmer Trader Mask.png', color: '#F5DEB3', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'miner_trader_mask': { imgSrc: 'Armor/Miner Trader Mask Icon.png', equippedImgSrc: 'Armor/Miner Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
+             'designer_trader_mask': { imgSrc: 'Armor/Designer Trader Mask Icon.png', equippedImgSrc: 'Armor/Designer Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'trader_mask': { imgSrc: 'Armor/Trader Mask Icon.png', equippedImgSrc: 'Armor/Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'trader_cloak': { imgSrc: 'Armor/Trader Cloak Icon.png', equippedImgSrc: 'Armor/Trader Cloak.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.03, maxDurability: 14 },
 			 'trader_pants': { imgSrc: 'Armor/Trader Pants Icon.png', equippedImgSrc: 'Armor/Trader Pants.png', color: '#00008B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.02, maxDurability: 11 },
@@ -4767,7 +4847,7 @@
 			 // BGU!
 			 'chestplate_of_creation': { imgSrc: 'Armor/Chestplate Of Creation Icon.png', equippedImgSrc: 'Armor/Chestplate Of Creation.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.24, maxDurability: 1000 },
 			 'soup_of_creation': { imgSrc: 'Soup Of Creation.png', color: '#00BFFF', isFood: true, healAmount: 100, addsMaxHealth: 60, fullHeal: true },
-			 'pickaxe_of_creation': { imgSrc: 'Pickaxe Of Creation.png', color: '#8A2BE2', isTool: true, miningPower: 50.0, maxDurability: 2500000 },
+			 'pickaxe_of_creation': { imgSrc: 'Pickaxe Of Creation.png', color: '#8A2BE2', isTool: true, miningPower: 50.0, maxDurability: 250000 }, // Intentionally Low Durability
 			 'elemental_helmet': { imgSrc: 'Armor/Elemental Helmet Icon.png', equippedImgSrc: 'Armor/Elemental Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.24, maxDurability: 300 },
 			 'powered_elemental_helmet': { imgSrc: 'Armor/Powered Elemental Helmet Icon.png', equippedImgSrc: 'Armor/Powered Elemental Helmet.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.24, maxDurability: 500 }, // Not Actually Obtainable
 		};
@@ -4821,6 +4901,8 @@
 			'plank_break_1': 'Plank Break 1.mp3',
 			'plank_break_2': 'Plank Break 2.mp3',
 			'flesh_break_1': 'Flesh Break 1.mp3',
+			'saw_break': 'Saw Break.mp3',
+			'saw_repair': 'Saw Repair.mp3',
 			// Add more here...
 		};
 
@@ -4830,6 +4912,7 @@
             'Trader': { imgSrc: 'Trader.png' },
             'Farmer Trader': { imgSrc: 'Farmer Trader.png' },
             'Miner Trader': { imgSrc: 'Miner Trader.png' },
+            'Designer Trader': { imgSrc: 'Designer Trader.png' },
             'Trader 2': { imgSrc: 'Trader 2.png' }
         };
 
@@ -5143,22 +5226,92 @@
 			input.click();
 		}
 
-		document.getElementById('modFileInput').addEventListener('change', function(e) {
-			const file = e.target.files[0];
-			if (!file) return;
+		document.getElementById('modFileInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-			const reader = new FileReader();
-			reader.onload = function(e) {
-				try {
-					const modData = JSON.parse(e.target.result);
-					activateMod(modData);
-				} catch (err) {
-					console.error("Mod Load Error:", err);
-					showMessageBox("Failed to load .bgumod file. Check console.", 'alert');
-				}
-			};
-			reader.readAsText(file);
-		});
+            // Handle ZIP Uploads
+            if (file.name.toLowerCase().endsWith('.zip')) {
+                try {
+                    const buffer = await file.arrayBuffer();
+                    const extractedFiles = await unzip(buffer);
+                    
+                    let modData = null;
+                    let texturesLoaded = 0;
+
+                    // 1. Process files
+                    for (const [filename, data] of Object.entries(extractedFiles)) {
+                        // Find and parse the .bgumod file
+                        if (filename.endsWith('.bgumod')) {
+                            const text = new TextDecoder().decode(data);
+                            modData = JSON.parse(text);
+                        } 
+                        // Find images (png/jpg/jpeg)
+                        else if (filename.match(/\.(png|jpg|jpeg)$/i)) {
+                            // Strip directory paths (e.g. "assets/Player.png" -> "Player.png")
+                            const flatName = filename.split('/').pop();
+                            
+                            // Create Blob URL
+                            const mimeType = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
+                            const blob = new Blob([data], { type: mimeType });
+                            const url = URL.createObjectURL(blob);
+                            
+                            // Register texture
+                            if (textureOverrides[flatName]) URL.revokeObjectURL(textureOverrides[flatName]);
+                            textureOverrides[flatName] = url;
+                            texturesLoaded++;
+                        }
+                    }
+
+                    if (modData) {
+                        console.log(`ZIP Mod: Loaded definition + ${texturesLoaded} textures.`);
+                        
+                        // Activate the mod
+                        activateMod(modData);
+
+                        // Trigger a texture refresh (borrowed from texture pack logic)
+                        showMessageBox(`Mod "${modData.name}" loaded from ZIP with ${texturesLoaded} textures! Reloading assets...`, 'alert', () => {
+                            // Clear existing assets to force reload
+                            const groups = getAssetGroups();
+                            for (const group of groups) {
+                                if (!group) continue;
+                                for (const key in group) {
+                                    if (assets[key]) delete assets[key];
+                                    if (group[key]?.equippedImgSrc) delete assets[`${key}_equipped`];
+                                }
+                            }
+                            // Restart loader
+                            assetsLoaded = 0;
+                            failedAssets = {};
+                            loadAssets();
+                        });
+                    } else {
+                        showMessageBox("Error: No .bgumod file found inside the ZIP!", 'alert');
+                    }
+
+                } catch (err) {
+                    console.error("ZIP Mod Error:", err);
+                    showMessageBox("Failed to extract mod ZIP. Check console.", 'alert');
+                }
+            } 
+            // Handle Standard .bgumod JSON Uploads
+            else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const modData = JSON.parse(e.target.result);
+                        activateMod(modData);
+                    } catch (err) {
+                        console.error("Mod Load Error:", err);
+                        showMessageBox("Failed to load .bgumod file.", 'alert');
+                    }
+                };
+                reader.readAsText(file);
+            }
+            
+            // Reset input so same file can be selected again if needed
+            e.target.value = '';
+        });
 
 		function activateMod(mod) {
 			console.log(`activating Mod: ${mod.name}...`);
@@ -5353,6 +5506,7 @@
 				if (mod.variableEdits.dungeonProbability !== undefined) dungeonProbability = mod.variableEdits.dungeonProbability;
 				if (mod.variableEdits.skyIslandProbability !== undefined) skyIslandProbability = mod.variableEdits.skyIslandProbability;
 				if (mod.variableEdits.hellfireOn !== undefined) hellfireOn = mod.variableEdits.hellfireOn;
+                if (mod.variableEdits.showBlockOutline !== undefined) showBlockOutline = mod.variableEdits.showBlockOutline;
 			}
 
 			// 3. Register New Blocks
@@ -5531,7 +5685,7 @@
 				trunkBlockType = 'raw_blueglow_wood'; bushBlockType = 'blueglow_bush'; minTrunkHeight = 6; maxTrunkHeight = 8;
 				minCanopyRadius = 2; maxCanopyRadius = 3; horizontalSpreadFactorMin = 0.7; horizontalSpreadFactorMax = 1.1;
 			} else if (treeType === 'ash') {
-				trunkBlockType = 'ash_block'; bushBlockType = 'ash_block'; minTrunkHeight = 5; maxTrunkHeight = 80;
+				trunkBlockType = 'ash'; bushBlockType = 'ash'; minTrunkHeight = 5; maxTrunkHeight = 80;
 				minCanopyRadius = 2; maxCanopyRadius = 3; horizontalSpreadFactorMin = 0.7; horizontalSpreadFactorMax = 1;
 			} else if (treeType === 'magma') {
 				trunkBlockType = 'magma_stone_block'; minTrunkHeight = 1; maxTrunkHeight = 5;
@@ -6194,6 +6348,8 @@
 					['emerald_compacted_stone', (typeof emeraldVeinProbability === 'number' ? emeraldVeinProbability : 0)],
 					['opal_compacted_stone', (typeof opalVeinProbability === 'number' ? opalVeinProbability : 0)],
 					['jade_compacted_stone', (typeof jadeVeinProbability === 'number' ? jadeVeinProbability : 0)],
+					['ametrine_compacted_stone', (typeof ametrineVeinProbability === 'number' ? ametrineVeinProbability : 0)],
+					['painite_compacted_stone', (typeof painiteVeinProbability === 'number' ? painiteVeinProbability : 0)],
 				];
 
 				// apply multiplier and compute total
@@ -6598,6 +6754,13 @@
 			}
             const key = `${col},${row}`;
             if (worldBlocks[key] !== undefined) {
+                // --- NEW: BLANK WORLD CHECK ---
+                if (seedControl === 'Blank') {
+                    // Return empty air for everything. 
+                    // Since this writes to worldBlocks, it essentially "generates" air.
+                    return (worldBlocks[key] = { type: '', mineProg: 0 });
+                }
+                // ------------------------------
                 return worldBlocks[key];
             }
 
@@ -6923,6 +7086,9 @@
 
             if (depth < 0) {
                 blockType = '';
+				if (depth < -5 && blockType === '' && random() < 0.0001) {
+					blockType = 'balloon';
+				}
             } else {
                 // Determine base terrain by biome
                 if (biome === 'deciduous_forest') {
@@ -6947,7 +7113,7 @@
                     else if (depth >= 1 && depth <= 4) blockType = (random() < 0.7) ? 'thick_mud' : 'mud'
 					else if (depth >= 5 && depth <= 9) blockType = (random() < 0.9) ? 'thick_mud' : 'mud'
                 } else if (biome === 'lava_flats') {
-                    if (depth >= 0 && depth <= 9) blockType = (random() < 0.02) ? 'ash_block' : (random() < 0.1) ? 'compacted_stone' : 'magma_stone_block';
+                    if (depth >= 0 && depth <= 9) blockType = (random() < 0.02) ? 'ash' : (random() < 0.1) ? 'compacted_stone' : 'magma_stone_block';
                 } else if (biome === 'salt_flats') {
                     if (depth >= 0 && depth <= 9) blockType = (random() < 0.03) ? 'limestone' : 'salt_rock_block';
                 } else if (biome === 'icy_hills') {
@@ -7089,25 +7255,25 @@
 						} else if (underworldBiome === 'ash_wastes' && depth < 315) {
 							if (depth === 300) {
 								const b = random();
-								if (b < 0.8) blockType = 'ash_block';
-								else blockType = 'obsidian_block';
+								if (b < 0.8) blockType = 'ash';
+								else blockType = 'obsidian';
 							} else {
 								const b = random();
-								if (b < 0.5) blockType = 'ash_block';
-								else if (b < 0.8) blockType = 'soot_block';
-								else blockType = 'obsidian_block';
+								if (b < 0.5) blockType = 'ash';
+								else if (b < 0.8) blockType = 'soot';
+								else blockType = 'obsidian';
 							}
 						} else if (underworldBiome === 'magma_basin' && depth < 315) {
 							if (depth === 300) {
 								const b = random();
 								if (b < 0.9) blockType = 'magma_stone_block';
 								else if (b < 0.95) blockType = 'basalt';
-								else blockType = 'obsidian_block';
+								else blockType = 'obsidian';
 							} else {
 								const b = random();
 								if (b < 0.8) blockType = 'magma_stone_block';
 								else if (b < 0.95) blockType = 'basalt';
-								else blockType = 'obsidian_block';
+								else blockType = 'obsidian';
 							}
 						} else if (underworldBiome === 'icy_hell' && depth < 315) {
 							blockType = 'hell_ice';
@@ -7191,9 +7357,41 @@
 						blockType = 'vine_stone';
 					}
 				}
-
+                if (seedControl === 'April Fools') {
+                    if ((blockType === 'compacted_stone' || blockType === 'compacting_stone' || blockType === 'stone' || blockType === 'stone_pt1' || blockType === 'stone_pt2' || blockType === 'stone_pt3' || blockType === 'stone_pt4') && random() < 1) {
+                        crust = random();
+                        if (crust <= 0.0823) blockType = 'aluminum_brick_block';
+                        else if (crust <= 0.1386) blockType = 'iron_brick_block';
+                        else if (crust <= 0.13866) blockType = 'copper_brick_block';
+                        else if (crust <= 0.13873) blockType = 'zinc_brick_block';
+                        else if (crust <= 0.138744) blockType = 'aluminum_brick_block';
+                        else if (crust <= 0.138746) blockType = 'tin_brick_block';
+                        else if (crust <= 0.138747) blockType = 'tungsten_brick_block';
+                        else if (crust <= 0.138748) blockType = 'salt_rock_block';
+                        else if (crust <= 0.138758) blockType = 'coal_block';
+                        else if (crust <= 0.1387580004) blockType = 'gold_brick_block';
+                        else if (crust <= 0.138758000425) blockType = 'diamond_compacted_stone';
+                        else if (crust <= 0.13875800045) blockType = 'emerald_compacted_stone';
+                        else if (crust <= 0.138758000475) blockType = 'sapphire_compacted_stone';
+                        else if (crust <= 0.1387580005) blockType = 'ruby_compacted_stone';
+                        else if (crust <= 0.1400080005) blockType = 'sandstone';
+                        else if (crust <= 0.1412580005) blockType = 'limestone';
+                        else if (crust <= 0.1425080005) blockType = 'schist';
+                        else if (crust <= 0.1437580005) blockType = 'slate';
+                        else if (crust <= 0.1437585005) blockType = 'obsidian';
+                        else if (crust <= 0.1437590005) blockType = 'jade_compacted_stone';
+                        else blockType = 'stump_stone';
+                    }
+                }
+                if (theSeed === 1173549121) {
+                    if (blockType === 'compacted_stone') {
+                        if (random() < 0.02) {
+                            blockType = 'iron_compacted_stone'
+                        }
+                    }
+                }
                 // Specific replacements
-                if (biome === 'desert' && blockType === 'sand' && random() < 0.15) {
+				if (biome === 'desert' && blockType === 'sand' && random() < 0.15) {
                     blockType = 'sandstone';
                 }
                 if (biome === 'overgrown_forest' && blockType === 'stone' && random() < 0.15) {
@@ -7300,6 +7498,9 @@
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability + nitroVeinProbability + crudeOilVeinProbability) {
                     generateVein(col, row, 'crude_oil_compacted_stone', 4, 12, 'compacted_stone');
                     blockType = 'crude_oil_compacted_stone';
+                } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability + nitroVeinProbability + shaleVeinProbability) {
+                    generateVein(col, row, 'shale', 8, 12, 'compacted_stone');
+                    blockType = 'shale';
                 }
             }
 
@@ -7339,10 +7540,12 @@
                      else if (random() < emeraldVeinProbability * oreSpawnMultiplier) blockType = 'emerald_compacted_stone';
 					 else if (random() < leadVeinProbability * oreSpawnMultiplier) blockType = 'lead_compacted_stone';
                 }
-                // Layer 6: Opal
+                // Layer 6: Opal, Jade, Ametrine, And Painite
                 if (depth >= 65) {
                     if (random() < opalVeinProbability * oreSpawnMultiplier) blockType = 'opal_compacted_stone';
 					else if (random() < jadeVeinProbability * oreSpawnMultiplier) blockType = 'jade_compacted_stone';
+					else if (random() < ametrineVeinProbability * oreSpawnMultiplier) blockType = 'ametrine_compacted_stone';
+					else if (random() < painiteVeinProbability * oreSpawnMultiplier) blockType = 'painite_compacted_stone';
                 }
             }
 			
@@ -7358,8 +7561,8 @@
                 } else if (random() < mighterrumVeinProbability * oreSpawnMultiplier) {
                     blockType = 'mighterrum_hellstone';
                 } else if (random() < obsidianVeinProbability) {
-                    generateVein(col, row, 'obsidian_block', 3, 5, 'hellstone');
-                    blockType = 'obsidian_block';
+                    generateVein(col, row, 'obsidian', 3, 5, 'hellstone');
+                    blockType = 'obsidian';
                 } else if (random() < boneSpineProbability) {
                     generateSpinalVein(col, row, 'bone_block', 20, 30);
                     blockType = 'bone_block';
@@ -7740,7 +7943,7 @@
 			if (blockType === 'spoiled_meat_block' && depth === 300 && random() < 0.2) {
                 generateTree(col, row, 'spoiled_meat');
             }
-			if (blockType === 'ash_block' && depth === 300 && random() < 0.2) {
+			if (blockType === 'ash' && depth === 300 && random() < 0.2) {
                 generateTree(col, row, 'ash');
             }
 			if (blockType === 'magma_stone_block' && depth === 300 && random() < 0.2) {
@@ -8177,7 +8380,7 @@
                         }
                         // Random junk piles/cobwebs
                         else if (random() < 0.4) {
-                            const junk = random() < 0.5 ? 'ash_block' : 'cobweb';
+                            const junk = random() < 0.5 ? 'ash' : 'cobweb';
                             worldBlocks[key] = { type: junk, mineProg: 0 };
                         }
                     }
@@ -8202,7 +8405,7 @@
             chestInv[0] = { type: 'tungsten_nugget', count: 3 + Math.floor(random() * 6) };
             
             // Crappy Loot / Junk
-            chestInv[1] = { type: 'ash_block', count: 10 + Math.floor(random() * 20) };
+            chestInv[1] = { type: 'ash', count: 10 + Math.floor(random() * 20) };
             chestInv[2] = { type: 'coal', count: 5 + Math.floor(random() * 10) };
             chestInv[3] = { type: 'iron_nugget', count: 2 + Math.floor(random() * 5) };
             
@@ -8476,7 +8679,7 @@
 					const ay = c.cy + adj[i].dy;
 					const aKey = `${ax},${ay}`;
 					if (!worldBlocks[aKey] || worldBlocks[aKey].type === '' || worldBlocks[aKey].type === undefined) {
-						worldBlocks[aKey] = { type: 'obsidian_block', mineProg: 0 };
+						worldBlocks[aKey] = { type: 'obsidian', mineProg: 0 };
 						placed++;
 					}
 				}
@@ -8667,17 +8870,17 @@
 			// 1. Build Base
 			if (variation === 'spikes') {
 				// Jagged Obsidian
-				worldBlocks[`${col-2},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
-				worldBlocks[`${col-1},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
-				worldBlocks[`${col-1},${surfaceRow-1}`] = { type: 'obsidian_block', mineProg: 0 }; // Spike up
-				worldBlocks[`${col},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
-				worldBlocks[`${col+1},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
-				worldBlocks[`${col+2},${surfaceRow}`] = { type: 'obsidian_block', mineProg: 0 };
+				worldBlocks[`${col-2},${surfaceRow}`] = { type: 'obsidian', mineProg: 0 };
+				worldBlocks[`${col-1},${surfaceRow}`] = { type: 'obsidian', mineProg: 0 };
+				worldBlocks[`${col-1},${surfaceRow-1}`] = { type: 'obsidian', mineProg: 0 }; // Spike up
+				worldBlocks[`${col},${surfaceRow}`] = { type: 'obsidian', mineProg: 0 };
+				worldBlocks[`${col+1},${surfaceRow}`] = { type: 'obsidian', mineProg: 0 };
+				worldBlocks[`${col+2},${surfaceRow}`] = { type: 'obsidian', mineProg: 0 };
 			} else {
 				// Ash Mound
-				for(let x=-2; x<=2; x++) worldBlocks[`${col+x},${surfaceRow}`] = { type: 'ash_block', mineProg: 0 };
-				worldBlocks[`${col-1},${surfaceRow-1}`] = { type: 'ash_block', mineProg: 0 };
-				worldBlocks[`${col+1},${surfaceRow-1}`] = { type: 'ash_block', mineProg: 0 };
+				for(let x=-2; x<=2; x++) worldBlocks[`${col+x},${surfaceRow}`] = { type: 'ash', mineProg: 0 };
+				worldBlocks[`${col-1},${surfaceRow-1}`] = { type: 'ash', mineProg: 0 };
+				worldBlocks[`${col+1},${surfaceRow-1}`] = { type: 'ash', mineProg: 0 };
 			}
 
 			// 2. Build Portal Frame (Same shape as Heaven Portal)
@@ -10289,24 +10492,29 @@
                 player.fallStartY = player.y; // Start tracking fall
             }
 
-            const playerRectX = { x: nextPlayerX, y: player.y, width: playerWidth, height: playerHeight };
-            const startColX = Math.floor(Math.min(player.x, nextPlayerX) / tileSize) - 2;
-            const endColX = Math.ceil(Math.max(player.x + playerWidth, nextPlayerX + playerWidth) / tileSize) + 2;
-            const startRowX = Math.floor(player.y / tileSize);
-            const endRowX = Math.floor((player.y + playerHeight - 1) / tileSize);
+            // --- NEW: ONLY CHECK COLLISIONS IF NOT IN CREATIVE MODE ---
+            if (isCreativeMode !== 1) { 
+                const playerRectX = { x: nextPlayerX, y: player.y, width: playerWidth, height: playerHeight };
+                const startColX = Math.floor(Math.min(player.x, nextPlayerX) / tileSize) - 2;
+                const endColX = Math.ceil(Math.max(player.x + playerWidth, nextPlayerX + playerWidth) / tileSize) + 2;
+                const startRowX = Math.floor(player.y / tileSize);
+                const endRowX = Math.floor((player.y + playerHeight - 1) / tileSize);
 
-            for (let col = startColX; col <= endColX; col++) {
-                for (let row = startRowX; row <= endRowX; row++) {
-                    if (isSolid(col, row)) {
-                        const blockRect = { x: col * tileSize, y: row * tileSize, width: tileSize, height: tileSize };
-                        if (rectIntersects(playerRectX, blockRect)) {
-                            if (player.dx > 0) nextPlayerX = blockRect.x - playerWidth;
-                            else if (player.dx < 0) nextPlayerX = blockRect.x + tileSize;
-                            player.dx = 0;
+                for (let col = startColX; col <= endColX; col++) {
+                    for (let row = startRowX; row <= endRowX; row++) {
+                        if (isSolid(col, row)) {
+                            const blockRect = { x: col * tileSize, y: row * tileSize, width: tileSize, height: tileSize };
+                            if (rectIntersects(playerRectX, blockRect)) {
+                                if (player.dx > 0) nextPlayerX = blockRect.x - playerWidth;
+                                else if (player.dx < 0) nextPlayerX = blockRect.x + tileSize;
+                                player.dx = 0;
+                            }
                         }
                     }
                 }
             }
+            // ----------------------------------------------------------
+
             player.x = nextPlayerX;
 
             if ((keys['ArrowUp'] || keys['KeyW']) && player.onGround) { // Check for 'W'
@@ -10521,6 +10729,9 @@
                     } else if (traderType === 'miner') {
                         // Miner drops their mask
                         addToInventory('miner_trader_mask', 1);
+                    } else if (traderType === 'designer') {
+                        // Designer drops their mask
+                        addToInventory('designer_trader_mask', 1);
                     } else if (traderType === 'level2') {
                         // Level 2 trader drops one random piece of default trader armor
                         const r = random();
@@ -10725,18 +10936,16 @@
 
             if (mouse.down && equippedItemProps && equippedItemProps.isGun) {
                 handleShooting(dt);
-                return; // Don't run mining logic
+                return; // Don't run mining logic for guns
             }
 			
-			// Determine the effective block type and its properties
-			// --- NEW: Prioritize Overlay for Mining ---
+			// Determine the effective block type (Prioritize Overlay)
 			let effectiveBlockType;
 			if (blockData.overlay) {
 				effectiveBlockType = blockData.overlay;
 			} else {
 				effectiveBlockType = blockData.type;
 			}
-			// --- END NEW ---
 
 			if (blockData.type && blockData.type.startsWith('planted_')) {
 				const seedType = blockData.type.replace('planted_', '').replace('_seeds', '');
@@ -10757,98 +10966,106 @@
 				const isHatchet = equippedItemType.includes('_hatchet');
 
                 if (isPickaxe && (isAxeBlock || isShovelBlock || isSwordBlock)) {
-                    // If a pickaxe is used on an axe or shovel block, nerf its power
-                    currentMiningPower = 0.1;
+                    currentMiningPower = handMiningPower;
                 } else if (isHatchet && (isShovelBlock || isSwordBlock)) {
-                    // Nerf its power
                     currentMiningPower = 0.1;
                 } else if (isAxeBlock && equippedItemProps.axePower) {
-					// Correct tool (axe) for wood blocks
 					currentMiningPower = equippedItemProps.axePower;
 					unlockAchievement('TIMBER');
 				} else if (isShovelBlock && equippedItemProps.shovelPower) {
-					// Correct tool (shovel) for shovelable blocks
 					currentMiningPower = equippedItemProps.shovelPower;
 					unlockAchievement('POOP_SCOOP');
 				} else if (isSwordBlock && equippedItemProps.swordPower) {
-					// Correct tool (sword) for swordable blocks
 					currentMiningPower = equippedItemProps.swordPower;
 					unlockAchievement('DUEL');
 				} else {
-					// It's a tool, but not the right one for this special block, or it's a generic block. Use its base mining power.
                     currentMiningPower = equippedItemProps.miningPower;
-					// Check for Terraformer (Pickaxe on a non-special block)
 					if (isPickaxe && blockPropsForMining && blockPropsForMining.solid && !isAxeBlock && !isShovelBlock) {
 						unlockAchievement('TERRAFORMER');
 					}
 				}
 			} else {
-				// Player is using their hand
 				currentMiningPower = handMiningPower;
 			}
 			
+            // BAC Penalties
 			let effectiveBAC = player.bloodAlcohol;
             const helmet = player.armor.helmet;
             if (helmet) {
                 if (helmet.type === 'sober_mask') {
-                    effectiveBAC *= 0.25; // 75% reduction
+                    effectiveBAC *= 0.25; 
                 } else if (helmet.type === 'drunk_mask') {
-                    effectiveBAC += 100; // Simulate +100
+                    effectiveBAC += 100; 
                 }
             }
 
             if (effectiveBAC > 25) {
-                // 1% power reduction for every BAC point *above* 25
                 let reductionPercent = (player.bloodAlcohol - 25) * 0.01;
-				if (reductionPercent >= 0.9) {
-					reductionPercent = 0.9
-				}
-                // Clamp reduction between 0% (0.0) and 100% (1.0)
+				if (reductionPercent >= 0.9) reductionPercent = 0.9;
                 const cappedReduction = Math.max(0, Math.min(1, reductionPercent));
-                // Apply the reduction
                 currentMiningPower *= (1 - cappedReduction);
             }
 
-			// --- NEW: ADVANCED MINING CHECKS ---
+            // --- NEW: DROP LOCKING & PENALTY LOGIC ---
 			let canMine = true;
+            let powerPenaltyApplied = false;
+
 			if (blockPropsForMining) {
-				// 1. Check for required power level
+				// 1. Check Mining Power Requirement
 				if (blockPropsForMining.requiredMiningPower && currentMiningPower < blockPropsForMining.requiredMiningPower) {
-					canMine = false;
+                    if (UNBREAKABLE_BY_DEFAULT || blockPropsForMining.unbreak) {
+                        canMine = false;
+                    } else {
+                        // Apply Penalty
+                        currentMiningPower /= INSUFFICIENT_POWER_PENALTY;
+                        powerPenaltyApplied = true;
+                    }
 				}
 
-				// 2. Check for a specific required tool
+				// 2. Check Required Tool (Supports Array or String)
 				if (blockPropsForMining.requiredTool) {
 					const required = blockPropsForMining.requiredTool;
-					if (Array.isArray(required)) {
-						// If it's an array, check if the held tool is in the array
-						if (!required.includes(equippedItemType)) {
-							canMine = false;
-						}
-					} else {
-						// If it's a single string, check for an exact match
-						if (equippedItemType !== required) {
-							canMine = false;
-						}
-					}
+                    let hasRequiredTool = false;
+                    
+                    if (Array.isArray(required)) {
+                        if (required.includes(equippedItemType)) hasRequiredTool = true;
+                    } else {
+                        if (equippedItemType === required) hasRequiredTool = true;
+                    }
+
+                    if (!hasRequiredTool) {
+                        if (UNBREAKABLE_BY_DEFAULT || blockPropsForMining.unbreak) {
+                            canMine = false;
+                        } else {
+                            // Apply penalty if not already applied
+                            if (!powerPenaltyApplied) {
+                                currentMiningPower /= INSUFFICIENT_POWER_PENALTY;
+                                powerPenaltyApplied = true;
+                            }
+                        }
+                    }
 				}
 			}
-			// --- END OF NEW CHECKS ---
+            // --- END NEW LOGIC ---
 
 			// If the mouse is pressed on a new block, and we can mine it, set it as the target.
 			if (mouse.down && (!miningTarget || miningTarget.col !== targetCol || miningTarget.row !== targetRow)) {
-				if (blockData && blockPropsForMining?.miningHardness > 0 && canMine) { // <-- Added canMine check
+				if (blockData && blockPropsForMining?.miningHardness > 0 && canMine) { 
 					miningTarget = {
 						col: targetCol,
 						row: targetRow,
 						progress: maintainBlockDurability ? (blockData.mineProg || 0) : 0,
-						requiredProgress: blockPropsForMining.miningHardness
+						requiredProgress: blockPropsForMining.miningHardness,
+                        isInefficient: powerPenaltyApplied, // Track for shaking
+                        lastParticleStage: 0 // Track for efficient particles
 					};
-					// This puts out fire *in* the block
-					if (fireBlocks[targetKey]) {
-						delete fireBlocks[targetKey];
-					}
-					// This puts out fire *above* the block
+                    // Set initial particle stage based on existing progress
+                    if (miningTarget.progress > 0) {
+                        miningTarget.lastParticleStage = Math.floor((miningTarget.progress / miningTarget.requiredProgress) * 5);
+                    }
+
+					// Put out fires
+					if (fireBlocks[targetKey]) delete fireBlocks[targetKey];
 					const blockAboveKey = `${targetCol},${targetRow - 1}`;
 					if (fireBlocks[blockAboveKey] && fireBlocks[blockAboveKey].burningBlockKey === targetKey) {
 						delete fireBlocks[blockAboveKey];
@@ -10860,14 +11077,14 @@
 
 			// If holding mouse down on a valid target, continue mining
 			if (mouse.down && miningTarget && miningTarget.col === targetCol && miningTarget.row === targetRow) {
-				// Double-check that conditions are still met (e.g., tool didn't break)
+				// Double-check conditions
 				if (!canMine || !blockData || blockPropsForMining?.miningHardness === 0) {
 					if (maintainBlockDurability && worldBlocks[targetKey]) worldBlocks[targetKey].mineProg = 0;
 					miningTarget = null;
 					return;
 				}
 
-				// Check for special inventory-not-empty case for chests
+				// Check for chest inventory
 				const blockToMine = worldBlocks[targetKey];
 				if (blockToMine && (blockToMine.type === 'chest' || blockToMine.type === 'dead_body_chest' || blockToMine.type === 'refrigerator' || blockToMine.type === 'magical_chest')) {
 					if (blockToMine.inventory && blockToMine.inventory.some(item => item !== null)) {
@@ -10879,12 +11096,32 @@
 				miningTarget.progress += dt * currentMiningPower;
 				if (maintainBlockDurability) worldBlocks[targetKey].mineProg = miningTarget.progress;
 
+                // --- NEW: Efficient Mining Particles (Every 20%) ---
+                if (!miningTarget.isInefficient && particleCount > 5) {
+                    // Calculate current stage (0 to 5)
+                    const currentStage = Math.floor((miningTarget.progress / miningTarget.requiredProgress) * 5);
+                    
+                    if (currentStage > miningTarget.lastParticleStage) {
+                        miningTarget.lastParticleStage = currentStage;
+                        // Emit 1 particle
+                        const tempCount = particleCount;
+                        particleCount = 1; // Temporarily force 1
+                        createBlockBreakParticles(targetCol, targetRow, effectiveBlockType);
+                        particleCount = tempCount; // Restore
+                    }
+                }
+                // ---------------------------------------------------
+
 				// Decrease tool durability
 				if (equippedItemObject && equippedItemProps?.isTool && equippedItemObject.durability !== undefined) {
-					equippedItemObject.durability -= dt * currentMiningPower; // Simplified durability loss
+					equippedItemObject.durability -= dt * currentMiningPower; 
 					if (equippedItemObject.durability <= 0) {
 						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 						miningTarget = null;
+						if (equippedItemObject.type === 'pickaxe_of_creation') {
+							addToInventory('b_of_creation', 1);
+							player.health = player.maxHealth; // Cool Mechanic!
+						}
 						updateHotbar();
 						return;
 					}
@@ -10893,52 +11130,44 @@
 				// Check if block is fully mined
 				if (miningTarget.progress >= miningTarget.requiredProgress) {
 
-					const minedBlockProps = blockTypes[effectiveBlockType]; // This now correctly points to the overlay if one existed
+					const minedBlockProps = blockTypes[effectiveBlockType]; 
 					
 					if (minedBlockProps && minedBlockProps.breakSound) {
 						playGameSound(minedBlockProps.breakSound);
 					}
 
-					// --- NEW: Handle Overlay Breaking ---
 					if (blockData.overlay) {
-						// Only drop the overlay item
-						handleMiningDrops(minedBlockProps, targetKey); // handleMiningDrops uses blockProps, so this is fine
-						createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType); // Particles for the overlay
+						// Overlays handle drops normally
+						handleMiningDrops(minedBlockProps, targetKey); 
+						createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType); 
 
-						// Remove the overlay, but leave the wall
 						blockData.overlay = null;
-						blockData.mineProg = 0; // Reset mine progress
+						blockData.mineProg = 0; 
 						miningTarget = null;
-						return; // Stop here, the wall is not broken
+						return; 
 					}
-					// --- END NEW ---
 
-					// If no overlay, proceed with original logic
 					const blockToMineData = worldBlocks[targetKey];
+                    
+                    // --- WORLD MOVER HANDLING ---
                     if (blockToMineData && blockToMineData.type === 'world_mover') {
-                        let spaceNeeded = 1; // 1 slot for the mover block itself
+                        let spaceNeeded = 1; 
                         const fuel = blockToMineData.inventory ? blockToMineData.inventory[0] : null;
-                        
                         let hasSpace = false;
-                        const tempInventory = JSON.parse(JSON.stringify(inventorySlots)); // A safe copy
-
-                        // First, find a slot for the mover itself
+                        const tempInventory = JSON.parse(JSON.stringify(inventorySlots)); 
                         let moverSlotIndex = -1;
                         for (let i = 0; i < tempInventory.length; i++) {
                             if (!tempInventory[i]) {
                                 moverSlotIndex = i;
-                                tempInventory[i] = { type: 'world_mover', count: 1 }; // Temporarily occupy the slot
+                                tempInventory[i] = { type: 'world_mover', count: 1 }; 
                                 break;
                             }
                         }
-
                         if (moverSlotIndex !== -1) {
-                            // Now check if there's space for the fuel
                             if (!fuel) {
-                                hasSpace = true; // No fuel, so space is fine
+                                hasSpace = true; 
                             } else {
                                 let fuelRemaining = fuel.count;
-                                // Try adding to existing stacks first
                                 for (let i = 0; i < tempInventory.length; i++) {
                                     if (tempInventory[i] && tempInventory[i].type === fuel.type && tempInventory[i].count < maxStackSize) {
                                         const canAdd = maxStackSize - tempInventory[i].count;
@@ -10947,7 +11176,6 @@
                                         fuelRemaining -= toAdd;
                                     }
                                 }
-                                // Try adding to empty slots
                                 while (fuelRemaining > 0) {
                                     let foundEmpty = false;
                                     for (let i = 0; i < tempInventory.length; i++) {
@@ -10959,69 +11187,68 @@
                                             break;
                                         }
                                     }
-                                    if (!foundEmpty) break; // No more empty slots
+                                    if (!foundEmpty) break; 
                                 }
                                 if (fuelRemaining <= 0) hasSpace = true;
                             }
                         }
-                        
                         if (!hasSpace) {
-                            miningTarget.progress = miningTarget.requiredProgress - 1; // Prevent insta-break
-                            return; // Stop the breaking process
+                            miningTarget.progress = miningTarget.requiredProgress - 1; 
+                            return; 
                         }
                     }
+                    // --- END WORLD MOVER ---
 
-					handleMiningDrops(minedBlockProps, targetKey);
-
-					createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType);
+                    // --- DROP LOCKING: PREVENT DROPS IF INEFFICIENT ---
+                    // If isInefficient AND the block doesn't allow drops (undropper: true)
+                    if (miningTarget.isInefficient && minedBlockProps.undropper) {
+                        // Break without drops
+                        createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType);
+                    } else {
+                        // Normal behavior
+                        handleMiningDrops(minedBlockProps, targetKey);
+                        createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType);
+                    }
+                    // --------------------------------------------------
 
 					if (blockData.type !== 'bed') {
 						worldBlocks[targetKey] = { type: '', mineProg: 0 };
 					}
                     exploredMap[targetKey] = '#000000';
-					const brokenBlockType = blockData.type;
+					
+                    // Mechageezer Logic
+                    const brokenBlockType = blockData.type;
                     const mechageezerComponents = ['lever_off', 'lever_on', 'chest_lever_off', 'chest_lever_on', 'reactant', 'trailer', 'lit_trailer', 'stone_trailer'];
                     if (mechageezerComponents.includes(brokenBlockType)) {
                         const [col, row] = targetKey.split(',').map(Number);
-						// Update only neighbor mech blocks (so the updater starts from a real mech block)
 						const mechNeighbors = [
-						  { col: col, row: row - 1 },
-						  { col: col, row: row + 1 },
-						  { col: col - 1, row: row },
-						  { col: col + 1, row: row }
+						  { col: col, row: row - 1 }, { col: col, row: row + 1 },
+						  { col: col - 1, row: row }, { col: col + 1, row: row }
 						];
-
 						for (const n of mechNeighbors) {
 						  const nt = getBlockType(n.col, n.row);
-						  // only call the network updater for actual mech nodes to avoid unnecessary work
 						  if (['lever_off','lever_on','chest_lever_off','chest_lever_on','reactant','trailer','lit_trailer','stone_trailer'].includes(nt)) {
 							scheduleMechUpdate(n.col, n.row);
 						  }
 						}
                     }
 
-                    // Break all foliage blocks stacked above the mined block
-                    let currentRow = targetRow - 1; // Start with the block directly above
-                    
+                    // Cascade Break Foliage Above
+                    let currentRow = targetRow - 1; 
                     while (true) {
                         const blockAboveKey = `${targetCol},${currentRow}`;
                         const blockAboveData = worldBlocks[blockAboveKey];
                     
-                        // Check if the block is a breakable foliage type
                         if (blockAboveData && foliageTypes.includes(blockAboveData.type)) {
                             const blockAboveProps = blockTypes[blockAboveData.type];
-                    
-                            // Check if player has inventory space for the drops
                             if (canInventoryAcceptDrops(blockAboveProps.drops)) {
                                 worldBlocks[blockAboveKey] = { type: '', mineProg: 0 };
                                 handleMiningDrops(blockAboveProps, blockAboveKey);
-                                currentRow--; // Move up to check the next block
+                                currentRow--; 
                             } else {
-                                // Stop the cascade if inventory is full
                                 break;
                             }
                         } else {
-                            // Stop if the block is solid, air, or not foliage
                             break;
                         }
                     }
@@ -11029,7 +11256,6 @@
                     miningTarget = null;
 				}
 			} else if (!mouse.down && miningTarget) {
-				// If mouse is released, reset mining progress (if not maintaining durability)
 				if (!maintainBlockDurability && worldBlocks[`${miningTarget.col},${miningTarget.row}`]) {
 					worldBlocks[`${miningTarget.col},${miningTarget.row}`].mineProg = 0;
 				}
@@ -11074,7 +11300,7 @@
 
 						// Check if block is destroyed
 						if (blockData.mineProg >= blockProps.miningHardness) {
-							worldBlocks[burningBlockKey] = (random() < 0.1) ? { type: 'ash_block', mineProg: 0 } : { type: '', mineProg: 0 };
+							worldBlocks[burningBlockKey] = (random() < 0.1) ? { type: 'ash', mineProg: 0 } : { type: '', mineProg: 0 };
 							// Fire goes out because the block it was burning is gone
 							keysToDelete.push(fireKey); 
 							continue; // Stop processing this fire, it's out
@@ -11132,7 +11358,7 @@
 		// NEW: Function to draw fire on the player
 		function drawPlayer() {
 			// 1. Draw the base player image
-            ctx.drawImage(
+			ctx.drawImage(
 				playerImg,
 				player.x - camera.x,
 				player.y - camera.y,
@@ -11140,35 +11366,45 @@
 				playerHeight
 			);
 
-            // 2. Draw equipped armor over the player
-            // We define a render order
-            const renderOrder = ['legGear', 'boots', 'chestGear', 'face', 'helmet'];
+			// 2. Draw equipped armor over the player
+			// Types of legGear that should render AFTER (over) boots.
+			// Add future items here (e.g., 'dress', 'long_robe', etc.)
+			const overBootsTypes = ['skirt'];
 
-            for (const armorSlot of renderOrder) {
-                // Get the item object DIRECTLY from the player.armor slot
-                const armorItem = player.armor[armorSlot]; 
-                
-                // If there's no item, skip to the next slot
-                if (!armorItem || typeof armorItem.type !== 'string') continue;
+			// Default render order (most things render legGear under boots)
+			let renderOrder = ['legGear', 'boots', 'chestGear', 'face', 'helmet'];
 
-                // Get the *equipped* asset key (e.g., "dark_helmet_equipped")
-                const equippedAssetKey = `${armorItem.type}_equipped`;
-                const armorImg = assets[equippedAssetKey];
+			// If the equipped legGear is one of the overBootsTypes, render boots first
+			// so legGear draws on top of boots.
+			const leg = player.armor && player.armor.legGear;
+			if (leg && typeof leg.type === 'string' && overBootsTypes.includes(leg.type)) {
+				renderOrder = ['boots', 'legGear', 'chestGear', 'face', 'helmet'];
+			}
 
-                // Check if the equipped image asset exists and loaded successfully
-                if (armorImg && !failedAssets[equippedAssetKey]) {
-                    // Draw the armor image in the same position and size as the player
-                    ctx.drawImage(
-                        armorImg,
-                        player.x - camera.x,
-                        player.y - camera.y,
-                        playerWidth,
-                        playerHeight
-                    );
-                }
-                // No placeholder "else" block, as requested
-            }
+			for (const armorSlot of renderOrder) {
+				// Get the item object DIRECTLY from the player.armor slot
+				const armorItem = player.armor[armorSlot];
+
+				// Skip if nothing equipped in this slot
+				if (!armorItem || typeof armorItem.type !== 'string') continue;
+
+				// Assemble the asset key for the equipped image (e.g. "skirt_equipped")
+				const equippedAssetKey = `${armorItem.type}_equipped`;
+				const armorImg = assets[equippedAssetKey];
+
+				// If image asset exists and didn't fail to load, draw it
+				if (armorImg && !failedAssets[equippedAssetKey]) {
+					ctx.drawImage(
+						armorImg,
+						player.x - camera.x,
+						player.y - camera.y,
+						playerWidth,
+						playerHeight
+					);
+				}
+			}
 		}
+
 		
 		// NEW: Function to draw fire on the player
 		function drawPlayerFire() {
@@ -12049,6 +12285,7 @@
                 const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
                 const playerRect = { x: player.x, y: player.y, width: playerWidth, height: playerHeight };
                 const targetIsWall = currentBlockAtTarget.endsWith('_wall');
+				const targetIsSaw = currentBlockAtTarget === 'saw_table' || currentBlockAtTarget === 'cracked_saw_table';
                 const itemIsWallPlacer = itemProps && itemProps.wallPlace === true;
 
                 if (rectIntersects(placementRect, playerRect)) {
@@ -12067,6 +12304,67 @@
                         unlockAchievement('HOME_SWEET_HOME');
                         removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
                     }
+				} else if (targetIsSaw) {
+					// 1. Handle Repairs: If table is cracked
+					if (blockAtTarget.type === 'cracked_saw_table') {
+						if (selectedItemType === 'iron_nugget') {
+							// Repair the table back to normal
+							worldBlocks[targetKey] = { type: 'saw_table', mineProg: 0 };
+							
+							// Consume 1 Iron Nugget
+							removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+							
+							// Optional: Sound effect
+							if (typeof playGameSound === 'function') playGameSound('saw_repair'); 
+							//showMessageBox("Saw Table Repaired!", 'info');
+						} else {
+							showMessageBox("The Saw Table is cracked! Use an Iron Nugget to repair it.", 'alert');
+						}
+						mouse.rightDown = false; // Consume click
+						return;
+					}
+
+					// 2. Handle Sawing: If table is functional
+					if (blockAtTarget.type === 'saw_table') {
+						// Look for a matching recipe
+						const recipe = sawRecipes.find(r => r.input === selectedItemType);
+
+						if (recipe) {
+							// Check for inventory space. 
+							// We simulate removing the input item first to see if the output fits.
+							const inputSlot = inventorySlots[hotbarIndices[selectedHotbarSlot]];
+							
+							// Temporarily decrement to simulate consumption
+							inputSlot.count--; 
+							// If the stack becomes empty temporarily, we need to handle that for the check, 
+							// but canInventoryAcceptDrops handles general availability.
+							
+							const canFit = canInventoryAcceptDrops([{ item: recipe.output, min: recipe.outputCount, max: recipe.outputCount }]);
+							
+							// Restore count immediately after check
+							inputSlot.count++; 
+
+							if (canFit) {
+								// Success! Perform the swap.
+								removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1); // Consume Input
+								addToInventory(recipe.output, recipe.outputCount);             // Add Output
+
+								// Play sound (using plank sound as placeholder)
+								if (typeof playGameSound === 'function') playGameSound('plank_break_1'); 
+
+								// 3. Handle Cracking Chance (5%)
+								if (Math.random() < 0.03) {
+									worldBlocks[targetKey] = { type: 'cracked_saw_table', mineProg: 0 };
+									// Play break sound
+									if (typeof playGameSound === 'function') playGameSound('saw_break');
+								}
+							} else {
+								showMessageBox("Not enough inventory space for the output.", 'alert');
+							}
+						}
+					}
+					
+					mouse.rightDown = false; // Consume click
 				} else if (itemIsWallPlacer && targetIsWall && !blockAtTarget.overlay) {
                     // Place as an overlay
                     worldBlocks[targetKey].overlay = selectedItemType;
@@ -12565,25 +12863,25 @@
                             
                                 // Case 1: Placed Magma next to Ice
                                 if (placedType === 'ice' && neighborType === 'magma_stone_block') {
-                                    worldBlocks[neighborKey] = { type: 'obsidian_block', mineProg: 0 };
+                                    worldBlocks[neighborKey] = { type: 'obsidian', mineProg: 0 };
                                 }
                             
                                 // Case 2: Placed Ice next to Magma
                                 if (placedType === 'magma_stone_block' && neighborType === 'ice') {
                                     // The block we just placed is the one that transforms
-                                    worldBlocks[targetKey] = { type: 'obsidian_block', mineProg: 0 };
+                                    worldBlocks[targetKey] = { type: 'obsidian', mineProg: 0 };
                                     break; // Stop checking other neighbors since this block already changed
                                 }
 
                                 // Case 1: Placed Magma next to Packed Ice
                                 if (placedType === 'packed_ice' && neighborType === 'magma_stone_block') {
-                                    worldBlocks[neighborKey] = { type: 'obsidian_block', mineProg: 0 };
+                                    worldBlocks[neighborKey] = { type: 'obsidian', mineProg: 0 };
                                 }
                             
                                 // Case 2: Placed Packed Ice next to Magma
                                 if (placedType === 'magma_stone_block' && neighborType === 'packed_ice') {
                                     // The block we just placed is the one that transforms
-                                    worldBlocks[targetKey] = { type: 'obsidian_block', mineProg: 0 };
+                                    worldBlocks[targetKey] = { type: 'obsidian', mineProg: 0 };
                                     break; // Stop checking other neighbors since this block already changed
                                 }
                             }
@@ -12996,7 +13294,7 @@
             'coniferous_forest': [ { type: 'taiga_grass_dirt_block_2', chance: 0.25 }, { type: 'taiga_grass_dirt_block_1', chance: 0.75 } ],
             'rocky': [ { type: 'packed_ice', chance: 0.03 }, { type: 'rock_block', chance: 0.97 } ],
             'muddy_swamp': [ { type: 'thick_mud', chance: 0.5 }, { type: 'mud', chance: 0.5 } ],
-            'lava_flats': [ { type: 'ash_block', chance: 0.02 }, { type: 'compacted_stone', chance: 0.1 }, { type: 'magma_stone_block', chance: 0.88 } ],
+            'lava_flats': [ { type: 'ash', chance: 0.02 }, { type: 'compacted_stone', chance: 0.1 }, { type: 'magma_stone_block', chance: 0.88 } ],
             'salt_flats': [ { type: 'limestone', chance: 0.03 }, { type: 'salt_rock_block', chance: 0.97 } ],
             'icy_hills': [ { type: 'ice', chance: 0.1 }, { type: 'packed_ice', chance: 0.9 } ],
             'desert': [ { type: 'sandstone', chance: 0.2 }, { type: 'sand', chance: 0.8 } ],
@@ -13014,8 +13312,8 @@
             'meat_world': [ { type: 'meat_block', chance: 0.6 }, { type: 'spoiled_meat_block', chance: 0.35 }, { type: 'flesh_block', chance: 0.05 } ],
             'doom_forest': [ { type: 'doom_hellstone', chance: 1.0 } ],
             'flesh_forest': [ { type: 'flesh_hellstone', chance: 1.0 } ],
-            'ash_wastes': [ { type: 'ash_block', chance: 0.8 }, { type: 'obsidian_block', chance: 0.2 } ],
-            'magma_basin': [ { type: 'magma_stone_block', chance: 0.9 }, { type: 'obsidian_block', chance: 0.1 } ],
+            'ash_wastes': [ { type: 'ash', chance: 0.8 }, { type: 'obsidian', chance: 0.2 } ],
+            'magma_basin': [ { type: 'magma_stone_block', chance: 0.9 }, { type: 'obsidian', chance: 0.1 } ],
             'icy_hell': [ { type: 'hell_ice', chance: 1.0 } ],
             'cloudscape': [ { type: 'heaven_brick_block', chance: 0.01 }, { type: 'heavensteel_cloud_block', chance: 0.001 }, { type: 'diviniron_cloud_block', chance: 0.0035 }, { type: 'cloud_rock_block', chance: 0.1 }, { type: 'cloud_block', chance: 0.8855 } ],
             'gilded_forest': [ { type: 'gilded_grass_dirt_block', chance: 1.0 } ],
@@ -13218,36 +13516,108 @@
 			}
 		}
 		
+		// --- Dynamic Background Variables ---
+        let currentBgState = { type: 'color', value: '#70b6d5' }; // Track current background
+        let activeBgLayerIndex = 1; // 1 or 2
+        
+        // Configuration for Biome Backgrounds
+        const biomeBackgroundMap = {
+            'deciduous_forest': { type: 'image', src: 'Deciduous Forest.png', color: '#d8fffe' },
+            'coniferous_forest': { type: 'image', src: 'Coniferous Forest.png', color: '#d8fffe' },
+			'desert': { type: 'image', src: 'Desert.png', color: '#d8fffe' },
+            // Add more biomes here easily:
+            // 'desert': { type: 'image', src: 'Desert Background.png', color: '#63441e' },
+        };
+
+        // Function to handle background transitions
+        function updateBackground(targetCol, targetRow) {
+            let targetBg = { type: 'color', value: '#d8fffe' }; // Default Sky
+
+            // 1. Determine Target Background based on depth and biome
+            if (targetRow < -100000) { 
+                targetBg = { type: 'color', value: '#ff8700' }; // Super Heaven
+            } else if (targetRow < -265) {
+                targetBg = { type: 'color', value: '#000000' }; // Space
+            } else if (targetRow < -145) { 
+                targetBg = { type: 'color', value: '#d8d043' }; // Heaven
+            } else if (targetRow > 605) { 
+                targetBg = { type: 'color', value: '#000000' }; // Void
+            } else if (targetRow > 205) { 
+                targetBg = { type: 'color', value: '#4d0f0f' }; // Hell
+            } else if (targetRow > 20) { 
+                targetBg = { type: 'color', value: '#2e2e2e' }; // Compacted Stone
+            } else if (targetRow > 10) { 
+                targetBg = { type: 'color', value: '#4e626d' }; // Stone
+            } else { 
+                // Surface Layer
+                if (isChristmasSeason() && isNightTime()) {
+                    targetBg = { type: 'color', value: '#0a0a14' };
+                } else {
+                    // Check Biome for specific images
+                    const currentBiome = getBiome(targetCol);
+                    if (biomeBackgroundMap[currentBiome]) {
+                        const mapEntry = biomeBackgroundMap[currentBiome];
+                        targetBg = { 
+                            type: mapEntry.type, 
+                            value: mapEntry.src, 
+                            fallback: mapEntry.color 
+                        };
+                    }
+                }
+            }
+
+            // 2. Check if background needs changing
+            // We compare type and value to see if it's actually different
+            if (targetBg.type === currentBgState.type && targetBg.value === currentBgState.value) {
+                return; // No change needed
+            }
+
+            // 3. Perform the Swap
+            // Identify layers
+            const frontLayerId = `bgLayer${activeBgLayerIndex}`;
+            const backLayerIndex = activeBgLayerIndex === 1 ? 2 : 1;
+            const backLayerId = `bgLayer${backLayerIndex}`;
+            
+            const frontEl = document.getElementById(frontLayerId);
+            const backEl = document.getElementById(backLayerId);
+
+            // Prepare the "Back" layer (the one currently hidden/opacity 0)
+            if (targetBg.type === 'image') {
+                // Set fallback color first
+                backEl.style.backgroundColor = targetBg.fallback;
+                // Set image
+                // Note: We use textureOverrides if available (for texture packs)
+                const finalSrc = textureOverrides[targetBg.value] || targetBg.value;
+                backEl.style.backgroundImage = `url('${finalSrc}')`;
+            } else {
+                // Color only
+                backEl.style.backgroundImage = 'none';
+                backEl.style.backgroundColor = targetBg.value;
+            }
+
+            // Swap Opacities
+            // The back layer (new bg) fades in (opacity 1)
+            // The front layer (old bg) fades out (opacity 0)
+            // CSS transition handles the smooth fade
+            backEl.style.opacity = '1';
+            backEl.style.zIndex = '-9'; // Move slightly forward
+            
+            frontEl.style.opacity = '0';
+            frontEl.style.zIndex = '-10'; // Move back
+
+            // Update State
+            currentBgState = targetBg;
+            activeBgLayerIndex = backLayerIndex;
+        }
+		
         function drawWorld() {
-            // Background color change based on depth
+            // --- UPDATED BACKGROUND LOGIC ---
+            const playerGridCol = Math.floor(player.x / tileSize);
             const playerGridY = Math.floor(player.y / tileSize);
             
-            if (playerGridY < -100000) { // Super Heaven
-                document.body.style.backgroundColor = '#ff8700';
-            } 
-            else if (playerGridY < -265) { // Space biome starts at y = -245
-                document.body.style.backgroundColor = '#000000';
-            } else if (playerGridY < -145) { // Heaven
-                document.body.style.backgroundColor = '#d8d043';
-            } else if (playerGridY > 605) { // Underworld
-                document.body.style.backgroundColor = '#000000';
-			} else if (playerGridY > 205) { // Underworld
-                document.body.style.backgroundColor = '#4d0f0f';
-            } else if (playerGridY > 20) { // Compacted Stone
-                document.body.style.backgroundColor = '#2e2e2e';
-            } else if (playerGridY > 10) { // Stone
-                document.body.style.backgroundColor = '#4e626d';
-            } else { // Surface / Sky
-				// --- SEASONAL OVERRIDE ---
-				// Check if a season is active AND it is night
-				if (isChristmasSeason() && isNightTime()) {
-					document.body.style.backgroundColor = '#0a0a14'; // Dark Christmas Night
-				} else {
-					// You can add more specific seasonal background checks here, 
-					// or just revert to the default normal sky color.
-					document.body.style.backgroundColor = '#d8fffe'; // Normal Sky Blue
-				}
-			}
+            // Call our new function to handle fades
+            updateBackground(playerGridCol, playerGridY);
+            // --------------------------------
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const startCol = Math.floor(camera.x / tileSize) - 1;
@@ -13262,6 +13632,23 @@
 					if (!blockData || blockData.type === '') continue; // skip empty/air tiles
                     let blockType = blockData.type;
                     let blockProps = blockTypes[blockType];
+                    
+                    // --- BLOCK HIGHLIGHT LOGIC ---
+                    const isBeingMinedInefficiently = (miningTarget && miningTarget.col === col && miningTarget.row === row && miningTarget.isInefficient);
+
+                    if (ENABLE_BLOCK_HIGHLIGHT && isBeingMinedInefficiently) {
+                        // Calculate flicker if enabled
+                        let b = HIGHLIGHT_BRIGHTNESS;
+                        if (HIGHLIGHT_FLICKER) {
+                            b += (Math.random() - 0.5) * 30; // Randomly fluctuates brightness
+                        }
+                        
+                        // Apply CSS-like filters to the Canvas Context
+                        ctx.filter = `brightness(${b}%) saturate(${HIGHLIGHT_SATURATION}%) hue-rotate(${HIGHLIGHT_HUE_SHIFT}deg)`;
+                    } else {
+                        ctx.filter = 'none';
+                    }
+                    
                     const screenX = col * tileSize - camera.x;
                     const screenY = row * tileSize - camera.y;
 
@@ -13344,6 +13731,7 @@
                     }
                 }
             }
+			ctx.filter = 'none';
         }
 		
 		function drawAnimatedDrops() {
@@ -14738,6 +15126,11 @@
 				anvilPower: 1,
                 output: 'rock_block', outputCount: 1,
             },
+			{ name: "Cobbled Stone Block",
+                input: { 0: { type: 'stone', count: 1 } },
+				anvilPower: 1,
+                output: 'cobbled_stone', outputCount: 1,
+            },
 			{
 				name: "Sandstone",
 				input: { 0: { type: 'sand', count: 4 } },
@@ -14936,7 +15329,7 @@
                 output: 'concrete', outputCount: 6
             },
 			{ name: "Dark Concrete Block",
-                input: { 0: { type: 'concrete', count: 5 }, 1: { type: 'ash_block', count: 1 } },
+                input: { 0: { type: 'concrete', count: 5 }, 1: { type: 'ash', count: 1 } },
 				fuel: 1,
                 output: 'dark_concrete', outputCount: 1
             },
@@ -15063,6 +15456,23 @@
                 output: 'elemental_helmet', outputCount: 1,
             },
 		];
+		let sawRecipes = [
+			// Refined planks
+            { input: 'planked_oak', output: 'refined_planked_oak', outputCount: 1 },
+			{ input: 'planked_birch', output: 'refined_planked_birch', outputCount: 1 },
+			{ input: 'planked_spruce', output: 'refined_planked_spruce', outputCount: 1 },
+            { input: 'planked_pine', output: 'refined_planked_pine', outputCount: 1 },
+			// Get more for your planks with a saw table
+            { input: 'raw_oak', output: 'planked_oak', outputCount: 4 },
+			{ input: 'raw_birch', output: 'planked_birch', outputCount: 4 },
+			{ input: 'raw_spruce', output: 'planked_spruce', outputCount: 4 },
+            { input: 'raw_pine', output: 'planked_pine', outputCount: 4 },
+			// Grinding blocks (sometimes reverse of anvil)
+            { input: 'sandstone', output: 'sand', outputCount: 4 },
+            { input: 'red_sandstone', output: 'red_sand', outputCount: 4 },
+            // Stonecutting
+            { input: 'stone', output: 'stone_brick_block', outputCount: 1 },
+		];
 		// --- CENTRAL STATION REGISTRY ---
 		// Maps block types to their configuration.
 		// To add a new station (Vanilla or Mod), just add it here!
@@ -15136,6 +15546,7 @@
 			{ input: { type: 'rock_pickaxe', count: 15 }, output: { type: 'ruby_plated_steel_pickaxe', count: 1 } },
 			// Miscalleneous For Sale
 			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'nitro_powder', count: 15 } },
+            { input: { type: 'gold_coin', count: 20 }, output: { type: 'cobweb', count: 1 } },
 			// Miscalleneous For Trade
 			{ input: { type: 'void_dust', count: 20 }, output: { type: 'void_crystal', count: 1 } },
 		];
@@ -15161,12 +15572,22 @@
 			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'rock_block', count: 24 } },
             { input: { type: 'gold_coin', count: 120 }, output: { type: 'infinitungsten_nugget', count: 1 } },
 		];
+        const designerTraderTrades = [
+            // Decorations For Sale
+            { input: { type: 'gold_coin', count: 4 }, output: { type: 'teddy_bear', count: 1 } },
+            { input: { type: 'gold_coin', count: 8 }, output: { type: 'wood_cabinet', count: 1 } },
+            { input: { type: 'gold_coin', count: 1 }, output: { type: 'wood_table', count: 1 } },
+            { input: { type: 'gold_coin', count: 1 }, output: { type: 'wood_table_legs', count: 1 } },
+            // Decorations For Trade
+            { input: { type: 'bedrock_stone', count: 10 }, output: { type: 'dead_teddy_bear', count: 1 } },
+        ];
 		
 		// This defines our trader types, their appearance, and their trades.
 		const traderTypes = [
 			{ name: 'Trader', key: 'default', imgSrc: 'Trader.png', trades: [traderTrades] },
 			{ name: 'Farmer', key: 'farmer', imgSrc: 'Farmer Trader.png', trades: [farmerTraderTrades] },
 			{ name: 'Miner', key: 'miner', imgSrc: 'Miner Trader.png', trades: [minerTraderTrades] },
+            { name: 'Designer', key: 'designer', imgSrc: 'Designer Trader.png', trades: [designerTraderTrades] },
 			{ name: 'Trader Lvl. 2', key: 'level2', imgSrc: 'Trader 2.png', trades: [traderTrades, level2TraderTrades] },
 		];
 		
@@ -15197,6 +15618,7 @@
             'default': traderTrades,
             'farmer': farmerTraderTrades,
             'miner': minerTraderTrades,
+            'designer': designerTraderTrades,
             'level2': level2TraderTrades
         };
 
@@ -15358,32 +15780,48 @@
 				slotDiv.appendChild(img);
 				slotDiv.style.opacity = '0.65';
 			  } else {
-				// Occupied slot -> keep normal rendering, and update paper doll as before
-				const itemProps = itemTypes[armorItem.type];
-				if (itemProps && itemProps.protectionFactor) {
-				  totalProtection += itemProps.protectionFactor;
-				}
-				slotDiv.style.opacity = '1.0';
+				  // Occupied slot -> keep normal rendering, and update paper doll as before
+				  const itemProps = itemTypes[armorItem.type];
+				  if (itemProps && itemProps.protectionFactor) {
+					totalProtection += itemProps.protectionFactor;
+				  }
 
-				// Draw equipped armor on paper doll (existing behavior)
-				const equippedAssetKey = `${armorItem.type}_equipped`;
-				const armorImgAsset = assets[equippedAssetKey];
-				if (armorImgAsset && !failedAssets[equippedAssetKey]) {
-				  const imgElement = document.createElement('img');
-				  imgElement.src = armorImgAsset.src;
-				  imgElement.classList.add('paper-doll-armor');
-				  const zForArmorType = {
-					'helmet': 50,
-					'face': 40,
-					'chestGear': 30,
-					'legGear': 10,
-					'boots': 20
-				  };
-				  imgElement.style.position = 'absolute';
-				  imgElement.style.zIndex = zForArmorType[slotKey] ?? 0;
-				  paperDollDiv.appendChild(imgElement);
+				  slotDiv.style.opacity = '1.0';
+
+				  const equippedAssetKey = `${armorItem.type}_equipped`;
+				  const armorImgAsset = assets[equippedAssetKey];
+
+				  if (armorImgAsset && !failedAssets[equippedAssetKey]) {
+					const imgElement = document.createElement('img');
+					imgElement.src = armorImgAsset.src;
+					imgElement.classList.add('paper-doll-armor');
+
+					const baseZ = {
+					  helmet: 50,
+					  face: 40,
+					  chestGear: 30,
+					  boots: 20,
+					  legGear: 10
+					};
+
+					const legGearOverBootsTypes = ['skirt'];
+
+					let finalZ = baseZ[slotKey] ?? 0;
+
+					if (
+					  slotKey === 'legGear' &&
+					  typeof armorItem.type === 'string' &&
+					  legGearOverBootsTypes.includes(armorItem.type)
+					) {
+					  finalZ = baseZ.boots + 1;
+					}
+
+					imgElement.style.position = 'absolute';
+					imgElement.style.zIndex = finalZ;
+					paperDollDiv.appendChild(imgElement);
+				  }
 				}
-			  }
+
 
 			  armorGrid.appendChild(slotDiv);
 			}
@@ -18021,8 +18459,18 @@
         newGameButton.addEventListener('click', async () => {
             if (await showMessageBox("Starting a new game will overwrite current progress. Are you sure?", 'confirm')) {
                 let newSeedValue = seedInput.value.trim();
-                let seedToUse = newSeedValue === '' ? Date.now() : stringToHash(newSeedValue);
-                startNewGame(seedToUse); // Call our new function
+                
+                // --- NEW BLANK WORLD LOGIC ---
+                if (newSeedValue === "Blank") {
+                    seedControl = "Blank";
+                    let seedToUse = Date.now(); // Seed doesn't matter, but we need a number
+                    startNewGame(seedToUse);
+                } else {
+                    seedControl = null; // Reset if not blank
+                    let seedToUse = newSeedValue === '' ? Date.now() : stringToHash(newSeedValue);
+                    startNewGame(seedToUse); 
+                }
+                // -----------------------------
             }
         });
 
@@ -19024,6 +19472,9 @@
 						if (traderType === 'miner') {
 							return [minerTraderTrades];
 						}
+                        if (traderType === 'designer') {
+							return [designerTraderTrades];
+						}
 						if (traderType === 'level2') {
 							return [traderTrades, level2TraderTrades];
 						}
@@ -19256,6 +19707,68 @@
           }
         }
         
+		// --- Custom ZIP Extractor (Pure JS) ---
+        async function unzip(buffer) {
+            const view = new DataView(buffer);
+            const u8 = new Uint8Array(buffer);
+            
+            // 1. Find End of Central Directory (EOCD)
+            let eocdOffset = buffer.byteLength - 22;
+            while (eocdOffset >= 0) {
+                if (view.getUint32(eocdOffset, true) === 0x06054b50) break;
+                eocdOffset--;
+            }
+            if (eocdOffset < 0) throw new Error("Invalid ZIP file");
+
+            const cdCount = view.getUint16(eocdOffset + 8, true);
+            const cdOffset = view.getUint32(eocdOffset + 16, true);
+            
+            let pos = cdOffset;
+            const files = {};
+
+            // 2. Iterate Central Directory
+            for (let i = 0; i < cdCount; i++) {
+                if (view.getUint32(pos, true) !== 0x02014b50) break; // Signature check
+                
+                const method = view.getUint16(pos + 10, true);
+                const compSize = view.getUint32(pos + 20, true);
+                const uncompSize = view.getUint32(pos + 24, true);
+                const nameLen = view.getUint16(pos + 28, true);
+                const extraLen = view.getUint16(pos + 30, true);
+                const commentLen = view.getUint16(pos + 32, true);
+                const localOffset = view.getUint32(pos + 42, true);
+
+                const nameBytes = u8.subarray(pos + 46, pos + 46 + nameLen);
+                const name = new TextDecoder().decode(nameBytes);
+
+                pos += 46 + nameLen + extraLen + commentLen; // Move to next CD record
+
+                // 3. Jump to Local File Header to find data
+                // Local Header structure: 30 bytes + name + extra
+                const localNameLen = view.getUint16(localOffset + 26, true);
+                const localExtraLen = view.getUint16(localOffset + 28, true);
+                const dataStart = localOffset + 30 + localNameLen + localExtraLen;
+                const compressedData = u8.subarray(dataStart, dataStart + compSize);
+
+                // 4. Decompress
+                let fileData;
+                if (method === 0) { // Store (no compression)
+                    fileData = compressedData;
+                } else if (method === 8) { // Deflate
+                    // Reuses your existing inflateRawUint8 function
+                    try {
+                        fileData = await inflateRawUint8(compressedData);
+                    } catch (e) {
+                        console.error(`Failed to decompress ${name}:`, e);
+                        continue;
+                    }
+                }
+
+                if (fileData) files[name] = fileData;
+            }
+            return files;
+        }
+		
         // Export function: compressed BGU2
         async function exportWorldBGU2() {
           try {
@@ -20288,6 +20801,7 @@
 					upgrades = [
 						{ name: 'Farmer', type: 'farmer', level: 2, icon: 'Farmer Trader.png' },
 						{ name: 'Miner', type: 'miner', level: 2, icon: 'Miner Trader.png' },
+                        { name: 'Designer', type: 'designer', level: 2, icon: 'Designer Trader.png' },
 						{ name: 'Lvl. 2', type: 'level2', level: 2, icon: 'Trader 2.png' }
 					];
 				}
