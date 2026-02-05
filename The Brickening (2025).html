@@ -1958,7 +1958,7 @@
 			<div class="inventory-section" id="armorSection">
                 <h3 style="margin-bottom: 5px;">Armor</h3>
                 <div style="display: flex; justify-content: space-around; align-items: center; gap: 20px;">
-                    <div id="paperDoll" style="width: 50px; height: 150px; background-image: url('Brickening Player.png'); background-size: contain; background-repeat: no-repeat; background-position: center;  opacity: 0.5; position: relative;">
+                    <div id="paperDoll" style="width: 50px; height: 150px; background-image: url('Brickening/Player.png'); background-size: contain; background-repeat: no-repeat; background-position: center;  opacity: 0.5; position: relative;">
                         </div>
                     
                     <div id="armorGrid" style="display: grid; grid-template-columns: 50px; grid-template-rows: repeat(4, 50px); gap: 8px; justify-content: center;">
@@ -2049,7 +2049,7 @@
     </div>
 	
 	<div id="traderCharacterContainer" oncontextmenu="return false;" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1001; align-items:flex-end; gap:15px;">
-	  <img id="traderCharacter" src="Brickening Trader.png" alt="Trader" style="width:80px; image-rendering:pixelated;">
+	  <img id="traderCharacter" src="Brickening/Trader.png" alt="Trader" style="width:80px; image-rendering:pixelated;">
 	  <div id="traderTradeOffer" class="inventory-section" style="background-color:rgba(10,10,30,0.9); border-radius:10px; padding:10px; width:260px;">
 		<p id="traderDialogue" style="font-style:italic; text-align:center; margin:0 0 8px 0;">Got goods if you've got coin.</p>
 		<div id="traderOfferList"></div>
@@ -2361,8 +2361,8 @@
         let tipIntervalId = null; // This will hold the ID of our timer
 		console.log('This is the monitor and cheat console! Try using this command: addToInventory("sky", 120)');
 		const playerImg = new Image();
-		playerImg.src = 'Brickening Player.png'; //Non constant to enable console cheats
-		const originalPlayerImgSrc = 'Brickening Player.png';
+		playerImg.src = 'Brickening/Player.png'; //Non constant to enable console cheats
+		const originalPlayerImgSrc = 'Brickening/Player.png';
 		const targetSkinSequence = "SKIN!";
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -3382,9 +3382,9 @@
 			'': { imgSrc: null, solid: false, miningHardness: 0, drops: [], color: '#87ceeb' }, // New replacement for sky, even faster loading!
             'cobweb': { imgSrc: 'Cobweb.png', solid: false, miningHardness: 50, drops: [], color: '#EEEEEE', wallPlace: true },
             'bed': { imgSrc: 'Bed.png', solid: true, miningHardness: 100, drops: [{item: 'bed', chance: 1, min: 1, max: 1}], color: '#FF0000' },
-			'trader': { imgSrc: 'Brickening Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513' },
+			'trader': { imgSrc: 'Brickening/Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513' },
 			'full_trader': { imgSrc: 'Full Trader.png', solid: true, miningHardness: 120, drops: null, color: '#8B4513' },
-            'chest': { imgSrc: 'Brickening Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+            'chest': { imgSrc: 'Brickening/Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'magical_chest': { imgSrc: 'Magical Chest.png', solid: true, miningHardness: 150, drops: [{item: 'magical_chest', chance: 1, min: 1, max: 1}], color: '#9400D3' },
             'void_chest': { imgSrc: 'Void Chest.png', solid: true, miningHardness: 150, drops: [{item: 'chest', chance: 1, min: 1, max: 1}], color: '#483D8B' },
 			'refrigerator': { imgSrc: 'Refrigerator.png', solid: true, miningHardness: 150, drops: [{item: 'refrigerator', chance: 1, min: 1, max: 1}], color: '#E6E8FA' },
@@ -3420,40 +3420,40 @@
 			'stone_stairs_left': { imgSrc: 'Stone Stairs Left.png', solid: true, miningHardness: 500, drops: [{item: 'stone_stairs_left', chance: 1, min: 1, max: 1}], color: '#999999' },
 			'dead_body_chest': { imgSrc: 'Dead Body Chest.png', solid: true, miningHardness: 150, drops: [{item: 'dead_body_block', chance: 1, min: 1, max: 1}], color: '#BC8F8F' },
 			'dead_body_block': { imgSrc: 'Dead Body Chest.png', solid: true, miningHardness: 150, drops: [{item: 'dead_body_block', chance: 1, min: 1, max: 1}], color: '#BC8F8F' },
-            'seed_dirt_block': { imgSrc: 'Brickening Seed Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 3}], color: '#8B4513', shovelBlock: true },
-			'grass_dirt': { imgSrc: 'Brickening Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
-			'overgrown_grass_dirt': { imgSrc: 'Brickening Overgrown Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
-			'dark_grass_dirt': { imgSrc: 'Brickening Dark Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
-			'overgrown_dark_grass_dirt': { imgSrc: 'Brickening Overgrown Dark Grass Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#6B8E23', shovelBlock: true },
-			'dark_grass_soil': { imgSrc: 'Brickening Dark Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
-			'overgrown_dark_grass_soil': { imgSrc: 'Brickening Overgrown Dark Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#6B8E23', shovelBlock: true },
-            'dirt': { imgSrc: 'Brickening Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
-			'grass_soil': { imgSrc: 'Brickening Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#90EE90', shovelBlock: true },
-			'overgrown_grass_soil': { imgSrc: 'Brickening Overgrown Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#32CD32', shovelBlock: true },
-            'soil': { imgSrc: 'Brickening Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+            'seed_dirt_block': { imgSrc: 'Brickening/Seed Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 3}], color: '#8B4513', shovelBlock: true },
+			'grass_dirt': { imgSrc: 'Brickening/Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
+			'overgrown_grass_dirt': { imgSrc: 'Brickening/Overgrown Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
+			'dark_grass_dirt': { imgSrc: 'Brickening/Dark Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+			'overgrown_dark_grass_dirt': { imgSrc: 'Brickening/Overgrown Dark Grass Dirt Block.png', solid: true, miningHardness: 70, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#6B8E23', shovelBlock: true },
+			'dark_grass_soil': { imgSrc: 'Brickening/Dark Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+			'overgrown_dark_grass_soil': { imgSrc: 'Brickening/Overgrown Dark Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#6B8E23', shovelBlock: true },
+            'dirt': { imgSrc: 'Brickening/Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true },
+			'grass_soil': { imgSrc: 'Brickening/Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#90EE90', shovelBlock: true },
+			'overgrown_grass_soil': { imgSrc: 'Brickening/Overgrown Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#32CD32', shovelBlock: true },
+            'soil': { imgSrc: 'Brickening/Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
 			'plantation_soil': { imgSrc: 'Plantation Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'plantation_soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
             'fertilizer': { imgSrc: 'Fertilizer Block.png', solid: true, miningHardness: 80, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
-            'stone': { imgSrc: 'Brickening Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999' },
+            'stone': { imgSrc: 'Brickening/Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999' },
 			'soft_stone': { imgSrc: 'Soft Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'soft_stone', chance: 1, min: 1, max: 1}], color: '#999999' },
 			'outer_mantle_molten_stone': { imgSrc: 'Outer Mantle Molten Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'iron_nugget', chance: 0.15, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.1, min: 1, max: 3}], color: '#FF8C00', requiredMiningPower: 2.5 },
 			'inner_mantle_molten_stone': { imgSrc: 'Inner Mantle Molten Stone Block.png', solid: true, miningHardness: 150000, drops: [{item: 'iron_nugget', chance: 0.3, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.2, min: 1, max: 3}], color: '#FF4500', requiredMiningPower: 5 },
 			'core_molten_stone': { imgSrc: 'Core Molten Stone Block.png', solid: true, miningHardness: 250000, drops: [{item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.4, min: 1, max: 3}], color: '#FF0000', requiredMiningPower: 10 },
 			'stump_stone': { imgSrc: 'Stump Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stump_stone', chance: 1, min: 1, max: 1}], color: '#778899' },
-			'taiga_dirt': { imgSrc: 'Brickening Taiga Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
-			'taiga_grass_dirt_block_1': { imgSrc: 'Brickening Taiga Grass Dirt Block 1.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#2E8B57', shovelBlock: true },
-			'taiga_grass_dirt_block_2': { imgSrc: 'Brickening Taiga Grass Dirt Block 2.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#2E8B57', shovelBlock: true },
+			'taiga_dirt': { imgSrc: 'Brickening/Taiga Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'taiga_grass_dirt_block_1': { imgSrc: 'Brickening/Taiga Grass Dirt Block 1.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#2E8B57', shovelBlock: true },
+			'taiga_grass_dirt_block_2': { imgSrc: 'Brickening/Taiga Grass Dirt Block 2.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#2E8B57', shovelBlock: true },
 			'watchtower_stone_block': { imgSrc: 'Watchtower Stone Block.png', solid: true, miningHardness: 800, drops: [{item: 'watchtower_stone_block', chance: 1, min: 1, max: 1}], color: '#686868' },
 			'powertower_stone_block': { imgSrc: 'Powertower Stone Block.png', solid: true, miningHardness: 800, drops: [{item: 'powertower_stone_block', chance: 1, min: 1, max: 1}], color: '#686868' },
             'rock_block': { imgSrc: 'Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'rock_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9' },
 			'salt_rock_block': { imgSrc: 'Salt Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'salt_rock_block', chance: 0.8, min: 1, max: 1}, {item: 'rock_salt', chance: 0.08, min: 1, max: 2}], color: '#FDF5E6' },
 			'limestone': { imgSrc: 'Limestone Block.png', solid: true, miningHardness: 300, drops: [{item: 'limestone', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
-            'sand': { imgSrc: 'Brickening Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'sand', chance: 1, min: 1, max: 1}], color: '#F4A460', shovelBlock: true },
-			'red_sand_block': { imgSrc: 'Brickening Red Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'red_sand_block', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true },
-            'sandstone': { imgSrc: 'Brickening Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'sandstone', chance: 1, min: 1, max: 1}], color: '#47433e' },
-			'red_sandstone_block': { imgSrc: 'Brickening Red Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'red_sandstone_block', chance: 1, min: 1, max: 1}], color: '#851500' },
-            'compacting_stone': { imgSrc: 'Brickening Compacting Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#696969' },
+            'sand': { imgSrc: 'Brickening/Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'sand', chance: 1, min: 1, max: 1}], color: '#F4A460', shovelBlock: true },
+			'red_sand_block': { imgSrc: 'Brickening/Red Sand Block.png', solid: true, miningHardness: 40, drops: [{item: 'red_sand_block', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true },
+            'sandstone': { imgSrc: 'Brickening/Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'sandstone', chance: 1, min: 1, max: 1}], color: '#47433e' },
+			'red_sandstone_block': { imgSrc: 'Brickening/Red Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'red_sandstone_block', chance: 1, min: 1, max: 1}], color: '#851500' },
+            'compacting_stone': { imgSrc: 'Brickening/Compacting Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#696969' },
             'glass_block': { imgSrc: 'Glass Block.png', solid: true, miningHardness: 40, drops: [{item: 'glass_block', chance: 1, min: 1, max: 1}], color: '#AFEEEE' },
-			'compacted_stone': { imgSrc: 'Brickening Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#565656', requiredMiningPower: 0.2 },
+			'compacted_stone': { imgSrc: 'Brickening/Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#565656', requiredMiningPower: 0.2 },
 			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#262626', requiredMiningPower: 0.3 },
 			'void_stone': { imgSrc: 'Void Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_stone', chance: 1, min: 1, max: 1}], color: '#5b6160', requiredMiningPower: 0.3 },
 			'void_dust_block': { imgSrc: 'Void Dust Block.png', solid: true, miningHardness: 100, drops: [{item: 'void_dust', chance: 1, min: 1, max: 4}], color: '#6b8683' },
@@ -3462,7 +3462,7 @@
 			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#191919', requiredMiningPower: 2.5 },
 			'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#451b1b' },
 			'hellrock': { imgSrc: 'Hellrock Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellrock', chance: 1, min: 1, max: 1}], color: '#8B0000' },
-			'magma_stone_block': { imgSrc: 'Brickening Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff8700' },
+			'magma_stone_block': { imgSrc: 'Brickening/Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff8700' },
 			'chasm_magma_stone_block': { imgSrc: 'Chasm Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'chasm_magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff00af' },
 			'heaven_magma_stone_block': { imgSrc: 'Heaven Magma Stone Block.png', solid: true, miningHardness: -1, drops: [], color: '#ff8700' },
 			'meteorite': { imgSrc: 'Meteorite.png', solid: true, miningHardness: 500, drops: [{item: 'gold_nugget', chance: 0.3, min: 1, max: 3}, {item: 'palladium_nugget', chance: 0.2, min: 1, max: 3}, {item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.6, min: 1, max: 3}], color: '#696969' },
@@ -3491,46 +3491,46 @@
 			'palladium_brick_block': { imgSrc: 'Palladium Brick Block.png', solid: true, miningHardness: 800, drops: [{item: 'palladium_brick_block', chance: 1, min: 1, max: 1}], color: '#E6E8FA' },
             'heaven_brick_block': { imgSrc: 'Heaven Brick Block.png', solid: true, miningHardness: 1200, drops: [{item: 'heaven_brick_block', chance: 1, min: 1, max: 1}], color: '#F0EAD6' },
             // Ores And Minerals
-			'coal_stone': { imgSrc: 'Brickening Coal Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F' },
-			'coal_compacted_stone': { imgSrc: 'Brickening Coal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.2 },
+			'coal_stone': { imgSrc: 'Brickening/Coal Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F' },
+			'coal_compacted_stone': { imgSrc: 'Brickening/Coal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.2 },
             'coal_compressed_stone': { imgSrc: 'Coal Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'coal', chance: 1, min: 1, max: 1}], color: '#36454F', requiredMiningPower: 0.5 },
-			'copper_compacted_stone': { imgSrc: 'Brickening Copper Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'copper_nugget', chance: 1, min: 1, max: 1}], color: '#B87333', requiredMiningPower: 0.2 },
-            'tin_compacted_stone': { imgSrc: 'Brickening Tin Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tin_nugget', chance: 1, min: 1, max: 1}], color: '#C0C0C0', requiredMiningPower: 0.2 },
-			'zinc_compacted_stone': { imgSrc: 'Brickening Zinc Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'zinc_nugget', chance: 1, min: 1, max: 1}], color: '#B0C4DE', requiredMiningPower: 0.2 },
-			'iron_stone': { imgSrc: 'Brickening Iron Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
-            'iron_compacted_stone': { imgSrc: 'Brickening Iron Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
+			'copper_compacted_stone': { imgSrc: 'Brickening/Copper Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'copper_nugget', chance: 1, min: 1, max: 1}], color: '#B87333', requiredMiningPower: 0.2 },
+            'tin_compacted_stone': { imgSrc: 'Brickening/Tin Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tin_nugget', chance: 1, min: 1, max: 1}], color: '#C0C0C0', requiredMiningPower: 0.2 },
+			'zinc_compacted_stone': { imgSrc: 'Brickening/Zinc Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'zinc_nugget', chance: 1, min: 1, max: 1}], color: '#B0C4DE', requiredMiningPower: 0.2 },
+			'iron_stone': { imgSrc: 'Brickening/Iron Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94' },
+            'iron_compacted_stone': { imgSrc: 'Brickening/Iron Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
 			'iron_granite': { imgSrc: 'Iron Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.8 },
 			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.5 },
-			'tungsten_compacted_stone': { imgSrc: 'Brickening Tungsten Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tungsten_nugget', chance: 1, min: 1, max: 1}], color: '#8B8B83', requiredMiningPower: 0.2 },
-            'gold_compacted_stone': { imgSrc: 'Brickening Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'gold_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
-            'ruby_compacted_stone': { imgSrc: 'Brickening Ruby Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ruby_nugget', chance: 1, min: 1, max: 1}], color: '#E0115F', requiredMiningPower: 0.2 },
-            'diamond_compacted_stone': { imgSrc: 'Brickening Diamond Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'diamond_nugget', chance: 1, min: 1, max: 1}], color: '#B9F2FF', requiredMiningPower: 0.2 },
-			'topaz_compacted_stone': { imgSrc: 'Brickening Topaz Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'topaz_nugget', chance: 1, min: 1, max: 1}], color: '#FFC87C', requiredMiningPower: 0.2 },
-            'sapphire_compacted_stone': { imgSrc: 'Brickening Sapphire Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'sapphire_nugget', chance: 1, min: 1, max: 1}], color: '#0F52BA', requiredMiningPower: 0.2 },
-            'emerald_compacted_stone': { imgSrc: 'Brickening Emerald Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'emerald_nugget', chance: 1, min: 1, max: 1}], color: '#50C878', requiredMiningPower: 0.2 },
-            'amethyst_compacted_stone': { imgSrc: 'Brickening Amethyst Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'amethyst_nugget', chance: 1, min: 1, max: 1}], color: '#9966CC', requiredMiningPower: 0.2 },
-            'opal_compacted_stone': { imgSrc: 'Brickening Opal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'opal_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7', requiredMiningPower: 0.2 },
-			'jade_compacted_stone': { imgSrc: 'Brickening Jade Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'jade_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
+			'tungsten_compacted_stone': { imgSrc: 'Brickening/Tungsten Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tungsten_nugget', chance: 1, min: 1, max: 1}], color: '#8B8B83', requiredMiningPower: 0.2 },
+            'gold_compacted_stone': { imgSrc: 'Brickening/Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'gold_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
+            'ruby_compacted_stone': { imgSrc: 'Brickening/Ruby Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ruby_nugget', chance: 1, min: 1, max: 1}], color: '#E0115F', requiredMiningPower: 0.2 },
+            'diamond_compacted_stone': { imgSrc: 'Brickening/Diamond Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'diamond_nugget', chance: 1, min: 1, max: 1}], color: '#B9F2FF', requiredMiningPower: 0.2 },
+			'topaz_compacted_stone': { imgSrc: 'Brickening/Topaz Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'topaz_nugget', chance: 1, min: 1, max: 1}], color: '#FFC87C', requiredMiningPower: 0.2 },
+            'sapphire_compacted_stone': { imgSrc: 'Brickening/Sapphire Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'sapphire_nugget', chance: 1, min: 1, max: 1}], color: '#0F52BA', requiredMiningPower: 0.2 },
+            'emerald_compacted_stone': { imgSrc: 'Brickening/Emerald Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'emerald_nugget', chance: 1, min: 1, max: 1}], color: '#50C878', requiredMiningPower: 0.2 },
+            'amethyst_compacted_stone': { imgSrc: 'Brickening/Amethyst Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'amethyst_nugget', chance: 1, min: 1, max: 1}], color: '#9966CC', requiredMiningPower: 0.2 },
+            'opal_compacted_stone': { imgSrc: 'Brickening/Opal Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'opal_nugget', chance: 1, min: 1, max: 1}], color: '#E0E9E7', requiredMiningPower: 0.2 },
+			'jade_compacted_stone': { imgSrc: 'Brickening/Jade Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'jade_nugget', chance: 1, min: 1, max: 1}], color: '#00A86B', requiredMiningPower: 0.2 },
             'aluminum_granite': { imgSrc: 'Aluminum Granite Block.png', solid: true, miningHardness: 1050, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3' },
 			'aluminum_compressed_stone': { imgSrc: 'Aluminum Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'aluminum_nugget', chance: 1, min: 1, max: 1}], color: '#D3D3D3', requiredMiningPower: 0.5 },
 			'palladium_compressed_stone': { imgSrc: 'Palladium Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'palladium_nugget', chance: 1, min: 1, max: 1}], color: '#E6E8FA', requiredMiningPower: 0.5 },
 			'nitro_compacted_stone': { imgSrc: 'Nitro Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'nitro_powder', chance: 1, min: 1, max: 5}], color: '#FFFF00', requiredMiningPower: 0.2 },
-			'crude_oil_compacted_stone': { imgSrc: 'Brickening Crude Oil Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'crude_oil_chunk', chance: 1, min: 1, max: 1}], color: '#000000', requiredMiningPower: 0.2 },
+			'crude_oil_compacted_stone': { imgSrc: 'Brickening/Crude Oil Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'crude_oil_chunk', chance: 1, min: 1, max: 1}], color: '#000000', requiredMiningPower: 0.2 },
 			'any_plank': { imgSrc: 'Any Plank.png', solid: false, miningHardness: 0, drops: [], color: '#654321' },
 			'any_gilded': { imgSrc: 'Any Gilded.png', solid: false, miningHardness: 0, drops: [], color: '#FFD700' },
 			'raw_deadwood': { imgSrc: 'Raw Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'raw_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
 			'planked_deadwood': { imgSrc: 'Planked Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'planked_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
-			'raw_oak': { imgSrc: 'Brickening Raw Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
+			'raw_oak': { imgSrc: 'Brickening/Raw Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
             'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22' },
             'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
-			'raw_apple': { imgSrc: 'Brickening Raw Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_apple', chance: 1, min: 1, max: 1}], color: '#654321' },
+			'raw_apple': { imgSrc: 'Brickening/Raw Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_apple', chance: 1, min: 1, max: 1}], color: '#654321' },
             'apple_bush': { imgSrc: 'Apple Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22' },
 			'apple_bush_fruit': { imgSrc: 'Apple Bush Block Fruit.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}, {item: 'apple', chance: 1, min: 1, max: 3}], color: '#FF0000' },
             'planked_apple': { imgSrc: 'Planked Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_apple', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
-            'raw_birch': { imgSrc: 'Brickening Raw Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_birch', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
+            'raw_birch': { imgSrc: 'Brickening/Raw Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_birch', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'birch_bush': { imgSrc: 'Birch Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'birch_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23' },
             'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
-            'raw_spruce': { imgSrc: 'Brickening Raw Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_spruce', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
+            'raw_spruce': { imgSrc: 'Brickening/Raw Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_spruce', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'spruce_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.2, min: 1, max: 1}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A' },
 			'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'raw_orange': { imgSrc: 'Raw Orange Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_orange', chance: 1, min: 1, max: 1}], color: '#654321' },
@@ -3583,7 +3583,7 @@
             'desert_brush': { imgSrc: 'Desert Brush.png', solid: false, miningHardness: 5, drops: [{item: 'tomato_seeds', chance: 0.2, min: 1, max: 2}], color: '#D2B48C' },
 			'desert_grass': { imgSrc: 'Desert Grass.png', solid: false, miningHardness: 5, drops: [{item: 'coffee_seeds', chance: 0.2, min: 1, max: 2}], color: '#D2B48C' },
             'prickly_pear_cactus': { imgSrc: 'Prickly Pear Cactus.png', solid: false, miningHardness: 5, drops: [{item: 'prickly_pear_fruit', chance: 0.6, min: 1, max: 1}], color: '#93C572' },
-            'cactus_block': { imgSrc: 'Brickening Cactus Block.png', solid: true, miningHardness: 80, drops: [{item: 'cactus_block', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+            'cactus_block': { imgSrc: 'Brickening/Cactus Block.png', solid: true, miningHardness: 80, drops: [{item: 'cactus_block', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
             'anthill_sand_block': { imgSrc: 'Anthill Sand Block.png', solid: true, miningHardness: 45, drops: [{item: 'anthill_sand_block', chance: 1, min: 1, max: 1}], color: '#C19A6B' },
             'colony_heart_sand_block': { imgSrc: 'Colony Heart Sand Block.png', solid: true, miningHardness: 500, drops: [{item: 'colony_heart', chance: 1, min: 1, max: 1}], color: '#FF4444' },
             'anthill_sand_mound': { imgSrc: 'Anthill Sand Mound.png', solid: false, miningHardness: 10, drops: [], color: '#D2B48C' },
@@ -3626,28 +3626,28 @@
             'hell_ice': { imgSrc: 'Hell Ice Block.png', solid: true, miningHardness: 110, drops: [{item: 'hell_ice', chance: 1, min: 1, max: 1}], color: '#4878e6' },
 			'gravel': { imgSrc: 'Gravel Block.png', solid: true, miningHardness: 160, drops: [{item: 'gravel', chance: 1, min: 1, max: 1}], color: '#A9A9A9', shovelBlock: true }, // Used to be 60 hardness
             // Overgrown Forest Blocks
-            'moss_dirt': { imgSrc: 'Brickening Moss Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
-			'dark_moss_dirt': { imgSrc: 'Brickening Dark Moss Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
-			'moss_soil': { imgSrc: 'Brickening Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
-			'dark_moss_soil': { imgSrc: 'Bricening Dark Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
+            'moss_dirt': { imgSrc: 'Brickening/Moss Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+			'dark_moss_dirt': { imgSrc: 'Brickening/Dark Moss Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
+			'moss_soil': { imgSrc: 'Brickening/Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+			'dark_moss_soil': { imgSrc: 'Bricening/Dark Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
             'moss_stone_brick_block': { imgSrc: 'Moss Stone Brick Block.png', solid: true, miningHardness: 510, drops: [{item: 'stone_brick_block', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
 			'dark_moss_stone_brick_block': { imgSrc: 'Dark Moss Stone Brick Block.png', solid: true, miningHardness: 510, drops: [{item: 'stone_brick_block', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
-			'weed_dirt': { imgSrc: 'Brickening Weed Dirt Block.png', solid: true, miningHardness: 65, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#5A5030', shovelBlock: true },
-            'mud': { imgSrc: 'Brickening Mud Block.png', solid: true, miningHardness: 100, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'weed_dirt': { imgSrc: 'Brickening/Weed Dirt Block.png', solid: true, miningHardness: 65, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#5A5030', shovelBlock: true },
+            'mud': { imgSrc: 'Brickening/Mud Block.png', solid: true, miningHardness: 100, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
 			'thick_mud': { imgSrc: 'Thick Mud Block.png', solid: true, miningHardness: 150, drops: [{item: 'thick_mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
 			'clay': { imgSrc: 'Clay Block.png', solid: true, miningHardness: 280, drops: [{item: 'clay', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true },
-			'surface_mud': { imgSrc: 'Brickening Surface Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}, {item: 'leaf', chance: 1, min: 1, max: 3}], color: '#5C4033', shovelBlock: true },
-			'grass_mud': { imgSrc: 'Brickening Grass Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
-			'overgrown_grass_mud': { imgSrc: 'Brickening Overgrown Grass Mud Block.png', solid: true, miningHardness: 120, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
-            'pest_dirt': { imgSrc: 'Brickening Pest Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
-            'raw_darkwood': { imgSrc: 'Brickening Raw Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'raw_darkwood', chance: 1, min: 1, max: 1}], color: '#2F271B' },
+			'surface_mud': { imgSrc: 'Brickening/Surface Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}, {item: 'leaf', chance: 1, min: 1, max: 3}], color: '#5C4033', shovelBlock: true },
+			'grass_mud': { imgSrc: 'Brickening/Grass Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
+			'overgrown_grass_mud': { imgSrc: 'Brickening/Overgrown Grass Mud Block.png', solid: true, miningHardness: 120, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
+            'pest_dirt': { imgSrc: 'Brickening/Pest Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
+            'raw_darkwood': { imgSrc: 'Brickening/Raw Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'raw_darkwood', chance: 1, min: 1, max: 1}], color: '#2F271B' },
             'darkwood_bush': { imgSrc: 'Darkwood Bush Block.png', solid: true, miningHardness: 25, drops: [{item: 'darkwood_bush', chance: 0.05, min: 1, max: 1}], color: '#3A3125' },
             'planked_darkwood': { imgSrc: 'Planked Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'planked_darkwood', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'pest_stone_block_weak': { imgSrc: 'Pest Stone Block (Weak).png', solid: true, miningHardness: 400, drops: [{item: 'stone', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 1}], color: '#6A675A', shovelBlock: true },
             'pest_stone_block_strong': { imgSrc: 'Pest Stone Block (Strong).png', solid: true, miningHardness: 600, drops: [{item: 'stone', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 5}], color: '#5A574A', shovelBlock: true },
-            'moss': { imgSrc: 'Brickening Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#4A5D23' },
-            'dark_moss': { imgSrc: 'Brickening Dark Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#3B4A1C' },
-            'weed': { imgSrc: 'Brickening Weed.png', solid: false, miningHardness: 5, drops: [{item: 'pest', chance: 0.5, min: 1, max: 1}], color: '#6B8E23' },
+            'moss': { imgSrc: 'Brickening/Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#4A5D23' },
+            'dark_moss': { imgSrc: 'Brickening/Dark Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#3B4A1C' },
+            'weed': { imgSrc: 'Brickening/Weed.png', solid: false, miningHardness: 5, drops: [{item: 'pest', chance: 0.5, min: 1, max: 1}], color: '#6B8E23' },
             'shroom': { imgSrc: 'Shroom.png', solid: false, miningHardness: 10, drops: [{item: 'shroom', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'big_shroom': { imgSrc: 'Big Shroom.png', solid: true, miningHardness: 50, drops: [{item: 'big_shroom', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'devil_shroom': { imgSrc: 'Devil Shroom.png', solid: true, miningHardness: 2500, drops: [{item: 'devil_shroom', chance: 1, min: 1, max: 1}], color: '#4B0082' },
@@ -4011,7 +4011,7 @@
 			 'happy_face': { imgSrc: 'Armor/Happy Face Icon.png', equippedImgSrc: 'Armor/Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0, maxDurability: 1 },
 			 'farmer_trader_mask': { imgSrc: 'Armor/Farmer Trader Mask Icon.png', equippedImgSrc: 'Armor/Farmer Trader Mask.png', color: '#F5DEB3', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'miner_trader_mask': { imgSrc: 'Armor/Miner Trader Mask Icon.png', equippedImgSrc: 'Armor/Miner Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
-			 'trader_mask': { imgSrc: 'Armor/Trader Mask Icon.png', equippedImgSrc: 'Armor/Brickening Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
+			 'trader_mask': { imgSrc: 'Armor/Trader Mask Icon.png', equippedImgSrc: 'Brickening/Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'trader_cloak': { imgSrc: 'Armor/Trader Cloak Icon.png', equippedImgSrc: 'Armor/Trader Cloak.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.03, maxDurability: 14 },
 			 'trader_pants': { imgSrc: 'Armor/Trader Pants Icon.png', equippedImgSrc: 'Armor/Trader Pants.png', color: '#00008B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.02, maxDurability: 11 },
 			 'trader_shoes': { imgSrc: 'Armor/Trader Shoes Icon.png', equippedImgSrc: 'Armor/Trader Shoes.png', color: '#4A3B2F', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 8 },
@@ -4046,9 +4046,11 @@
 
         // Breaking stage assets for visual feedback during mining
         const breakingStageAssets = {
-            'breaking_stage_1': { imgSrc: 'Breaking Stage 1.png' },
-            'breaking_stage_2': { imgSrc: 'Breaking Stage 2.png' },
-            'breaking_stage_3': { imgSrc: 'Breaking Stage 3.png' }
+            'breaking_stage_1': { imgSrc: 'Brickening/Breaking Stage 1.png' },
+            'breaking_stage_2': { imgSrc: 'Brickening/Breaking Stage 2.png' },
+            'breaking_stage_3': { imgSrc: 'Brickening/Breaking Stage 3.png' },
+			'breaking_stage_4': { imgSrc: 'Brickening/Breaking Stage 4.png' },
+			'breaking_stage_5': { imgSrc: 'Brickening/Breaking Stage 5.png' },
         };
 		
 		const fireAssets = {
@@ -10921,9 +10923,11 @@
                             // ... (rest of the durability drawing logic, no changes needed here)
                             const progressRatio = blockData.mineProg / effectiveMiningHardness;
                             let overlayImage = null;
-                            if (progressRatio >= 0.75) overlayImage = assets['breaking_stage_3'];
-                            else if (progressRatio >= 0.50) overlayImage = assets['breaking_stage_2'];
-                            else if (progressRatio >= 0.25) overlayImage = assets['breaking_stage_1'];
+                            if (progressRatio >= 0.833) overlayImage = assets['breaking_stage_5'];
+							else if (progressRatio >= 0.6664) overlayImage = assets['breaking_stage_4'];
+							else if (progressRatio >= 0.4998) overlayImage = assets['breaking_stage_3'];
+                            else if (progressRatio >= 0.3332) overlayImage = assets['breaking_stage_2'];
+                            else if (progressRatio >= 0.1666) overlayImage = assets['breaking_stage_1'];
                             if (overlayImage) ctx.drawImage(overlayImage, screenX, screenY, tileSize, tileSize);
                         }
                     }
@@ -11088,9 +11092,11 @@
                 const screenX = miningTarget.col * tileSize - camera.x;
                 const screenY = miningTarget.row * tileSize - camera.y;
                 let overlayImage = null;
-                if (progressRatio >= 0.75) overlayImage = assets['breaking_stage_3'];
-                else if (progressRatio >= 0.50) overlayImage = assets['breaking_stage_2'];
-                else if (progressRatio >= 0.25) overlayImage = assets['breaking_stage_1'];
+                if (progressRatio >= 0.833) overlayImage = assets['breaking_stage_5'];
+				else if (progressRatio >= 0.6664) overlayImage = assets['breaking_stage_4'];
+				else if (progressRatio >= 0.4998) overlayImage = assets['breaking_stage_3'];
+                else if (progressRatio >= 0.3332) overlayImage = assets['breaking_stage_2'];
+                else if (progressRatio >= 0.1666) overlayImage = assets['breaking_stage_1'];
                 if (overlayImage) ctx.drawImage(overlayImage, screenX, screenY, tileSize, tileSize);
             }
         }
@@ -12550,7 +12556,7 @@
 
 		// This defines our trader types, their appearance, and their trades.
 		const traderTypes = [
-			{ name: 'Trader', imgSrc: 'Brickening Trader.png', trades: traderTrades },
+			{ name: 'Trader', imgSrc: 'Brickening/Trader.png', trades: traderTrades },
 			{ name: 'Farmer', imgSrc: 'Farmer Trader.png', trades: farmerTraderTrades },
 			{ name: 'Miner', imgSrc: 'Miner Trader.png', trades: minerTraderTrades },
 			{ name: 'Full_Trader', imgSrc: 'Full Trader.png', trades: minerTraderTrades },
