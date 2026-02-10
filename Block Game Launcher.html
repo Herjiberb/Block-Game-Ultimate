@@ -278,6 +278,21 @@
     #music-button:hover {
         background-color: #059669;
     }
+	#mods-button {
+        position: relative; 
+        top: auto; 
+        right: auto;
+        padding: 0.5rem;
+        border-radius: 9999px;
+        background-color: #047857;
+        transition: all 0.15s ease-in-out;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        border: none;
+        cursor: pointer;
+    }
+    #mods-button:hover {
+        background-color: #059669;
+    }
     .block-icon {
         width: 2.5rem;
         height: 2.5rem;
@@ -869,7 +884,7 @@
     <main>
         
         <div class="title-container">
-            <img src="Logo 2025.png" alt="BLOCK GAME ULTIMATE Logo" id="main-logo" class="main-logo-image" onclick="setRandomLogo()" style="cursor: pointer;"/> <!-- Normally Logo.png -->
+            <img src="Logo.png" alt="BLOCK GAME ULTIMATE Logo" id="main-logo" class="main-logo-image" onclick="setRandomLogo()" style="cursor: pointer;"/> <!-- Normally Logo.png -->
             <span id="splash-text" class="splash-text">
                 Loading fun...
             </span>
@@ -907,6 +922,9 @@
 		<button id="music-button" onclick="openMusicModal()">
             <img src="Book.png" alt="Block Music Icon" class="block-icon"/>
         </button>
+		<button id="mods-button" onclick="openModsModal()">
+            <img src="Reactant.png" alt="Block Mods Icon" class="block-icon"/>
+        </button>
         
         </div>
 </div>
@@ -916,12 +934,29 @@
 <button id="exit-button" onclick="exitContent()">X</button>
 
 <div id="snapshots-modal" class="modal-overlay">
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeSnapshotsModal()">✕</button>
-        <div class="modal-title">Available Snapshots</div>
-        <ul id="snapshot-list" class="snapshot-list">
-            </ul>
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeSnapshotsModal()">✕</button>
+    <div class="modal-title">Available Snapshots</div>
+
+    <!-- Search area -->
+    <div style="display:flex; gap:0.5rem; margin:0.75rem 0;">
+      <input id="snapshot-search-input"
+             placeholder="Search snapshots by name or patch notes (type keywords)..."
+             style="flex:1; padding:0.5rem; border-radius:0.25rem; border:1px solid #444; background:#182417; color:#fff;"
+             oninput="onSnapshotSearchInput(event)">
+      <button class="launcher-button snapshots-button"
+              style="padding:0.45rem 0.75rem; font-size:1rem;"
+              onclick="performSnapshotSearch()">Search</button>
+      <button class="launcher-button" style="background:#444; padding:0.45rem 0.75rem; font-size:1rem;"
+              onclick="clearSnapshotSearch()">Clear</button>
     </div>
+
+    <div id="snapshot-results-info" style="font-size:0.9rem; color:#ccc; margin-bottom:0.5rem;">
+      Showing all snapshots
+    </div>
+
+    <ul id="snapshot-list" class="snapshot-list"></ul>
+  </div>
 </div>
 
 <div id="patch-notes-modal" class="modal-overlay">
@@ -958,6 +993,22 @@
             style="width: 100%; padding: 1rem;" 
             onclick="launchContent('Block Music.html')">
             Open Music
+        </button>
+    </div>
+</div>
+
+<div id="mods-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <button class="modal-close" onclick="closeModsModal()">✕</button>
+        <div class="modal-title">Launch Marketplace</div>
+        <p style="margin-bottom: 2rem; font-size: 1.1rem; color: #ccc;">
+            The Block Game Ultimate Marketplace is your destination for quality community mods!
+        </p>
+        <button 
+            class="launcher-button play-button" 
+            style="width: 100%; padding: 1rem;" 
+            onclick="launchContent('Marketplace.html')">
+            Open Marketplace
         </button>
     </div>
 </div>
@@ -1157,8 +1208,15 @@
 		"Now that, that is some good brisket!",
 		"Minor miner versus major miner. Modest miner wins.",
 		"BGU actually stands for Butt Gallery Unique!",
+		"Will you find the rare diamondillium or the rare diamondium?",
+		"Balloon!",
 		"Created by Bryant Reitzel ",
 		"Ideas and mechanics all from the mind of Bryant Reitzel",
+		"Complete anarchy!",
+		"Dig straight down!",
+		"Water is the most vital nutrient. It makes plants grow.",
+		"Do not do murder, that'd be bad.",
+		"Are the traders even human?",
     ];
 
     // --- NEW: Logo Weights Configuration ---
@@ -1179,7 +1237,12 @@
         { 
             name: "Current Development Build (Default)", 
             path: "Block Game Ultimate.html",
-            notes: "Vastly changed heaven debris recipes to give more results, and added better chances to heaven debris flats. Added desolate hell portals that can be used to make heaven gate brick blocks. Added hellfire dungeon that is hideous and also made burnt players drop crispy heads. Want some sweet, sweet honey from a beehive on a tree? Then make sure there's room to run because they WILL kill you!",
+            notes: "",
+		},
+		{ 
+            name: "Atlas & Architecture (Version ###)", 
+            path: "Snapshot - Atlas & Architecture.html",
+            notes: "Vastly changed heaven debris recipes to give more results, and added better chances to heaven debris flats. Added desolate hell portals that can be used to make heaven gate brick blocks. Added hellfire dungeon that is hideous and also made burnt players drop crispy heads. Want some sweet, sweet honey from a beehive on a tree? Then make sure there's room to run because they WILL kill you! Added more decoration items placeable on walls, and more clothes for the new designer trader. Added a saw table for cutting blocks. Added shale, cobbled stone, polished marble and granite variants, and amethyst, diamond, rose quartz, and emerald blocks and walls. Added new rare ametrine crystals and hyper rare painite gemstones to compacted stone. Added support for zipped mod uploads and mod biome backgrounds. Added refined wood planks for saw tables, and a more efficient saw table planks recipe. Added support for mod total recipe removal. Added better creative flight controls. Added new april fools and creator special seed secrets. Fixed a bug where the tooltip followed your mouse when switching hotbar slots. Added particle effects while hitting blocks (not just on break) and for after falls, amplifying the higher the fall was. On some blocks, with insufficient mining power, instead of being unbreakable, they take 10x longer to break. Added new petrified trees to compacted stone with a chance of having amber. Added new village houses to some surface biomes with a rustic feel to them. Textural: Made darkwood planks have brighter color than bark for visual appeal (planked walls were too dark). Added doom fortresses to the depths of the underworld with decent loot, and add elder oak trees with new rare forest heart drops. Added elder shrooms to fungal growth and rainforests with rare fungal heart drops. Revamped the way biomes are chosen and weighted, leading to new world gen. Added savanna biomes with baobab and acacia trees. Added giant rose quartz and amethyst geodes to the compressed stone layers. Made the underworld 100 blocks less deep, and made the void more empty. Added forgotten crypts, ancient bunkers, and spider nests to the compressed stone layer. Added anthill structures to savanna biomes. Added balloonite balloon structures with resources used to repair breaking tools. Added broken infinitungsten and mythicalithium pickaxe variants that occur after using the tool fully. They can be salvaged for both 1 and 2 impure infinitungsten. The non-broken variants can be salvaged for mythicalithium and infinitungsten, but it may not be worth the cost (since there is the new balloonium repairing). Added the ability to smelt a balloon, a new rare item found in the sky, in a magma furnace into 1 balloonium nugget. Added brushlands biome with sagebrush, saltbrush, and rabbitbrush, and new dry dirt and grass (based on Colorado). Added cherry grove biome with new cherry blossom trees and wildberry bushes. Added wormy apples as rare drop from apple trees. Added support for mod structure block replacements. Changed the way beds are rendered in inventory and hand. Fixed a bug where beds could be used to propel the player up through blocks until they reached a big enough air pocket. Fixed MAJOR lag spikes caused by spoilage updates. Added summer and winter tundra biomes. Added oneblock as a creator block for mods and fun oneblock minigames. Fixed the removal of metadata when shift clicking between chest and inventory (specifically with books).",
 		},
 		{ 
             name: "Foundations & Frontiers (Version ###)", 
@@ -1341,6 +1404,7 @@
         closeSnapshotsModal();
         closeGalleryModal();
 		closeMusicModal();
+		closeModsModal();
         closeArtistModal();
         closePatchNotesModal();
         closeUpdatesModal();
@@ -1522,7 +1586,7 @@
         gameIframe.title = contentPath.split('/').pop().split('.')[0]; // Set title dynamically from file name
 
         // Show the exit button only for the Gallery and Snapshots/Experiments, hide for the main game
-        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Block Music.html') || contentPath.includes('Block Game Artist.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
+        if (contentPath.includes('Block Gallery.html') || contentPath.includes('Block Music.html') || contentPath.includes('Marketplace.html') || contentPath.includes('Block Game Artist.html') || contentPath.includes('Versions/') || contentPath === 'ZZZ Lasers.html') {
             exitButton.style.display = 'flex';
         } else {
             // For the main game, the user is typically expected to be there longer
@@ -1585,97 +1649,323 @@
 
     // --- Snapshots Modal Functions ---
 
-    /**
-     * Dynamically renders the list of snapshots in the modal.
-     */
-    function renderSnapshots() {
-        const listElement = document.getElementById('snapshot-list');
-        listElement.innerHTML = ''; // Clear previous entries
+    /* ----------------- Snapshot Search & Render (FULL functions) ----------------- */
 
-        SNAPSHOT_DATA.forEach(snapshot => {
-            const listItem = document.createElement('li');
-            listItem.className = 'snapshot-item';
-            
-            // --- NEW: Triple-click logic ---
-            let clickTimer = null;
-            let clickCount = 0;
-            const tripleClickDelay = 500; // 500ms window for 3 clicks
+	/**
+	 * Normalize text for tokenization/search: lowercase and collapse whitespace.
+	 * @param {string} s
+	 * @returns {string}
+	 */
+	function normalizeText(s) {
+		if (!s) return '';
+		return s.toLowerCase().replace(/[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-./:;<=>?@\[\]^_`{|}~]/g, ' ').replace(/\s+/g, ' ').trim();
+	}
 
-            const clickHandler = (event) => {
+	/**
+	 * Escape regex special characters for literal matching.
+	 */
+	function escapeRegExp(string) {
+		return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	/**
+	 * Tokenize a user query into meaningful terms.
+	 * @param {string} query
+	 * @returns {string[]} array of tokens
+	 */
+	function tokenizeQuery(query) {
+		const normalized = normalizeText(query);
+		if (!normalized) return [];
+		// split on spaces
+		return normalized.split(' ').filter(t => t.length > 0);
+	}
+
+	/**
+	 * Score a single snapshot for a list of query terms.
+	 * Strategy:
+	 *  - For each term, count occurrences in name and notes.
+	 *  - Name matches are weighted higher (nameWeight). Notes have lower weight.
+	 *  - Exact multi-term "all terms present" bonus.
+	 *
+	 * @param {{name:string, notes:string}} snapshot
+	 * @param {string[]} terms
+	 * @returns {number} score (higher is better)
+	 */
+	function scoreSnapshot(snapshot, terms) {
+		if (!terms || terms.length === 0) return 0;
+
+		const nameText = normalizeText(snapshot.name || '');
+		const notesText = normalizeText(snapshot.notes || '');
+
+		let score = 0;
+		const nameWeight = 5;   // weight per name occurrence
+		const notesWeight = 1;  // weight per notes occurrence
+
+		for (const rawTerm of terms) {
+			const term = rawTerm.trim();
+			if (!term) continue;
+
+			// Use simple substring occurrence counts (safe and robust)
+			// Count occurrences using regex (word-boundary-ish)
+			const termEsc = escapeRegExp(term);
+			const re = new RegExp(`\\b${termEsc}\\b`, 'g');
+
+			const nameMatches = (nameText.match(re) || []).length;
+			const notesMatches = (notesText.match(re) || []).length;
+
+			score += nameMatches * nameWeight + notesMatches * notesWeight;
+
+			// Also reward partial / substring matches (if no whole-word matches)
+			if (nameMatches === 0 && nameText.includes(term)) score += 2; // small boost
+			if (notesMatches === 0 && notesText.includes(term)) score += 0.5; // tiny boost
+		}
+
+		// Bonus if ALL terms are present somewhere (helps phrase-like searches)
+		const allPresent = terms.every(t => nameText.includes(t) || notesText.includes(t));
+		if (allPresent) score += 2;
+
+		return score;
+	}
+
+	/**
+	 * Perform search over SNAPSHOT_DATA. Returns sorted array (highest relevance first).
+	 * If query is empty or whitespace, returns a shallow copy of SNAPSHOT_DATA (original order).
+	 * @param {string} query
+	 * @returns {Array}
+	 */
+	function searchSnapshots(query) {
+		const terms = tokenizeQuery(query);
+
+		// if no terms, return all snapshots (keep original order)
+		if (terms.length === 0) {
+			return SNAPSHOT_DATA.slice();
+		}
+
+		// Score each snapshot
+		const scored = SNAPSHOT_DATA.map(s => {
+			const sScore = scoreSnapshot(s, terms);
+			return { snapshot: s, score: sScore };
+		});
+
+		// Filter out zero-score results and sort by score desc then by name asc
+		const filteredSorted = scored
+			.filter(x => x.score > 0)
+			.sort((a, b) => {
+				if (b.score !== a.score) return b.score - a.score;
+				// tie-break: alphabetical by name
+				return a.snapshot.name.localeCompare(b.snapshot.name);
+			})
+			.map(x => x.snapshot);
+
+		return filteredSorted;
+	}
+
+	/**
+	 * Render the provided snapshots list into the snapshot modal.
+	 * If `list` is omitted, renders all snapshots.
+	 * This function fully replaces the previous renderSnapshots implementation.
+	 * @param {Array} [list]
+	 */
+	function renderSnapshots(list) {
+		const listElement = document.getElementById('snapshot-list');
+		if (!listElement) return;
+		listElement.innerHTML = ''; // Clear previous entries
+
+		const toRender = Array.isArray(list) ? list : SNAPSHOT_DATA.slice();
+
+		// Update results info
+		const infoEl = document.getElementById('snapshot-results-info');
+		if (infoEl) {
+			if (document.getElementById('snapshot-search-input').value.trim().length === 0) {
+				infoEl.textContent = `Showing ${toRender.length} snapshot${toRender.length === 1 ? '' : 's'}`;
+			} else {
+				// when search used, show counts vs total
+				const total = SNAPSHOT_DATA.length;
+				infoEl.textContent = `Showing ${toRender.length} of ${total} snapshots`;
+			}
+		}
+
+		// For each snapshot, create the same clickable row structure and keep triple-click behavior
+		toRender.forEach(snapshot => {
+			const listItem = document.createElement('li');
+			listItem.className = 'snapshot-item';
+			listItem.style.display = 'flex';
+			listItem.style.justifyContent = 'space-between';
+			listItem.style.alignItems = 'center';
+
+			// --- triple-click / single-click timer logic (copied/adapted) ---
+			let clickTimer = null;
+			let clickCount = 0;
+			const tripleClickDelay = 500; // ms
+
+			const clickHandler = (event) => {
+				// If click originated from patch-notes button, ignore for launch/triple-click logic
 				if (event.target.closest('.patch-notes-button')) {
-                    if (clickTimer) {
-                        clearTimeout(clickTimer);
-                    }
-                    clickCount = 0;
-                    return; // Stop processing the click for the li (game launch)
-                }
-				// Stop the mobile browser's default behavior (like scroll or zoom) 
-				// from cancelling the launch timer, preserving the triple-click logic.
-				if (event.type === 'touchstart') {
-					event.preventDefault(); 
+					if (clickTimer) clearTimeout(clickTimer);
+					clickCount = 0;
+					return;
 				}
-                clickCount++;
 
-                if (clickTimer) {
-                    clearTimeout(clickTimer);
-                }
+				// prevent touch default behavior interfering
+				if (event.type === 'touchstart') {
+					event.preventDefault();
+				}
 
-                clickTimer = setTimeout(() => {
-                    clickCount = 0; // Reset after delay
-                }, tripleClickDelay);
+				clickCount++;
+				if (clickTimer) clearTimeout(clickTimer);
 
-                if (clickCount === 1) {
-                    // On the first click, set a timer to launch the game
-                    // This creates a small delay, but allows triple-click to cancel it.
-                    clickTimer = setTimeout(() => {
-                        launchContent(snapshot.path);
-                        clickCount = 0;
-                    }, tripleClickDelay);
-                } else if (clickCount === 3) {
-                    // TRIPLE CLICK!
-                    event.stopPropagation();
-                    event.preventDefault();
-                    clearTimeout(clickTimer); // Cancel the game launch
-                    clickCount = 0;
-                    applyLauncherTheme(snapshot); // Apply theme instead
-                }
-            };
+				// If first click, set timer to launch content after delay (gives user chance to triple click)
+				clickTimer = setTimeout(() => {
+					if (clickCount === 1) {
+						// single click -> launch snapshot
+						launchContent(snapshot.path);
+					}
+					clickCount = 0;
+				}, tripleClickDelay);
 
-            listItem.addEventListener('mousedown', clickHandler);
-            listItem.addEventListener('touchstart', clickHandler);
-            // --- END of Triple-click logic ---
+				// Triple click handler
+				if (clickCount === 3) {
+					event.stopPropagation();
+					event.preventDefault();
+					clearTimeout(clickTimer); // cancel pending launch
+					clickCount = 0;
+					applyLauncherTheme(snapshot); // apply snapshot theme (existing function)
+				}
+			};
 
-            // Structure includes the new Patch Notes button
-            listItem.innerHTML = `
-				<div style="flex-grow: 1;">
-					<span>${snapshot.name}</span><br>
-					<span class="snapshot-path">Path: ${snapshot.path}</span>
-				</div>
-				<div style="display: flex; gap: 0.5rem; align-items: center;">
-					<button class="patch-notes-button" 
-							onclick="event.stopPropagation(); openPatchNotesModal('${snapshot.name}')" 
-							title="View Patch Notes">
-						<img src="Planked Oak Block.png" alt="Notes Icon" class="patch-notes-icon"/>
-					</button>
-					</div>
-			`;
-            listElement.appendChild(listItem);
-        });
-    }
+			listItem.addEventListener('mousedown', clickHandler);
+			listItem.addEventListener('touchstart', clickHandler);
 
-    /**
-     * Shows the Snapshots modal.
-     */
-    function openSnapshotsModal() {
-        closeAllModals();
-        renderSnapshots();
+			// Build left-side (name and path)
+			const leftDiv = document.createElement('div');
+			leftDiv.style.flexGrow = '1';
+			const nameSpan = document.createElement('span');
+			nameSpan.textContent = snapshot.name;
+			nameSpan.style.display = 'block';
+			const pathSpan = document.createElement('span');
+			pathSpan.className = 'snapshot-path';
+			pathSpan.textContent = `Path: ${snapshot.path}`;
 
-        const modal = document.getElementById('snapshots-modal');
-        modal.style.display = 'flex';
-        setTimeout(() => {
-            modal.classList.add('open');
-        }, 10);
-    }
+			leftDiv.appendChild(nameSpan);
+			leftDiv.appendChild(pathSpan);
+
+			// Build right-side (patch notes button)
+			const rightDiv = document.createElement('div');
+			rightDiv.style.display = 'flex';
+			rightDiv.style.gap = '0.5rem';
+			rightDiv.style.alignItems = 'center';
+
+			const patchBtn = document.createElement('button');
+			patchBtn.className = 'patch-notes-button';
+			patchBtn.title = 'View Patch Notes';
+			patchBtn.style.lineHeight = 0;
+			// image inside button
+			const img = document.createElement('img');
+			img.src = 'Planked Oak Block.png';
+			img.alt = 'Notes';
+			img.className = 'patch-notes-icon';
+			patchBtn.appendChild(img);
+
+			// Wire up patch notes click safely (avoid inline onclick quoting issues)
+			patchBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				openPatchNotesModal(snapshot.name);
+			});
+
+			rightDiv.appendChild(patchBtn);
+
+			listItem.appendChild(leftDiv);
+			listItem.appendChild(rightDiv);
+
+			listElement.appendChild(listItem);
+		});
+
+		// If there are no results, show a helpful placeholder
+		if (toRender.length === 0) {
+			const empty = document.createElement('div');
+			empty.style.gridColumn = '1/-1';
+			empty.style.textAlign = 'center';
+			empty.style.padding = '1rem';
+			empty.style.color = '#888';
+			empty.textContent = 'No snapshots matched your search.';
+			// append as a li-like item
+			const holder = document.createElement('li');
+			holder.className = 'snapshot-item';
+			holder.style.justifyContent = 'center';
+			holder.appendChild(empty);
+			listElement.appendChild(holder);
+		}
+	}
+
+	/**
+	 * Shows the Snapshots modal (FULL replacement).
+	 * Focuses the search input and renders full list initially.
+	 */
+	function openSnapshotsModal() {
+		closeAllModals();
+
+		// Make sure search input exists (modal HTML replacement required)
+		const modal = document.getElementById('snapshots-modal');
+		if (!modal) {
+			console.error('Snapshots modal not found in DOM. Make sure you replaced the HTML block as instructed.');
+			return;
+		}
+
+		// Clear and focus search input
+		const searchInput = document.getElementById('snapshot-search-input');
+		if (searchInput) {
+			searchInput.value = '';
+		}
+
+		// Render full snapshot list initially
+		renderSnapshots();
+
+		// Show modal
+		modal.style.display = 'flex';
+		setTimeout(() => modal.classList.add('open'), 10);
+
+		// focus the input after modal opens
+		setTimeout(() => {
+			if (searchInput) searchInput.focus();
+		}, 100);
+	}
+
+	/**
+	 * Hides the Snapshots modal (FULL replacement to match openSnapshotsModal).
+	 */
+	function closeSnapshotsModal() {
+		const modal = document.getElementById('snapshots-modal');
+		if (!modal) return;
+		modal.classList.remove('open');
+		setTimeout(() => {
+			if (!modal.classList.contains('open')) {
+				modal.style.display = 'none';
+			}
+		}, 300);
+	}
+
+	/* ---------- Helpers for live search UI ---------- */
+
+	/** Called on typing into the input (wired via oninput attribute). */
+	function onSnapshotSearchInput(evt) {
+		const q = (evt && evt.target) ? evt.target.value : (document.getElementById('snapshot-search-input')?.value || '');
+		const results = searchSnapshots(q);
+		renderSnapshots(results);
+	}
+
+	/** Called from Search button. */
+	function performSnapshotSearch() {
+		const q = document.getElementById('snapshot-search-input')?.value || '';
+		const results = searchSnapshots(q);
+		renderSnapshots(results);
+	}
+
+	/** Clear the search box and show all snapshots. */
+	function clearSnapshotSearch() {
+		const input = document.getElementById('snapshot-search-input');
+		if (input) input.value = '';
+		renderSnapshots(SNAPSHOT_DATA.slice());
+	}
 
     /**
      * Hides the Snapshots modal.
@@ -1728,6 +2018,9 @@
         }
 		if (snapshotName.includes('Foundations & Frontiers (Version ###)')) {
             return 'Snapshot - Foundations & Frontiers.png';
+        }
+		if (snapshotName.includes('Atlas & Architecture (Version ###)')) {
+            return 'Snapshot - Atlas & Architecture.png';
         }
 		if (snapshotName.includes('The Brickening (2025)')) {
             return 'The Brickening (2025).png';
@@ -1833,6 +2126,15 @@
             modal.classList.add('open');
         }, 10);
     }
+	
+	function openModsModal() {
+        closeAllModals();
+        const modal = document.getElementById('mods-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('open');
+        }, 10);
+    }
 
     /**
      * Hides the Gallery modal.
@@ -1849,6 +2151,16 @@
 	
 	function closeMusicModal() {
         const modal = document.getElementById('music-modal');
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 300); 
+    }
+	
+	function closeModsModal() {
+        const modal = document.getElementById('mods-modal');
         modal.classList.remove('open');
         setTimeout(() => {
             if (!modal.classList.contains('open')) {

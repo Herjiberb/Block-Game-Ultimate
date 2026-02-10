@@ -1,0 +1,180 @@
+(function() {
+    // --- 1. CONFIGURATION ---
+    const SCALE = 4; // 4x Resolution
+    
+    // Create the high-res canvas
+    const hrCanvas = document.createElement('canvas');
+    hrCanvas.width = canvas.width * SCALE;
+    hrCanvas.height = canvas.height * SCALE;
+    const hrCtx = hrCanvas.getContext('2d');
+    
+    // Critical: Disable smoothing for crisp pixel art
+    hrCtx.imageSmoothingEnabled = false;
+    
+    // Scale everything up by 4x so we can use original game coordinates
+    hrCtx.scale(SCALE, SCALE);
+
+    // --- 2. RENDER BACKGROUND ---
+    // Grab the actual calculated background color from the DOM layers
+    const bgLayerId = (document.getElementById('bgLayer1').style.opacity > 0) ? 'bgLayer1' : 'bgLayer2';
+    const bgElement = document.getElementById(bgLayerId);
+    const bgStyle = window.getComputedStyle(bgElement);
+    
+    // Fill Background Color
+    hrCtx.fillStyle = bgStyle.backgroundColor;
+    hrCtx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Try to draw Background Image if one exists
+    // (Note: This tries to access the computed style image. If complex, it falls back to color)
+    const bgImageCSS = bgStyle.backgroundImage;
+    if (bgImageCSS && bgImageCSS !== 'none') {
+        const urlMatch = bgImageCSS.match(/url\(["']?([^"']*)["']?\)/);
+        if (urlMatch && urlMatch[1]) {
+            const bgImg = new Image();
+            bgImg.src = urlMatch[1];
+            // Only draw if loaded immediately (often cached), otherwise color persists
+            if (bgImg.complete && bgImg.naturalWidth > 0) {
+                 hrCtx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+            }
+        }
+    }
+
+    // --- 3. RENDER BLOCKS ---
+    // Calculate visible area based on the camera
+    const startCol = Math.floor(camera.x / tileSize) - 1;
+    const endCol = Math.ceil((camera.x + canvas.width) / tileSize) + 1;
+    const startRow = Math.floor(camera.y / tileSize) - 1;
+    const endRow = Math.ceil((camera.y + canvas.height) / tileSize) + 1;
+
+    for (let col = startCol; col < endCol; col++) {
+        for (let row = startRow; row < endRow; row++) {
+            const key = `${col},${row}`;
+            const blockData = worldBlocks[key];
+            if (!blockData || blockData.type === '') continue;
+
+            let blockType = blockData.type;
+            
+            // Handle Planted Crops logic
+            if (blockType.startsWith('planted_')) {
+                 const seedType = blockType.replace('planted_', '').replace('_seeds', '');
+                 blockType = `${seedType}_${blockData.baseBlockType}`;
+            }
+            
+            // Handle Cloaking
+            let displayType = (typeof cloakingEnabled !== 'undefined' && cloakingEnabled) 
+                              ? (blockData.cloakedAs || blockType) 
+                              : blockType;
+
+            const blockImg = assets[displayType];
+            const screenX = col * tileSize - camera.x;
+            const screenY = row * tileSize - camera.y;
+
+            if (blockImg) {
+                // Special Multi-block rendering (Traders & Beds)
+                if (blockType === 'trader' && blockData.part === 'bottom') {
+                     // Determine trader skin
+                     const tType = blockData.traderType || 'default';
+                     // Accessing global traderTypeMap from game scope
+                     const tInfo = (typeof traderTypeMap !== 'undefined' && traderTypeMap[tType]) ? traderTypeMap[tType] : { imgSrc: 'Trader.png' };
+                     // Strip extension to match asset key convention
+                     const aKey = tInfo.imgSrc.replace('.png', ''); 
+                     const tImg = assets[aKey] || blockImg;
+                     
+                     hrCtx.drawImage(tImg, screenX, screenY - tileSize*2, tileSize, tileSize*3);
+                } else if (blockType === 'bed' && blockData.part === 'left') {
+                     hrCtx.drawImage(blockImg, screenX, screenY, tileSize * 3, tileSize);
+                } else if (blockType !== 'bed' && blockType !== 'trader') {
+                     // Standard Block
+                     hrCtx.drawImage(blockImg, screenX, screenY, tileSize, tileSize);
+                }
+            } else if (blockTypes[displayType]?.color) {
+                // Fallback Color
+                hrCtx.fillStyle = blockTypes[displayType].color;
+                hrCtx.fillRect(screenX, screenY, tileSize, tileSize);
+            }
+
+            // Render Overlay (e.g. Vines, Chains)
+            if (blockData.overlay) {
+                const ovImg = assets[blockData.overlay];
+                if (ovImg) hrCtx.drawImage(ovImg, screenX, screenY, tileSize, tileSize);
+            }
+            
+            // Render Item Frames contents
+            if (blockType === 'item_frame' && blockData.item) {
+                 const iImg = assets[blockData.item.type];
+                 if (iImg) {
+                     const is = tileSize * 0.8;
+                     const io = (tileSize - is)/2;
+                     hrCtx.drawImage(iImg, screenX + io, screenY + io, is, is);
+                 }
+            }
+        }
+    }
+
+    // --- 4. RENDER PLAYER ---
+    const px = player.x - camera.x;
+    const py = player.y - camera.y;
+    
+    // Draw Base Skin
+    // Assuming 'playerImg' is the global Image object for the current skin
+    if (typeof playerImg !== 'undefined') {
+        hrCtx.drawImage(playerImg, px, py, playerWidth, playerHeight);
+    }
+    
+    // Draw Armor
+    const renderOrder = ['legGear', 'boots', 'chestGear', 'face', 'helmet'];
+    // Skirt layer fix logic
+    const leg = player.armor && player.armor.legGear;
+    if (leg && leg.type === 'skirt') { 
+         // Logic to swap order not strictly needed for static screenshot unless wearing skirt+boots
+    }
+    
+    for (const slot of renderOrder) {
+        const item = player.armor[slot];
+        if (item && item.type) {
+            const aKey = `${item.type}_equipped`;
+            const aImg = assets[aKey];
+            if (aImg) hrCtx.drawImage(aImg, px, py, playerWidth, playerHeight);
+        }
+    }
+
+    // Draw Held Item
+    const held = getSelectedItem();
+    if (held) {
+        const hImg = assets[held.type];
+        if (hImg) {
+            hrCtx.save();
+            let pivotX = px + playerWidth / 2;
+			let pivotY = py + playerHeight / 2.5;
+            hrCtx.translate(pivotX, pivotY);
+            
+            const props = itemTypes[held.type] || blockTypes[held.type];
+            // Rotation logic
+            if (props && props.isGun) {
+                 hrCtx.rotate(heldItemState.gunAngle || 0);
+                 if (Math.abs(heldItemState.gunAngle) > Math.PI/2) hrCtx.scale(1, -1);
+            } else {
+                 hrCtx.scale(player.facingDirection, 1);
+                 hrCtx.rotate(heldItemState.angle);
+            }
+            
+            // Draw item offset
+            if (held.type === 'minigun') {
+				hrCtx.drawImage(hImg, 7 + heldItemState.offsetX, -20 + heldItemState.offsetY, tileSize * 1.2, tileSize * 1.2);
+			} else {
+				hrCtx.drawImage(hImg, 10 + heldItemState.offsetX, -5 + heldItemState.offsetY, tileSize * 0.8, tileSize * 0.8);
+			}
+            hrCtx.restore();
+        }
+    }
+
+    // --- 5. DOWNLOAD ---
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `BGU_HighRes_${timestamp}.png`;
+    link.href = hrCanvas.toDataURL('image/png');
+    link.click();
+    
+    console.log(`%c[BGU RENDER] Captured 4x Resolution Screenshot: ${hrCanvas.width}x${hrCanvas.height}px`, "color: #00ff00; font-weight: bold; background: #222; padding: 4px;");
+
+})();
