@@ -1,0 +1,233 @@
+{
+  "name": "Cherry World",
+  "blockReplacements": [
+    {
+      "target": "raw_oak",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "oak_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_birch",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "birch_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_spruce",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "spruce_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_pine",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "pine_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_apple",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "apple_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "apple_bush_fruit",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_orange",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "orange_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "orange_bush_fruit",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_darkwood",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "darkwood_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_acacia",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "acacia_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_baobab",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "baobab_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_mahogany",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "mahogany_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_rubber",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "rubber_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_cinnamon",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "cinnamon_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_redwood",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "redwood_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_hell_wood",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "hell_wood_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_gilded_wood",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "gilded_wood_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "raw_blueglow_wood",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "blueglow_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+	{
+      "target": "raw_deadwood",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+    {
+      "target": "deadwood_bush",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    },
+	{
+      "target": "raw_shroom",
+      "replaceWith": "raw_cherry_blossom",
+      "chance": 1,
+	  "structures": 1
+    },
+	{
+      "target": "raw_shroom_top",
+      "replaceWith": "cherry_blossom_bush",
+      "chance": 1,
+	  "structures": 1
+    }
+  ]
+}
