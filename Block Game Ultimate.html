@@ -2158,6 +2158,108 @@
             z-index: -9; /* Sits on top of layer 1 when fading in */
             opacity: 0;
         }
+		
+		/* Add this to your CSS */
+		.recipe-controls label {
+			font-size: 0.9em;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			cursor: pointer;
+			background-color: #555;
+			padding: 5px 10px;
+			border-radius: 5px;
+			border: 1px solid #777;
+			user-select: none;
+		}
+		.recipe-controls label:hover {
+			background-color: #666;
+		}
+		.recipe-controls input[type="checkbox"] {
+			cursor: pointer;
+		}
+		
+		/* Base Wrapper Style (Mobile First: Column Layout) */
+		.inventory-layout-wrapper {
+			display: flex;
+			flex-direction: column-reverse; /* Put recipes at bottom on mobile */
+			gap: 15px;
+		}
+
+		.recipes-column {
+			width: 100%;
+		}
+
+		.inventory-main-column {
+			width: 100%;
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+		}
+
+		/* RECIPE MENU STYLING FIXES */
+		#recipeMenu {
+			/* Ensure it has a max height so it scrolls internally */
+			max-height: 400px;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden; /* Hide overflow on container */
+		}
+
+		#recipeListContainer, #recipeIconContainer {
+			overflow-y: auto; /* Enable scroll on the list itself */
+			flex-grow: 1; /* Take up remaining space */
+			border-top: 1px solid #555;
+			margin-top: 5px;
+			padding-top: 5px;
+			/* Custom Scrollbar for style */
+			scrollbar-width: thin;
+			scrollbar-color: #666 #333;
+		}
+
+		/* DESKTOP LAYOUT (Side-by-Side) */
+		@media (min-width: 900px) {
+			#inventoryCraftingMenu {
+				/* Expand the menu width to fit both columns */
+				max-width: 1100px !important; 
+				width: 95%;
+				max-height: 90vh;
+				overflow: hidden; /* Prevent body scroll, let columns scroll */
+			}
+
+			.inventory-layout-wrapper {
+				flex-direction: row; /* Side by side */
+				align-items: flex-start;
+				height: 100%;
+				overflow: hidden; /* Contain the scroll areas */
+			}
+
+			/* LEFT SIDE: RECIPES */
+			.recipes-column {
+				flex: 0 0 320px; /* Fixed width for recipe sidebar */
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+			}
+
+			#recipeMenu {
+				height: 100%;
+				max-height: 75vh; /* Adjust based on screen height */
+				margin-top: 0; /* Remove existing margin */
+			}
+
+			/* RIGHT SIDE: INVENTORY */
+			.inventory-main-column {
+				flex: 1; /* Take remaining space */
+				overflow-y: auto; /* Allow this side to scroll independently */
+				max-height: 75vh; /* Match height logic */
+				padding-right: 5px; /* Space for scrollbar */
+				
+				/* Custom Scrollbar */
+				scrollbar-width: thin;
+				scrollbar-color: #666 #333;
+			}
+		}
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -2271,67 +2373,70 @@
 
     <!-- Inventory & Crafting Menu Overlay -->
     <div id="inventoryCraftingOverlay" oncontextmenu="return false;">
-        <div id="inventoryCraftingMenu">
-            <h2>Inventory & Crafting</h2>
-            <div class="inventory-section">
-				<h3>Crafting</h3>
-                <div class="crafting-area">
-                    <button class="mobile-close-button">X</button>
-                    <div id="craftingGrid">
-                        <!-- Crafting grid slots will be dynamically generated here -->
-                    </div>
-                    <div class="crafting-arrow">&#10144;</div>
-                    <div class="inventory-slot" id="craftingOutput"></div>
-                </div>
-                 <button id="craftButton" disabled>Craft</button>
-            </div>
-            
-            <div class="inventory-section">
-                <h3>Your Inventory</h3>
-                <div id="playerInventoryGrid" class="inventory-grid">
-                    </div>
-            </div>
-            <div class="inventory-section">
-                <h3>Hotbar Slots</h3>
-                <div id="inventoryHotbarGrid" class="inventory-grid">
-                    </div>
-            </div>
-			<div class="inventory-section" style="text-align: center;">
-                <h3>Delete Item</h3>
-                <div id="deleteSlot" class="inventory-slot" data-source-type="delete" data-slot-index="0">X</div>
-            </div>
-			<div class="inventory-section" id="armorSection">
-                <h3 style="margin-bottom: 5px;">Armor</h3>
-                <div style="display: flex; justify-content: space-around; align-items: center; gap: 20px;">
-                    <div id="paperDoll" style="width: 50px; height: 150px; background-image: url('Player.png'); background-size: contain; background-repeat: no-repeat; background-position: center;  opacity: 0.5; position: relative;">
-                        </div>
-                    
-                    <div id="armorGrid" style="display: grid; grid-template-columns: 50px; grid-template-rows: repeat(4, 50px); gap: 8px; justify-content: center;">
-                        </div>
-                    
-                    <div id="armorStats" style="text-align: center; min-width: 100px;">
-                        <h4>Total Protection</h4>
-                        <div id="totalProtectionDisplay" style="font-size: 1.5em; color: #4CAF50; font-weight: bold;">0%</div>
-                    </div>
-                </div>
-            </div>
-            <div id="recipeMenu" class="inventory-section">
-                <h3>Recipes</h3>
-                
-                <div class="recipe-controls">
-                    <input type="text" id="recipeSearchInput" placeholder="Search recipes...">
-                    <button id="recipeViewToggleList" class="recipe-view-toggle active">List</button>
-                    <button id="recipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
-                </div>
+		<div id="inventoryCraftingMenu">
+			<h2>Inventory & Crafting</h2>
+			
+			<div class="inventory-layout-wrapper">
+				
+				<div class="recipes-column">
+					<div id="recipeMenu" class="inventory-section">
+						<h3>Recipes</h3>
+						
+						<div class="recipe-controls">
+							<input type="text" id="recipeSearchInput" placeholder="Search recipes...">
+							<label><input type="checkbox" id="recipeCraftableToggle" checked> Craftable</label>
+							<button id="recipeViewToggleList" class="recipe-view-toggle active">List</button>
+							<button id="recipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
+						</div>
 
-                <div id="recipeIconContainer" style="display: none;">
-                    </div>
+						<div id="recipeIconContainer" style="display: none;"></div>
+						<div id="recipeListContainer" style="display: block;"></div>
+					</div>
+				</div>
 
-                <div id="recipeListContainer" style="display: block;">
-                    </div>
-            </div>
-        </div>
-    </div>
+				<div class="inventory-main-column">
+					<div class="inventory-section">
+						<h3>Crafting</h3>
+						<div class="crafting-area">
+							<button class="mobile-close-button">X</button>
+							<div id="craftingGrid">
+								</div>
+							<div class="crafting-arrow">&#10144;</div>
+							<div class="inventory-slot" id="craftingOutput"></div>
+						</div>
+						<button id="craftButton" disabled>Craft</button>
+					</div>
+					
+					<div class="inventory-section">
+						<h3>Your Inventory</h3>
+						<div id="playerInventoryGrid" class="inventory-grid"></div>
+					</div>
+					
+					<div class="inventory-section">
+						<h3>Hotbar Slots</h3>
+						<div id="inventoryHotbarGrid" class="inventory-grid"></div>
+					</div>
+					
+					<div class="inventory-section" style="text-align: center;">
+						<h3>Delete Item</h3>
+						<div id="deleteSlot" class="inventory-slot" data-source-type="delete" data-slot-index="0">X</div>
+					</div>
+					
+					<div class="inventory-section" id="armorSection">
+						<h3 style="margin-bottom: 5px;">Armor</h3>
+						<div style="display: flex; justify-content: space-around; align-items: center; gap: 20px;">
+							<div id="paperDoll" style="width: 50px; height: 150px; background-image: url('Player.png'); background-size: contain; background-repeat: no-repeat; background-position: center;  opacity: 0.5; position: relative;"></div>
+							<div id="armorGrid" style="display: grid; grid-template-columns: 50px; grid-template-rows: repeat(4, 50px); gap: 8px; justify-content: center;"></div>
+							<div id="armorStats" style="text-align: center; min-width: 100px;">
+								<h4>Total Protection</h4>
+								<div id="totalProtectionDisplay" style="font-size: 1.5em; color: #4CAF50; font-weight: bold;">0%</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	
 	<div id="devConsoleOverlay">
 		<button class="mobile-close-button">X</button>
@@ -2459,10 +2564,11 @@
                 <h3>Recipes</h3>
                 
                 <div class="recipe-controls">
-                    <input type="text" id="anvilRecipeSearchInput" placeholder="Search recipes...">
-                    <button id="anvilRecipeViewToggleList" class="recipe-view-toggle active">List</button>
-                    <button id="anvilRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
-                </div>
+					<input type="text" id="anvilRecipeSearchInput" placeholder="Search recipes...">
+					<label><input type="checkbox" id="anvilCraftableToggle" checked> Craftable</label>
+					<button id="anvilRecipeViewToggleList" class="recipe-view-toggle active">List</button>
+					<button id="anvilRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
+				</div>
 
                 <div id="anvilRecipeIconContainer" style="display: none;">
                 </div>
@@ -2544,10 +2650,11 @@
                 <h3>Recipes</h3>
 
                 <div class="recipe-controls">
-                    <input type="text" id="ovenRecipeSearchInput" placeholder="Search recipes...">
-                    <button id="ovenRecipeViewToggleList" class="recipe-view-toggle active">List</button>
-                    <button id="ovenRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
-                </div>
+					<input type="text" id="ovenRecipeSearchInput" placeholder="Search recipes...">
+					<label><input type="checkbox" id="ovenCraftableToggle" checked> Craftable</label>
+					<button id="ovenRecipeViewToggleList" class="recipe-view-toggle active">List</button>
+					<button id="ovenRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
+				</div>
 
                 <div id="ovenRecipeIconContainer" style="display: none;">
                     </div>
@@ -2809,6 +2916,84 @@
 		const DAY_CYCLE_DURATION = 600000; // 10 minutes in milliseconds for a full day-night cycle
 		let plantSpoilageAccumulator = 0;
 		const PLANT_SPOILAGE_INTERVAL = 1000; // ms (once per second)
+		
+		// --- RECIPE FILTER STATE VARIABLES ---
+		let filterCraftableInventory = true;
+		let filterCraftableAnvil = true;
+		let filterCraftableOven = true;
+
+		// --- NEW HELPER: Check if player has materials for a recipe ---
+		function hasMaterialsForRecipe(recipe, inventory) {
+			const counts = {};
+
+			// 1. Tally Player Inventory
+			for (const slot of inventory) {
+				if (slot) {
+					counts[slot.type] = (counts[slot.type] || 0) + slot.count;
+				}
+			}
+
+			// 2. Tally Crafting Grid (NEW ADDITION)
+			// Checks if the crafting grid variable exists and adds those items to the available count
+			if (typeof craftingGridSlots !== 'undefined') {
+				for (const slot of craftingGridSlots) {
+					if (slot) {
+						counts[slot.type] = (counts[slot.type] || 0) + slot.count;
+					}
+				}
+			}
+
+			// 3. Aggregate Requirements
+			const inputs = recipe.input;
+			const required = {};
+			
+			for (const key in inputs) {
+				const req = inputs[key];
+				if (!req) continue;
+				
+				if (req.type === 'any_plank') {
+					 required['any_plank'] = (required['any_plank'] || 0) + req.count;
+				} else if (req.type === 'any_gilded') {
+					 required['any_gilded'] = (required['any_gilded'] || 0) + req.count;
+				} else {
+					 required[req.type] = (required[req.type] || 0) + req.count;
+				}
+			}
+
+			// 4. Compare Requirements vs Total Available
+			for (const type in required) {
+				const needed = required[type];
+				
+				if (type === 'any_plank') {
+					let totalPlanks = 0;
+					for (const t in counts) {
+						if (t.startsWith('planked_')) totalPlanks += counts[t];
+					}
+					if (totalPlanks < needed) return false;
+				} else if (type === 'any_gilded') {
+					let totalGilded = 0;
+					for (const t in counts) {
+						if (t.startsWith('gilded_') || t.startsWith('raw_gilded_') || t.startsWith('planked_gilded_')) totalGilded += counts[t];
+					}
+					if (totalGilded < needed) return false;
+				} else {
+					if ((counts[type] || 0) < needed) return false;
+				}
+			}
+			
+			// 5. Oven Fuel Check
+			if (recipe.fuel) {
+				if ((counts['pure_fuel'] || 0) < recipe.fuel) return false;
+			}
+
+			return true;
+		}
+
+        // --- PARKOUR TIMER VARIABLES ---
+        let parkourTimerState = 'inactive'; // 'inactive', 'running', 'finished'
+        let parkourStartTime = 0;
+        let parkourFinalTime = 0;
+        let parkourFadeTimer = 0;
 
         const hotbarDiv = document.getElementById('hotbar');
         const loadingScreen = document.getElementById('loadingScreen');
@@ -4319,7 +4504,7 @@
             'bookshelf_full': { imgSrc: 'Bookshelf Full.png', solid: true, miningHardness: 150, drops: [{item: 'bookshelf_empty', chance: 1, min: 1, max: 1}, {item: 'book', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'world_mover': { imgSrc: 'World Mover.png', solid: true, miningHardness: 250, drops: [{item: 'world_mover', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
 			'world_builder': { imgSrc: 'World Builder.png', solid: true, miningHardness: 250, drops: [{item: 'world_builder', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
-			'beehive': { imgSrc: 'Beehive.png', solid: true, miningHardness: 100, drops: [{item: 'beehive', chance: 1, min: 1, max: 1}], color: '#8A2BE2' },
+			'beehive': { imgSrc: 'Beehive.png', solid: true, miningHardness: 100, drops: [{item: 'honeycomb', chance: 1, min: 1, max: 4}], color: '#8A2BE2' },
 			'napalm_bomb': { imgSrc: 'Napalm Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#FF4500', bombDamage: 3, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 90 },
 			'dynamite_bomb': { imgSrc: 'Dynamite Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#DC143C', bombDamage: 15, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 220 },
 			'octogen_bomb': { imgSrc: 'Octogen Bomb.png', solid: true, miningHardness: 80, drops: [], color: '#FFD700', bombDamage: 45, bombRadius: 9, playerDamageMin: 10, playerDamageMax: 180 },
@@ -4345,7 +4530,7 @@
 			'crisped_body_block': { imgSrc: 'Crisped Body Block.png', solid: true, miningHardness: 150, drops: [{item: 'crisped_body_block', chance: 1, min: 1, max: 1}], color: '#2a2a2a' },
             
 			// Dirt
-			'dirt': { imgSrc: 'Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true, placeSound: ['soil_place_1'], breakSound: ['soil_break_1', 'soil_break_2', 'soil_break_3'] },
+			'dirt': { imgSrc: 'Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#A0522D', shovelBlock: true, placeSound: ['soil_place_1'], breakSound: ['soil_break_1', 'soil_break_2', 'soil_break_3'], slab: true },
 			'grass_dirt': { imgSrc: 'Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			'overgrown_grass_dirt': { imgSrc: 'Overgrown Grass Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
 			'dark_grass_dirt': { imgSrc: 'Dark Grass Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
@@ -4356,8 +4541,9 @@
 			'weed_dirt': { imgSrc: 'Weed Dirt Block.png', solid: true, miningHardness: 65, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#5A5030', shovelBlock: true },
             'seed_dirt': { imgSrc: 'Seed Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'hop_seeds', chance: 1, min: 1, max: 3}], color: '#8B4513', shovelBlock: true },
             'pest_dirt': { imgSrc: 'Pest Dirt Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
+			'snow_dirt': { imgSrc: 'Snow Dirt Block.png', solid: true, miningHardness: 60, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			// Soil
-            'soil': { imgSrc: 'Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true, placeSound: ['soil_place_1'], breakSound: ['soil_break_1', 'soil_break_2', 'soil_break_3'] },
+            'soil': { imgSrc: 'Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true, placeSound: ['soil_place_1'], breakSound: ['soil_break_1', 'soil_break_2', 'soil_break_3'], slab: true },
 			'grass_soil': { imgSrc: 'Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#90EE90', shovelBlock: true },
 			'overgrown_grass_soil': { imgSrc: 'Overgrown Grass Soil Block.png', solid: true, miningHardness: 90, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#32CD32', shovelBlock: true },
 			'dark_grass_soil': { imgSrc: 'Dark Grass Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
@@ -4366,8 +4552,9 @@
 			'dark_moss_soil': { imgSrc: 'Dark Moss Soil Block.png', solid: true, miningHardness: 60, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
 			'surface_soil': { imgSrc: 'Surface Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'leaf', chance: 1, min: 1, max: 3}], color: '#5C4033', shovelBlock: true },
 			'pest_soil': { imgSrc: 'Pest Soil Block.png', solid: true, miningHardness: 100, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
+			'snow_soil': { imgSrc: 'Snow Soil Block.png', solid: true, miningHardness: 80, drops: [{item: 'soil', chance: 1, min: 1, max: 1}], color: '#90EE90', shovelBlock: true },
 			// Silt
-			'silt': { imgSrc: 'Silt Block.png', solid: true, miningHardness: 90, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'silt': { imgSrc: 'Silt Block.png', solid: true, miningHardness: 90, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true, slab: true },
 			'grass_silt': { imgSrc: 'Grass Silt Block.png', solid: true, miningHardness: 100, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			'overgrown_grass_silt': { imgSrc: 'Overgrown Grass Silt Block.png', solid: true, miningHardness: 110, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
 			'dark_grass_silt': { imgSrc: 'Dark Grass Silt Block.png', solid: true, miningHardness: 100, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
@@ -4376,8 +4563,9 @@
 			'dark_moss_silt': { imgSrc: 'Dark Moss Silt Block.png', solid: true, miningHardness: 100, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
 			'surface_silt': { imgSrc: 'Surface Silt Block.png', solid: true, miningHardness: 100, drops: [{item: 'silt', chance: 1, min: 1, max: 1}, {item: 'leaf', chance: 1, min: 1, max: 3}], color: '#5C4033', shovelBlock: true },
 			'pest_silt': { imgSrc: 'Pest Silt Block.png', solid: true, miningHardness: 120, drops: [{item: 'silt', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
+			'snow_silt': { imgSrc: 'Snow Silt Block.png', solid: true, miningHardness: 100, drops: [{item: 'silt', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			// Mud
-			'mud': { imgSrc: 'Mud Block.png', solid: true, miningHardness: 100, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true, placeSound: ['thick_soil_place_1'], breakSound: ['thick_soil_break_1', 'thick_soil_break_2', 'thick_soil_break_3'] },
+			'mud': { imgSrc: 'Mud Block.png', solid: true, miningHardness: 100, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true, placeSound: ['thick_soil_place_1'], breakSound: ['thick_soil_break_1', 'thick_soil_break_2', 'thick_soil_break_3'], slab: true },
 			'grass_mud': { imgSrc: 'Grass Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			'overgrown_grass_mud': { imgSrc: 'Overgrown Grass Mud Block.png', solid: true, miningHardness: 120, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#006400', shovelBlock: true },
 			'dark_grass_mud': { imgSrc: 'Dark Grass Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
@@ -4386,25 +4574,26 @@
 			'dark_moss_mud': { imgSrc: 'Dark Moss Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#4A442A', shovelBlock: true },
 			'surface_mud': { imgSrc: 'Surface Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}, {item: 'leaf', chance: 1, min: 1, max: 3}], color: '#5C4033', shovelBlock: true },
 			'pest_mud': { imgSrc: 'Pest Mud Block.png', solid: true, miningHardness: 130, drops: [{item: 'mud', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 3}], color: '#6B4226', shovelBlock: true },
+			'snow_mud': { imgSrc: 'Snow Mud Block.png', solid: true, miningHardness: 110, drops: [{item: 'mud', chance: 1, min: 1, max: 1}], color: '#228B22', shovelBlock: true },
 			// Thick Mud
-			'thick_mud': { imgSrc: 'Thick Mud Block.png', solid: true, miningHardness: 150, drops: [{item: 'thick_mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'thick_mud': { imgSrc: 'Thick Mud Block.png', solid: true, miningHardness: 150, drops: [{item: 'thick_mud', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true, slab: true },
 			// Clay
-			'clay': { imgSrc: 'Clay Block.png', solid: true, miningHardness: 280, drops: [{item: 'clay', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true },
+			'clay': { imgSrc: 'Clay Block.png', solid: true, miningHardness: 280, drops: [{item: 'clay', chance: 1, min: 1, max: 1}], color: '#47433e', shovelBlock: true, slab: true },
 			// Taiga Dirt
-			'taiga_dirt': { imgSrc: 'Taiga Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'taiga_dirt': { imgSrc: 'Taiga Dirt Block.png', solid: true, miningHardness: 50, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true, slab: true },
 			'taiga_grass_dirt_block_1': { imgSrc: 'Taiga Grass Dirt Block 1.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#2E8B57', shovelBlock: true },
 			'taiga_grass_dirt_block_2': { imgSrc: 'Taiga Grass Dirt Block 2.png', solid: true, miningHardness: 60, drops: [{item: 'taiga_dirt', chance: 1, min: 1, max: 1}], color: '#2E8B57', shovelBlock: true },
             // Podzol
-			'podzol': { imgSrc: 'Podzol Block.png', solid: true, miningHardness: 50, drops: [{item: 'podzol', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'podzol': { imgSrc: 'Podzol Block.png', solid: true, miningHardness: 50, drops: [{item: 'podzol', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true, slab: true },
 			'moss_podzol': { imgSrc: 'Moss Podzol Block.png', solid: true, miningHardness: 60, drops: [{item: 'podzol', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
 			// Mycelium
-			'mycelium': { imgSrc: 'Mycelium Block.png', solid: true, miningHardness: 70, drops: [{item: 'mycelium', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
+			'mycelium': { imgSrc: 'Mycelium Block.png', solid: true, miningHardness: 70, drops: [{item: 'mycelium', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true, slab: true },
 			'mud_mycelium': { imgSrc: 'Mud Mycelium Block.png', solid: true, miningHardness: 80, drops: [{item: 'mycelium', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
             // Fertilizer
-			'fertilizer': { imgSrc: 'Fertilizer Block.png', solid: true, miningHardness: 80, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true },
+			'fertilizer': { imgSrc: 'Fertilizer Block.png', solid: true, miningHardness: 80, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}], color: '#5C4033', shovelBlock: true, slab: true },
 			
 			'plantation_soil': { imgSrc: 'Plantation Soil Block.png', solid: true, miningHardness: 70, drops: [{item: 'plantation_soil', chance: 1, min: 1, max: 1}], color: '#8B4513', shovelBlock: true },
-            'stone': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
+            'stone': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'], slab: true },
 			'stone_pt1': { imgSrc: 'Stone Block PT1.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
 			'stone_pt2': { imgSrc: 'Stone Block PT2.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
 			'stone_pt3': { imgSrc: 'Stone Block PT3.png', solid: true, miningHardness: 500, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
@@ -4427,18 +4616,19 @@
 			'red_sandstone': { imgSrc: 'Red Sandstone Block.png', solid: true, miningHardness: 450, drops: [{item: 'red_sandstone', chance: 1, min: 1, max: 1}], color: '#851500' },
             'compacting_stone': { imgSrc: 'Compacting Stone Block.png', solid: true, miningHardness: 750, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#696969' },
             'glass_block': { imgSrc: 'Glass Block.png', solid: true, miningHardness: 40, drops: [{item: 'glass_block', chance: 1, min: 1, max: 1}], color: '#AFEEEE' },
-			'compacted_stone': { imgSrc: 'Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#565656', requiredMiningPower: 0.2 },
-			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#262626', requiredMiningPower: 0.3 },
+			'compacted_stone': { imgSrc: 'Compacted Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'compacted_stone', chance: 1, min: 1, max: 1}], color: '#565656', requiredMiningPower: 0.2, slab: true },
+			'compressed_stone': { imgSrc: 'Compressed Stone Block.png', solid: true, miningHardness: 10000, drops: [{item: 'compressed_stone', chance: 1, min: 1, max: 1}], color: '#262626', requiredMiningPower: 0.3, slab: true },
 			'void_stone': { imgSrc: 'Void Stone Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_stone', chance: 1, min: 1, max: 1}], color: '#5b6160', requiredMiningPower: 0.3 },
 			'void_dust_block': { imgSrc: 'Void Dust Block.png', solid: true, miningHardness: 100, drops: [{item: 'void_dust', chance: 1, min: 1, max: 4}], color: '#6b8683' },
 			'void_crystal': { imgSrc: 'Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_crystal', chance: 1, min: 1, max: 1}], color: '#de65b7', requiredMiningPower: 0.2 },
 			'red_void_crystal': { imgSrc: 'Red Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'red_void_crystal', chance: 1, min: 1, max: 1}], color: '#DC143C', requiredMiningPower: 0.2 },
-			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#191919', requiredMiningPower: 2.5 },
-			'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#451b1b' },
+			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#191919', requiredMiningPower: 2.5, slab: true },
+			'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#451b1b', slab: true },
 			'hellrock': { imgSrc: 'Hellrock Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellrock', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'magma_stone_block': { imgSrc: 'Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff8700' },
 			'chasm_magma_stone_block': { imgSrc: 'Chasm Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'chasm_magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff00af' },
-			'heaven_magma_stone_block': { imgSrc: 'Heaven Magma Stone Block.png', solid: true, miningHardness: -1, drops: [], color: '#ff8700' },
+			'heaven_magma_stone_block': { imgSrc: 'Heaven Magma Stone Block.png', solid: true, miningHardness: -1, drops: [], color: '#000000' },
+            'death_magma_stone_block': { imgSrc: 'Death Magma Stone Block.png', solid: true, miningHardness: 1, drops: [], color: '#ff8700', requiredTool: 'test_axe' },
 			'meteorite': { imgSrc: 'Meteorite.png', solid: true, miningHardness: 500, drops: [{item: 'gold_nugget', chance: 0.3, min: 1, max: 3}, {item: 'palladium_nugget', chance: 0.2, min: 1, max: 3}, {item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.6, min: 1, max: 3}, {item: 'tungsten_nugget', chance: 0.6, min: 1, max: 3}], color: '#696969' },
 			'hellsteel_hellstone': { imgSrc: 'Hellsteel Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'hellsteel_nugget', chance: 1, min: 1, max: 3}], color: '#E62020' },
 			'mighterrum_hellstone': { imgSrc: 'Mighterrum Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'mighterrum_nugget', chance: 1, min: 1, max: 1}], color: '#B22222' },
@@ -4503,57 +4693,57 @@
 			'any_plank': { imgSrc: 'Any Plank.png', solid: false, miningHardness: 0, drops: [], color: '#654321' },
 			'any_gilded': { imgSrc: 'Any Gilded.png', solid: false, miningHardness: 0, drops: [], color: '#FFD700' },
 			'raw_deadwood': { imgSrc: 'Raw Deadwood Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
-			'planked_deadwood': { imgSrc: 'Planked Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'planked_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
+			'planked_deadwood': { imgSrc: 'Planked Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'planked_deadwood', chance: 1, min: 1, max: 1}], color: '#654321', slab: true },
 			'raw_oak': { imgSrc: 'Raw Oak Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
             'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22', swordBlock: true },
-            'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'] },
+            'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'], slab: true },
 			'refined_planked_oak': { imgSrc: 'Refined Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'] },
 			'raw_apple': { imgSrc: 'Raw Apple Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_apple', chance: 1, min: 1, max: 1}], color: '#654321' },
             'apple_bush': { imgSrc: 'Apple Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22', swordBlock: true },
 			'apple_bush_fruit': { imgSrc: 'Apple Bush Block Fruit.png', solid: true, miningHardness: 20, drops: [{item: 'apple_bush', chance: 0.05, min: 1, max: 1}, {item: 'apple', chance: 1, min: 1, max: 3}, {item: 'wormy_apple', chance: 0.01, min: 1, max: 1}], color: '#FF0000', swordBlock: true },
-            'planked_apple': { imgSrc: 'Planked Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_apple', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'] },
+            'planked_apple': { imgSrc: 'Planked Apple Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_apple', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'], slab: true },
             'raw_birch': { imgSrc: 'Raw Birch Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_birch', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'birch_bush': { imgSrc: 'Birch Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'birch_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
-            'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3', breakSound: ['plank_break_1', 'plank_break_2'] },
+            'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3', breakSound: ['plank_break_1', 'plank_break_2'], slab: true },
 			'refined_planked_birch': { imgSrc: 'Refined Planked Birch Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_birch', chance: 1, min: 1, max: 1}], color: '#F5DEB3', breakSound: ['plank_break_1', 'plank_break_2'] },
             'raw_spruce': { imgSrc: 'Raw Spruce Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_spruce', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'spruce_bush', chance: 0.05, min: 1, max: 1}, {item: 'spruce_needle', chance: 0.6, min: 1, max: 5}, {item: 'spruce_cone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
-			'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'] },
+			'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'], slab: true },
 			'refined_planked_spruce': { imgSrc: 'Refined Planked Spruce Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_spruce', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'] },
 			'raw_pine': { imgSrc: 'Raw Pine Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_pine', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'pine_bush': { imgSrc: 'Pine Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'pine_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.6, min: 1, max: 5}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
-			'planked_pine': { imgSrc: 'Planked Pine Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_pine', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'] },
+			'planked_pine': { imgSrc: 'Planked Pine Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_pine', chance: 1, min: 1, max: 1}], color: '#8B4513', breakSound: ['plank_break_1', 'plank_break_2'], slab: true },
 			'raw_aspen': { imgSrc: 'Raw Aspen Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_aspen', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
             'green_aspen_bush': { imgSrc: 'Green Aspen Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'green_aspen_bush', chance: 0.05, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
 			'yellow_aspen_bush': { imgSrc: 'Yellow Aspen Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'yellow_aspen_bush', chance: 0.05, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
 			'orange_aspen_bush': { imgSrc: 'Orange Aspen Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'orange_aspen_bush', chance: 0.05, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
 			'red_aspen_bush': { imgSrc: 'Red Aspen Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'red_aspen_bush', chance: 0.05, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
-			'planked_aspen': { imgSrc: 'Planked Aspen Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_aspen', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'planked_aspen': { imgSrc: 'Planked Aspen Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_aspen', chance: 1, min: 1, max: 1}], color: '#8B4513', slab: true },
 			'raw_orange': { imgSrc: 'Raw Orange Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_orange', chance: 1, min: 1, max: 1}], color: '#654321' },
             'orange_bush': { imgSrc: 'Orange Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'orange_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22', swordBlock: true },
 			'orange_bush_fruit': { imgSrc: 'Orange Bush Block Fruit.png', solid: true, miningHardness: 20, drops: [{item: 'orange_bush', chance: 0.05, min: 1, max: 1}, {item: 'orange', chance: 1, min: 1, max: 3}], color: '#FFA500', swordBlock: true },
-            'planked_orange': { imgSrc: 'Planked Orange Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_orange', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+            'planked_orange': { imgSrc: 'Planked Orange Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_orange', chance: 1, min: 1, max: 1}], color: '#D2B48C', slab: true },
 			'raw_redwood': { imgSrc: 'Raw Redwood Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_redwood', chance: 1, min: 1, max: 1}], color: '#A0522D' },
             'redwood_bush': { imgSrc: 'Redwood Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'redwood_bush', chance: 0.05, min: 1, max: 1}, {item: 'pine_needle_living', chance: 0.2, min: 1, max: 1}, {item: 'pinecone', chance: 0.1, min: 1, max: 1}], color: '#0A4A2A', swordBlock: true },
-			'planked_redwood': { imgSrc: 'Planked Redwood Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_redwood', chance: 1, min: 1, max: 1}], color: '#A0522D' },
+			'planked_redwood': { imgSrc: 'Planked Redwood Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_redwood', chance: 1, min: 1, max: 1}], color: '#A0522D', slab: true },
 			'raw_rubber': { imgSrc: 'Raw Rubber Block.png', solid: true, miningHardness: 150, drops: [{item: 'raw_rubber', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'rubber_bush': { imgSrc: 'Rubber Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'rubber_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
-            'planked_rubber': { imgSrc: 'Planked Rubber Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_rubber', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+            'planked_rubber': { imgSrc: 'Planked Rubber Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_rubber', chance: 1, min: 1, max: 1}], color: '#F5DEB3', slab: true },
 			'raw_mahogany': { imgSrc: 'Raw Mahogany Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_mahogany', chance: 1, min: 1, max: 1}], color: '#C04000' },
             'mahogany_bush': { imgSrc: 'Mahogany Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'mahogany_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
             'planked_mahogany': { imgSrc: 'Planked Mahogany Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_mahogany', chance: 1, min: 1, max: 1}], color: '#C04000' },
-			'raw_cinnamon': { imgSrc: 'Raw Cinnamon Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_cinnamon', chance: 1, min: 1, max: 1}], color: '#D2691E' },
+			'raw_cinnamon': { imgSrc: 'Raw Cinnamon Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_cinnamon', chance: 1, min: 1, max: 1}], color: '#D2691E', slab: true },
             'cinnamon_bush': { imgSrc: 'Cinnamon Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'cinnamon_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
             'planked_cinnamon': { imgSrc: 'Planked Cinnamon Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_cinnamon', chance: 1, min: 1, max: 1}], color: '#D2691E' },
 			'raw_acacia': { imgSrc: 'Raw Acacia Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_acacia', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'acacia_bush': { imgSrc: 'Acacia Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'acacia_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
-            'planked_acacia': { imgSrc: 'Planked Acacia Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_acacia', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+            'planked_acacia': { imgSrc: 'Planked Acacia Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_acacia', chance: 1, min: 1, max: 1}], color: '#F5DEB3', slab: true },
 			'raw_baobab': { imgSrc: 'Raw Baobab Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_baobab', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'baobab_bush': { imgSrc: 'Baobab Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'baobab_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
-            'planked_baobab': { imgSrc: 'Planked Baobab Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_baobab', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+            'planked_baobab': { imgSrc: 'Planked Baobab Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_baobab', chance: 1, min: 1, max: 1}], color: '#F5DEB3', slab: true },
 			'raw_cherry_blossom': { imgSrc: 'Raw Cherry Blossom Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_cherry_blossom', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
             'cherry_blossom_bush': { imgSrc: 'Cherry Blossom Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'cherry_blossom_bush', chance: 0.05, min: 1, max: 1}], color: '#6B8E23', swordBlock: true },
-            'planked_cherry_blossom': { imgSrc: 'Planked Cherry Blossom Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_cherry_blossom', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
+            'planked_cherry_blossom': { imgSrc: 'Planked Cherry Blossom Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_cherry_blossom', chance: 1, min: 1, max: 1}], color: '#F5DEB3', slab: true },
 			'raw_blueglow_wood': { imgSrc: 'Raw Blueglow Wood Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_blueglow_wood', chance: 1, min: 1, max: 1}], color: '#00BFFF' },
             'blueglow_bush': { imgSrc: 'Blueglow Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'blueglow_bush', chance: 0.05, min: 1, max: 1}], color: '#00BFFF', swordBlock: true },
             'planked_blueglow_wood': { imgSrc: 'Planked Blueglow Wood Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_blueglow_wood', chance: 1, min: 1, max: 1}], color: '#00BFFF' },
@@ -4601,6 +4791,7 @@
 			'desert_grass': { imgSrc: 'Desert Grass.png', solid: false, miningHardness: 5, drops: [{item: 'coffee_seeds', chance: 0.2, min: 1, max: 2}], color: '#D2B48C' },
             'prickly_pear_cactus': { imgSrc: 'Prickly Pear Cactus.png', solid: false, miningHardness: 5, drops: [{item: 'prickly_pear_fruit', chance: 0.6, min: 1, max: 1}], color: '#93C572' },
             'cactus_block': { imgSrc: 'Cactus Block.png', solid: true, miningHardness: 80, drops: [{item: 'cactus_block', chance: 1, min: 1, max: 1}], color: '#556B2F', shovelBlock: true },
+			'planked_cactus': { imgSrc: 'Planked Cactus Block.png', solid: true, miningHardness: 40, drops: [{item: 'planked_cactus', chance: 1, min: 1, max: 1}], color: '#F5DEB3', slab: true },
             'anthill_sand_block': { imgSrc: 'Anthill Sand Block.png', solid: true, miningHardness: 45, drops: [{item: 'anthill_sand_block', chance: 1, min: 1, max: 1}], color: '#C19A6B' },
             'anthill_sand_wall': { imgSrc: 'Anthill Sand Wall.png', solid: false, miningHardness: 22.5, drops: [{item: 'anthill_sand_wall', chance: 1, min: 1, max: 1}], color: '#C19A6B' },
             'colony_heart_sand_block': { imgSrc: 'Colony Heart Sand Block.png', solid: true, miningHardness: 500, drops: [{item: 'colony_heart', chance: 1, min: 1, max: 1}], color: '#FF4444' },
@@ -4668,7 +4859,7 @@
             'fungal_heart_block': { imgSrc: 'Fungal Heart Block.png', solid: true, miningHardness: 30000, drops: [{item: 'fungal_heart', chance: 1, min: 1, max: 1}], color: '#654321', axeBlock: true, requiredMiningPower: 1.5 },
 			'raw_darkwood': { imgSrc: 'Raw Darkwood Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_darkwood', chance: 1, min: 1, max: 1}], color: '#2F271B' },
             'darkwood_bush': { imgSrc: 'Darkwood Bush Block.png', solid: true, miningHardness: 25, drops: [{item: 'darkwood_bush', chance: 0.05, min: 1, max: 1}], color: '#3A3125', swordBlock: true },
-            'planked_darkwood': { imgSrc: 'Planked Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'planked_darkwood', chance: 1, min: 1, max: 1}], color: '#4A3B2F' },
+            'planked_darkwood': { imgSrc: 'Planked Darkwood Block.png', solid: true, miningHardness: 160, drops: [{item: 'planked_darkwood', chance: 1, min: 1, max: 1}], color: '#4A3B2F', slab: true },
             'pest_stone_block_weak': { imgSrc: 'Pest Stone Block (Weak).png', solid: true, miningHardness: 400, drops: [{item: 'stone', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 1}], color: '#6A675A', shovelBlock: true },
             'pest_stone_block_strong': { imgSrc: 'Pest Stone Block (Strong).png', solid: true, miningHardness: 600, drops: [{item: 'stone', chance: 1, min: 1, max: 1}, {item: 'pest', chance: 1, min: 1, max: 5}], color: '#5A574A', shovelBlock: true },
             'moss': { imgSrc: 'Moss.png', solid: false, miningHardness: 5, drops: [{item: 'moss_seeds', chance: 0.4, min: 1, max: 3}], color: '#4A5D23' },
@@ -4803,6 +4994,8 @@
 			'visible_barrier': { imgSrc: 'Barrier Visible.png', solid: true, miningHardness: 50, drops: [], color: '#FF0000', requiredTool: 'test_axe' },
 			'master_block': { imgSrc: 'Stone Block.png', solid: true, miningHardness: -1, drops: [{item: 'stone', chance: 1, min: 240, max: 240}], color: '#999999' },
             'oneblock': { imgSrc: 'Stone Block.png', solid: true, miningHardness: -1, drops: [{item: 'stone', chance: 1, min: 240, max: 240}], color: '#999999' },
+            'start_timer': { imgSrc: null, solid: true, miningHardness: 500, drops: [{item: 'start_timer', chance: 1, min: 1, max: 1}], color: '#00FF00' }, // Bright Green
+            'stop_timer': { imgSrc: null, solid: true, miningHardness: 500, drops: [{item: 'stop_timer', chance: 1, min: 1, max: 1}], color: '#FF0000' },   // Bright Red
 			'test_block_mine_power': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', requiredMiningPower: 0.5 },
 			'test_block_test_axe': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', requiredTool: 'test_axe' },
             'test_block_shovel': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 100, drops: [{item: 'stone', chance: 1, min: 1, max: 1}], color: '#999999', shovelBlock: true },
@@ -5018,6 +5211,7 @@
 			 'wheat_bread': { imgSrc: 'Wheat Bread.png', color: '#E6BF83', isFood: true, healAmount: 7 },
 			 'barley_bread': { imgSrc: 'Barley Bread.png', color: '#E6BF83', isFood: true, healAmount: 7 },
 			 'noodles': { imgSrc: 'Noodles.png', color: '#E6BF83', isFood: true, healAmount: 1 },
+			 'sopapilla': { imgSrc: 'Sopapilla.png', color: '#E6BF83', isFood: true, healAmount: 3 },
 			 'cake': { imgSrc: 'Cake.png', color: '#E6BF83', isFood: true, healAmount: 36 },
 			 'pumpkin_pie': { imgSrc: 'Pumpkin Pie.png', color: '#E6BF83', isFood: true, healAmount: 36 },
 			 'ramen_noodles': { imgSrc: 'Ramen Noodles.png', color: '#E6BF83', isFood: true, healAmount: 30 },
@@ -5026,6 +5220,8 @@
 			 'raw_sugar': { imgSrc: 'Raw Sugar.png', color: '#FFFFFF' },
 			 'refined_sugar': { imgSrc: 'Refined Sugar.png', color: '#FFFFFF' },
 			 'molasses': { imgSrc: 'Molasses.png', color: '#3A1F04' },
+			 'honeycomb': { imgSrc: 'Honeycomb.png', color: '#FFFFFF' },
+			 'honey': { imgSrc: 'Honey.png', color: '#FFFFFF' },
 			 'egg': { imgSrc: 'Egg.png', color: '#F0EAD6' },
 			 'flour': { imgSrc: 'Flour.png', color: '#F5F5DC' },
 			 'rock_salt': { imgSrc: 'Rock Salt.png', color: '#FDF5E6' },
@@ -5173,6 +5369,33 @@
 			 'hearty_pants': { imgSrc: 'Armor/Hearty Pants Icon.png', equippedImgSrc: 'Armor/Hearty Pants.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.24, maxDurability: 350 },
 		};
 		
+		// --- SLAB SYSTEM GENERATION ---
+        const generatedSlabs = {};
+        const generatedSlabItems = {};
+        for (const [key, props] of Object.entries(blockTypes)) {
+            if (props.slab) {
+                const slabKey = `${key}_slab`;
+                generatedSlabs[slabKey] = {
+                    ...props,
+                    miningHardness: props.miningHardness / 2, // Half durability
+                    drops: [{ item: slabKey, chance: 1, min: 1, max: 1 }],
+                    isSlab: true,
+                    parentBlock: key
+                };
+                generatedSlabItems[slabKey] = {
+                    imgSrc: props.imgSrc,
+                    color: props.color,
+                    isSlab: true
+                };
+            }
+        }
+        Object.assign(blockTypes, generatedSlabs);
+        Object.assign(itemTypes, generatedSlabItems);
+
+        blockTypes['mixed_slab'] = {
+            imgSrc: null, solid: true, miningHardness: 0, drops: [], color: '#888', isMixedSlab: true
+        };
+		
 		let npcTypes = { // Also used for custom particles
 			 'bee': { imgSrc: 'Bee.png', color: '#802600', isParticle: true },
 			 'cow': { imgSrc: 'Cow.png', color: '#802600', isMob: true, height: 2, width: 3 },
@@ -5238,7 +5461,7 @@
         };
 
         // Combine all assets to load
-        const assetsToLoadList = {  ...breakingStageAssets, ...blockTypes, ...itemTypes, ...npcTypes, ...healthAssets, ...fireAssets };
+        const assetsToLoadList = {  ...breakingStageAssets, ...healthAssets, ...fireAssets, ...blockTypes, ...itemTypes, ...npcTypes, };
         const assets = {};            // will store loaded Image objects keyed by type name (e.g. assets['dirt'])
 		let failedAssets = {};      // track failures
 		let assetsToLoad = 0;
@@ -5306,7 +5529,7 @@
         
 		function getAssetGroups() {
 			// Add any other asset maps you use here
-			return [breakingStageAssets, blockTypes, itemTypes, npcTypes, healthAssets, fireAssets, traderImageAssets]; // NEW: Added traderImageAssets
+			return [breakingStageAssets, healthAssets, fireAssets, blockTypes, itemTypes, npcTypes, traderImageAssets]; // NEW: Added traderImageAssets
 		}
 
 		function loadAssets() {
@@ -5550,6 +5773,17 @@
 		document.getElementById('modFileInput').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
+			
+			function runModScript(filename, code) {
+				try {
+					// Use Function constructor to execute in global scope (not command-history)
+					new Function(code)();
+					console.log(`[Mod Script] Executed ${filename}`);
+				} catch (err) {
+					console.error(`[Mod Script] Error executing ${filename}:`, err);
+					try { showMessageBox(`Mod script error in ${filename}: ${err.message}`, 'alert'); } catch (e) { /* no-op */ }
+				}
+			}
 
             // Handle ZIP Uploads
             if (file.name.toLowerCase().endsWith('.zip')) {
@@ -5559,6 +5793,7 @@
                     
                     let modData = null;
                     let texturesLoaded = 0;
+					const scriptsToRun = {}; // { filename: code }
 
                     // 1. Process files
                     for (const [filename, data] of Object.entries(extractedFiles)) {
@@ -5582,6 +5817,20 @@
                             textureOverrides[flatName] = url;
                             texturesLoaded++;
                         }
+						// scripts: root script.js OR any scripts/*.js
+						else if (
+							// exact root script.js
+							filename.split('/').pop().toLowerCase() === 'script.js'
+						) {
+							try {
+								const code = new TextDecoder().decode(data);
+								scriptsToRun[filename] = code;
+							} catch (err) {
+								console.warn('Failed to decode script file', filename, err);
+							}
+						} else {
+							// other files are ignored here (could be used later)
+						}
                     }
 
                     if (modData) {
@@ -5606,6 +5855,12 @@
                             failedAssets = {};
                             loadAssets();
                         });
+						
+						// Execute scripts AFTER activation so scripts can rely on registered content.
+						// Scripts run in global scope and are NOT piped into the console input or history.
+						for (const [fname, code] of Object.entries(scriptsToRun)) {
+							runModScript(fname, code);
+						}
                     } else {
                         showMessageBox("Error: No .bgumod file found inside the ZIP!", 'alert');
                     }
@@ -6878,7 +7133,7 @@
             // --- CONFIGURATION: EDIT BIOME WEIGHTS HERE ---
             // Higher number = More common. 
             // Example: 100 is very common, 1 is very rare.
-            const BIOME_TYPES = [
+            let BIOME_TYPES = [
                 { type: 'deciduous_forest',  weight: 100 }, // Common
                 { type: 'desert',            weight: 60 }, // Common
 				{ type: 'coniferous_forest', weight: 50 }, // Common
@@ -11993,9 +12248,13 @@
                 // You can adjust this value to make the damage faster or slower.
                 if (applyDamage(10 * (dt / 1000))) return;
             } else if (blockBelow === 'heaven_magma_stone_block') {
-                // Apply damage over time. The '50' means 50 health per second.
+                // Apply damage over time. The '100' means 100 health per second.
                 // You can adjust this value to make the damage faster or slower.
-                if (applyDamage(50 * (dt / 1000))) return;
+                if (applyDamage(100 * (dt / 1000))) return;
+            } else if (blockBelow === 'death_magma_stone_block') {
+                // Apply damage over time. The '1000000' means 1000000 health per second.
+                // You can adjust this value to make the damage faster or slower.
+                if (applyDamage(1000000 * (dt / 1000))) return;
             }
 			
             
@@ -12187,19 +12446,31 @@
             for (let col = startColY; col <= endColY; col++) {
                 for (let row = startRowY; row <= endRowY; row++) {
                     if (isSolid(col, row)) {
-                        // Optimization: Inline intersection check to avoid creating blockRect object
-                        const bx = col * tileSize;
-                        const by = row * tileSize;
+                        let bx = col * tileSize;
+                        let by = row * tileSize;
+                        let bWidth = tileSize;
+                        let bHeight = tileSize;
+                        
+                        const bData = worldBlocks[`${col},${row}`];
+						if (bData && blockTypes[bData.type]?.isSlab && !bData.type.startsWith('mixed_')) {
+							if (bData.orientation === 'vertical') {
+								bWidth = tileSize / 2;
+								if (bData.part === 'right') bx += tileSize / 2;
+							} else {
+								bHeight = tileSize / 2;
+								if (bData.part === 'bottom') by += tileSize / 2;
+							}
+						}
                         // rectIntersects logic inlined:
-                        if (playerRectY.x < bx + tileSize && playerRectY.x + playerWidth > bx &&
-                            playerRectY.y < by + tileSize && playerRectY.y + playerHeight > by) {
+                        if (playerRectY.x < bx + bWidth && playerRectY.x + playerWidth > bx &&
+                            playerRectY.y < by + bHeight && playerRectY.y + playerHeight > by) {
                             
                             if (player.dy > 0) {
                                 player.y = by - playerHeight;
                                 player.dy = 0;
                                 player.onGround = true;
                             } else if (player.dy < 0) {
-                                player.y = by + tileSize;
+                                player.y = by + bHeight; // Uses dynamic height
                                 player.dy = 0;
                             }
                             nextPlayerY = player.y;
@@ -12258,12 +12529,25 @@
                 for (let col = startColX; col <= endColX; col++) {
                     for (let row = startRowX; row <= endRowX; row++) {
                         if (isSolid(col, row)) {
-                            const bx = col * tileSize;
-                            const by = row * tileSize;
-                            if (playerRectX.x < bx + tileSize && playerRectX.x + playerWidth > bx &&
-                                playerRectX.y < by + tileSize && playerRectX.y + playerHeight > by) {
+                            let bx = col * tileSize;
+                            let by = row * tileSize;
+                            let bWidth = tileSize;
+                            let bHeight = tileSize;
+                            
+                            const bData = worldBlocks[`${col},${row}`];
+							if (bData && blockTypes[bData.type]?.isSlab && !bData.type.startsWith('mixed_')) {
+								if (bData.orientation === 'vertical') {
+									bWidth = tileSize / 2;
+									if (bData.part === 'right') bx += tileSize / 2;
+								} else {
+									bHeight = tileSize / 2;
+									if (bData.part === 'bottom') by += tileSize / 2;
+								}
+							}
+                            if (playerRectX.x < bx + bWidth && playerRectX.x + playerWidth > bx &&
+                                playerRectX.y < by + bHeight && playerRectX.y + playerHeight > by) {
                                 if (player.dx > 0) nextPlayerX = bx - playerWidth;
-                                else if (player.dx < 0) nextPlayerX = bx + tileSize;
+                                else if (player.dx < 0) nextPlayerX = bx + bWidth; // Uses dynamic width
                                 player.dx = 0;
                             }
                         }
@@ -12511,7 +12795,20 @@
 
 
             // Handle the block's own drops
-            if (blockProps && blockProps.drops) {
+            if (blockData && blockData.type === 'mixed_slab') {
+				const isVert = blockData.orientation === 'vertical';
+				const p1Props = blockTypes[isVert ? blockData.leftType : blockData.bottomType];
+				const p2Props = blockTypes[isVert ? blockData.rightType : blockData.topType];
+				
+				const dropFn = (drop) => {
+					if (Math.random() < drop.chance) {
+						if (animateDrops) createAnimatedDrop(col, row, drop);
+						else addToInventory(drop.item, drop.min + Math.floor(Math.random() * (drop.max - drop.min + 1)));
+					}
+				};
+				if (p1Props?.drops) p1Props.drops.forEach(dropFn);
+				if (p2Props?.drops) p2Props.drops.forEach(dropFn);
+			} else if (blockProps && blockProps.drops) {
                 blockProps.drops.forEach(drop => {
                     if (random() < drop.chance) {
 						if (animateDrops) {
@@ -12709,6 +13006,26 @@
 				effectiveBlockType = `${seedType}_${blockData.baseBlockType}`;
 			}
 			const blockPropsForMining = blockTypes[effectiveBlockType];
+			
+			let requiredHardness = blockPropsForMining?.miningHardness || 0;
+            let effectiveRequiredMiningPower = blockPropsForMining?.requiredMiningPower || 0;
+            let effectiveRequiredTool = blockPropsForMining?.requiredTool || null;
+            let effectiveUnbreak = blockPropsForMining?.unbreak || false;
+
+            if (effectiveBlockType === 'mixed_slab') {
+				const isVert = blockData.orientation === 'vertical';
+				const p1Props = blockTypes[isVert ? blockData.leftType : blockData.bottomType];
+				const p2Props = blockTypes[isVert ? blockData.rightType : blockData.topType];
+				
+				const p1Hardness = p1Props?.miningHardness || 0;
+				const p2Hardness = p2Props?.miningHardness || 0;
+				// Combine hardness
+				requiredHardness = p1Hardness + p2Hardness;
+				
+				effectiveRequiredMiningPower = Math.max(p1Props?.requiredMiningPower || 0, p2Props?.requiredMiningPower || 0);
+				effectiveRequiredTool = p1Props?.requiredTool || p2Props?.requiredTool || null;
+				effectiveUnbreak = (p1Props?.unbreak || p2Props?.unbreak || false);
+			}
 
 			// Determine player's current mining capabilities
 			const equippedItemType = equippedItemObject ? equippedItemObject.type : null;
@@ -12770,8 +13087,8 @@
 
 			if (blockPropsForMining) {
 				// 1. Check Mining Power Requirement
-				if (blockPropsForMining.requiredMiningPower && currentMiningPower < blockPropsForMining.requiredMiningPower) {
-                    if (UNBREAKABLE_BY_DEFAULT || blockPropsForMining.unbreak) {
+				if (effectiveRequiredMiningPower && currentMiningPower < effectiveRequiredMiningPower) {
+                    if (UNBREAKABLE_BY_DEFAULT || effectiveUnbreak) {
                         canMine = false;
                     } else {
                         // Apply Penalty
@@ -12781,8 +13098,8 @@
 				}
 
 				// 2. Check Required Tool (Supports Array or String)
-				if (blockPropsForMining.requiredTool) {
-					const required = blockPropsForMining.requiredTool;
+				if (effectiveRequiredTool) {
+					const required = effectiveRequiredTool;
                     let hasRequiredTool = false;
                     
                     if (Array.isArray(required)) {
@@ -12792,15 +13109,9 @@
                     }
 
                     if (!hasRequiredTool) {
-                        if (UNBREAKABLE_BY_DEFAULT || blockPropsForMining.unbreak) {
-                            canMine = false;
-                        } else {
-                            // Apply penalty if not already applied
-                            if (!powerPenaltyApplied) {
-                                currentMiningPower /= INSUFFICIENT_POWER_PENALTY;
-                                powerPenaltyApplied = true;
-                            }
-                        }
+                        // STRICT FIX: If a specific named tool is required (e.g. "test_axe"), 
+                        // you explicitly CANNOT mine the block without it.
+                        canMine = false;
                     }
 				}
 			}
@@ -12808,12 +13119,12 @@
 
 			// If the mouse is pressed on a new block, and we can mine it, set it as the target.
 			if (mouse.down && (!miningTarget || miningTarget.col !== targetCol || miningTarget.row !== targetRow)) {
-				if (blockData && blockPropsForMining?.miningHardness > 0 && canMine) { 
+				if (blockData && requiredHardness > 0 && canMine) { 
 					miningTarget = {
 						col: targetCol,
 						row: targetRow,
 						progress: maintainBlockDurability ? (blockData.mineProg || 0) : 0,
-						requiredProgress: blockPropsForMining.miningHardness,
+						requiredProgress: requiredHardness,
                         isInefficient: powerPenaltyApplied, // Track for shaking
                         lastParticleStage: 0 // Track for efficient particles
 					};
@@ -12836,7 +13147,8 @@
 			// If holding mouse down on a valid target, continue mining
 			if (mouse.down && miningTarget && miningTarget.col === targetCol && miningTarget.row === targetRow) {
 				// Double-check conditions
-				if (!canMine || !blockData || blockPropsForMining?.miningHardness === 0) {
+				// FIX: Check requiredHardness here too
+				if (!canMine || !blockData || requiredHardness === 0) {
 					if (maintainBlockDurability && worldBlocks[targetKey]) worldBlocks[targetKey].mineProg = 0;
 					miningTarget = null;
 					return;
@@ -13230,6 +13542,69 @@
 				ctx.globalAlpha = 1.0;
 			}
 		}
+
+        function drawParkourTimer() {
+            if (parkourTimerState === 'inactive') return;
+        
+            let timeToShow = 0;
+            if (parkourTimerState === 'running') {
+                timeToShow = performance.now() - parkourStartTime;
+            } else {
+                timeToShow = parkourFinalTime;
+            }
+        
+            // Format time: MM:SS.ms
+            const ms = Math.floor((timeToShow % 1000) / 10); // 2 digit ms
+            const s = Math.floor((timeToShow / 1000) % 60);
+            const m = Math.floor(timeToShow / 60000);
+            const text = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+        
+            const centerX = canvas.width / 2;
+            const topY = 60; // Position from top
+        
+            ctx.save();
+            
+            // -- Dramatic Style --
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "bold 36px 'Courier New', monospace"; // Monospace prevents jitter
+        
+            // Background Pill (Semi-transparent black)
+            const textWidth = ctx.measureText(text).width;
+            const padding = 20;
+            ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+            ctx.beginPath();
+            ctx.roundRect(centerX - (textWidth / 2) - padding, topY - 25, textWidth + (padding * 2), 50, 10);
+            ctx.fill();
+            
+            // Border for Pill
+            ctx.lineWidth = 3;
+            if (parkourTimerState === 'running') {
+                ctx.strokeStyle = "#00BFFF"; // Cyan border while running
+                ctx.fillStyle = "#FFFFFF";   // White text
+            } else {
+                // Flash effect when finished
+                if (Math.floor(Date.now() / 200) % 2 === 0 && parkourFadeTimer > 7000) {
+                    ctx.strokeStyle = "#FFFF00"; // Flash Yellow
+                    ctx.fillStyle = "#FFFF00";
+                } else {
+                    ctx.strokeStyle = "#FFD700"; // Gold border when done
+                    ctx.fillStyle = "#FFD700";   // Gold text
+                }
+            }
+            ctx.stroke();
+        
+            // Text Shadow
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+        
+            // Draw Time
+            ctx.fillText(text, centerX, topY);
+        
+            ctx.restore();
+        }
 		
 		function updateParticles(dt) {
 			// We loop backwards because we might be removing items from the array while looping.
@@ -14087,6 +14462,7 @@
                 const targetIsWall = currentBlockAtTarget.endsWith('_wall');
 				const targetIsSaw = currentBlockAtTarget === 'saw_table' || currentBlockAtTarget === 'cracked_saw_table';
                 const itemIsWallPlacer = itemProps && itemProps.wallPlace === true;
+				const isSlabItem = itemProps && itemProps.isSlab === true;
 
                 if (rectIntersects(placementRect, playerRect)) {
                     mouse.rightDown = false;
@@ -14191,7 +14567,61 @@
                     worldBlocks[targetKey].overlay = selectedItemType;
                     removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
                     //mouse.rightDown = false; // Consume click
-                } else if (selectedItemIsTrader) {
+                } else if (isSlabItem) {
+					const offsetX = worldMouseX - (targetCol * tileSize);
+					const offsetY = worldMouseY - (targetRow * tileSize);
+					const isVertical = keys['r']; // Check if 'R' is held
+
+					const targetBlockData = worldBlocks[targetKey];
+
+					if (rectIntersects(placementRect, playerRect)) {
+						mouse.rightDown = false;
+						return;
+					}
+
+					if (!targetBlockData || targetBlockData.type === '') {
+						// PLACING NEW SLAB
+						let part = '';
+						if (isVertical) {
+							part = (offsetX < tileSize / 2) ? 'left' : 'right';
+						} else {
+							part = (offsetY < tileSize / 2) ? 'top' : 'bottom';
+						}
+
+						worldBlocks[targetKey] = {
+							type: selectedItemType,
+							mineProg: 0,
+							part: part,
+							orientation: isVertical ? 'vertical' : 'horizontal'
+						};
+						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+						if (typeof playGameSound === 'function' && itemProps.placeSound) playGameSound(itemProps.placeSound);
+
+					} else if (targetBlockData.type.endsWith('_slab') && !targetBlockData.type.startsWith('mixed_')) {
+						// MIXING SLABS
+						const isTargetVertical = targetBlockData.orientation === 'vertical';
+
+						// Only allow mixing if the orientations match
+						if (isVertical && isTargetVertical) {
+							if (targetBlockData.part === 'left' && offsetX >= tileSize / 2) {
+								worldBlocks[targetKey] = { type: 'mixed_slab', leftType: targetBlockData.type, rightType: selectedItemType, mineProg: 0, orientation: 'vertical' };
+								removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+							} else if (targetBlockData.part === 'right' && offsetX < tileSize / 2) {
+								worldBlocks[targetKey] = { type: 'mixed_slab', leftType: selectedItemType, rightType: targetBlockData.type, mineProg: 0, orientation: 'vertical' };
+								removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+							}
+						} else if (!isVertical && !isTargetVertical) {
+							if (targetBlockData.part === 'bottom' && offsetY < tileSize / 2) {
+								worldBlocks[targetKey] = { type: 'mixed_slab', bottomType: targetBlockData.type, topType: selectedItemType, mineProg: 0, orientation: 'horizontal' };
+								removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+							} else if (targetBlockData.part === 'top' && offsetY >= tileSize / 2) {
+								worldBlocks[targetKey] = { type: 'mixed_slab', bottomType: selectedItemType, topType: targetBlockData.type, mineProg: 0, orientation: 'horizontal' };
+								removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+							}
+						}
+						if (typeof playGameSound === 'function' && itemProps.placeSound) playGameSound(itemProps.placeSound);
+					}
+				} else if (selectedItemIsTrader) {
 					// try to place a 1x3 vertical trader with bottom at targetRow
 					const canPlaceTrader = getBlockType(targetCol, targetRow) === '' &&
 										   getBlockType(targetCol, targetRow - 1) === '' &&
@@ -15068,13 +15498,22 @@
                     const itemProps = itemTypes[itemObject.type] || blockTypes[itemObject.type];
                     const itemImg = assets[itemObject.type];
                     
-                    // --- BED ICON LOGIC START ---
+                    // --- BED ICON LOGIC ---
                     if (itemObject.type === 'bed') {
                         const imgElement = document.createElement('img');
                         imgElement.src = 'Bed Icon.png'; 
                         slotDiv.appendChild(imgElement);
                     } 
-                    // --- BED ICON LOGIC END ---
+                    // --- SLAB LOGIC (FIXED) ---
+                    else if (itemProps?.isSlab && assets[itemProps.parentBlock] && !failedAssets[itemProps.parentBlock]) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = assets[itemProps.parentBlock].src;
+                        // CSS trick to make it look like a bottom slab in the UI
+                        imgElement.style.clipPath = 'inset(50% 0 0 0)';
+                        imgElement.style.transform = 'translateY(25%) scale(1.1)';
+                        slotDiv.appendChild(imgElement);
+                    }
+                    // --- STANDARD ITEM LOGIC ---
                     else if (itemImg && !failedAssets[itemObject.type]) {
                         const imgElement = document.createElement('img');
                         imgElement.src = itemImg.src;
@@ -15506,7 +15945,44 @@
                         blockProps = blockTypes[blockType];
                     }
 
-                    if (blockType !== '' && blockProps) {
+                    if (blockType === 'mixed_slab') {
+						const isVert = blockData.orientation === 'vertical';
+						const part1Img = assets[blockTypes[isVert ? blockData.leftType : blockData.bottomType].parentBlock];
+						const part2Img = assets[blockTypes[isVert ? blockData.rightType : blockData.topType].parentBlock];
+
+						if (isVert) {
+							// Draw Vertical Mixed
+							if (part1Img) ctx.drawImage(part1Img, 0, 0, part1Img.width / 2, part1Img.height, screenX, screenY, tileSize / 2, tileSize);
+							if (part2Img) ctx.drawImage(part2Img, part2Img.width / 2, 0, part2Img.width / 2, part2Img.height, screenX + tileSize / 2, screenY, tileSize / 2, tileSize);
+						} else {
+							// Draw Horizontal Mixed
+							if (part1Img) ctx.drawImage(part1Img, 0, part1Img.height / 2, part1Img.width, part1Img.height / 2, screenX, screenY + tileSize / 2, tileSize, tileSize / 2);
+							if (part2Img) ctx.drawImage(part2Img, 0, 0, part2Img.width, part2Img.height / 2, screenX, screenY, tileSize, tileSize / 2);
+						}
+                        
+                        if (maintainBlockDurability && blockData.mineProg > 0) {
+                            const combinedHardness = blockTypes[blockData.bottomType].miningHardness + blockTypes[blockData.topType].miningHardness;
+                            const progressRatio = blockData.mineProg / combinedHardness;
+                            let overlayImage = null;
+                            if (progressRatio >= 0.75) overlayImage = assets['breaking_stage_3'];
+                            else if (progressRatio >= 0.50) overlayImage = assets['breaking_stage_2'];
+                            else if (progressRatio >= 0.25) overlayImage = assets['breaking_stage_1'];
+                            if (overlayImage) ctx.drawImage(overlayImage, screenX, screenY, tileSize, tileSize);
+                        }
+                        continue; // Move on to next block
+                    } else if (blockProps && blockProps.isSlab) {
+						const slabImg = assets[blockProps.parentBlock];
+						const part = blockData.part;
+						
+						if (slabImg) {
+							if (part === 'top') ctx.drawImage(slabImg, 0, 0, slabImg.width, slabImg.height / 2, screenX, screenY, tileSize, tileSize / 2);
+							else if (part === 'bottom') ctx.drawImage(slabImg, 0, slabImg.height / 2, slabImg.width, slabImg.height / 2, screenX, screenY + tileSize / 2, tileSize, tileSize / 2);
+							else if (part === 'left') ctx.drawImage(slabImg, 0, 0, slabImg.width / 2, slabImg.height, screenX, screenY, tileSize / 2, tileSize);
+							else if (part === 'right') ctx.drawImage(slabImg, slabImg.width / 2, 0, slabImg.width / 2, slabImg.height, screenX + tileSize / 2, screenY, tileSize / 2, tileSize);
+						}
+						continue;
+					}
+					if (blockType !== '' && blockProps) {
                         // --- NEW: Cloaking Logic ---
                         // Determine what to display. If cloaked, use the cloaked type, otherwise use the real type.
 						if (cloakingEnabled === true) {
@@ -15975,6 +16451,8 @@
 		});*/
 
         window.addEventListener('keydown', (e) => {
+			const key = e.key.toLowerCase();
+			keys[key] = true;
 			// --- QUICK DELETE & CLEAR INVENTORY LOGIC ---
             if (e.key === 'Delete') {
                 const now = Date.now();
@@ -16190,6 +16668,10 @@
         });
 
         window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+		window.addEventListener('keyup', (e) => {
+			const key = e.key.toLowerCase();
+			keys[key] = false;
+		});
 		// --- TOOLTIP LOGIC ---
 		let isHotbarTooltipActive = false; // Flag to stop mouse tracking
 
@@ -16402,6 +16884,14 @@
 			{ name: "Coffee Beans",
                 input: { 0: { type: 'coffee', count: 1 } },
                 output: 'coffee_bean', outputCount: 3
+            },
+			{ name: "Honey",
+                input: { 0: { type: 'honeycomb', count: 1 } },
+                output: 'honey', outputCount: 2
+            },
+			{ name: "Beehive",
+                input: { 0: { type: 'honeycomb', count: 1 }, 1: { type: 'honeycomb', count: 1 }, 4: { type: 'honeycomb', count: 1 }, 5: { type: 'honeycomb', count: 1 } },
+                output: 'beehive', outputCount: 1
             },
 			{ name: "Wooden Bowl",
                 input: { 0: { type: 'any_plank', count: 1 }, 3: { type: 'any_plank', count: 1 }, 4: { type: 'any_plank', count: 1 }, 7: { type: 'any_plank', count: 1 }, 8: { type: 'any_plank', count: 1 }, 9: { type: 'any_plank', count: 1 }, 10: { type: 'any_plank', count: 1 }, 11: { type: 'any_plank', count: 1 } },
@@ -17203,6 +17693,11 @@
 				output: 'spaghetti', outputCount: 1,
 				byproduct: 'glass_cup', outputCount: 1,
             },
+			{ name: "Sopapilla",
+                input: { 0: { type: 'flour', count: 1 }, 1: { type: 'butter', count: 1 }, 2: { type: 'honey', count: 1 }, 4: { type: 'refined_sugar', count: 1 } },
+                fuel: 1,
+				output: 'sopapilla', outputCount: 2
+            },
 			{ name: "Cake",
                 input: { 0: { type: 'flour', count: 1 }, 1: { type: 'egg', count: 1 }, 2: { type: 'flour', count: 1 }, 3: { type: 'raw_sugar', count: 1 }, 4: { type: 'butter', count: 1 }, 5: { type: 'raw_sugar', count: 1 }, 7: { type: 'cup_of_milk', count: 1 } },
                 fuel: 2,
@@ -17371,6 +17866,7 @@
 			{ input: 'raw_birch', output: 'planked_birch', outputCount: 4 },
 			{ input: 'raw_spruce', output: 'planked_spruce', outputCount: 4 },
             { input: 'raw_pine', output: 'planked_pine', outputCount: 4 },
+			{ input: 'cactus_block', output: 'planked_cactus', outputCount: 4 },
 			// Grinding blocks (sometimes reverse of anvil)
             { input: 'sandstone', output: 'sand', outputCount: 4 },
             { input: 'red_sandstone', output: 'red_sandstone', outputCount: 4 },
@@ -17381,6 +17877,8 @@
 			{ input: 'infinitungsten_pickaxe', output: 'infinitungsten_nugget', outputCount: 1 },
 			{ input: 'broken_mythicalithium_pickaxe', output: 'impure_infinitungsten_nugget', outputCount: 2 },
 			{ input: 'mythicalithium_pickaxe', output: 'mythicalithium_nugget', outputCount: 1 },
+			// Misc
+			{ input: 'branch', output: 'wooden_stick', outputCount: 2 },
 		];
 		// --- CENTRAL STATION REGISTRY ---
 		// Maps block types to their configuration.
@@ -17873,9 +18371,15 @@
                 const itemProps = itemTypes[itemObject.type] || blockTypes[itemObject.type];
                 const itemImg = assets[itemObject.type];
                 if (itemObject.type === 'bed') {
-                    // Force the icon specifically for beds in slots
                     const imgElement = document.createElement('img');
-                    imgElement.src = 'Bed Icon.png'; // Use the icon file directly
+                    imgElement.src = 'Bed Icon.png';
+                    slot.appendChild(imgElement);
+                } else if (itemProps?.isSlab && assets[itemProps.parentBlock] && !failedAssets[itemProps.parentBlock]) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = assets[itemProps.parentBlock].src;
+                    // CSS trick to make it look like a bottom slab in the UI
+                    imgElement.style.clipPath = 'inset(50% 0 0 0)';
+                    imgElement.style.transform = 'translateY(25%) scale(1.1)';
                     slot.appendChild(imgElement);
                 } else if (itemImg && !failedAssets[itemObject.type]) {
                     const imgElement = document.createElement('img');
@@ -18616,6 +19120,11 @@
         
             // Refresh the UI once after all crafts are done
             updateInventoryMenu();
+			
+			// --- NEW: Refresh Recipe List ---
+			// Pass the current search value so we don't lose the filter
+			const searchVal = document.getElementById('recipeSearchInput').value;
+			renderRecipes(searchVal);
         }
 		
 		function normalizeForSearch(str) {
@@ -18633,98 +19142,95 @@
 		}
 		
         function renderRecipes(filterText = '') {
-            const recipeListDiv = document.getElementById('recipeListContainer'); // Find new container ID
-            const iconContainer = document.getElementById('recipeIconContainer');
-            recipeListDiv.innerHTML = '';
-            iconContainer.innerHTML = '';
-            
-            const filterNormalized = normalizeForSearch(filterText);
+			const recipeListDiv = document.getElementById('recipeListContainer');
+			const iconContainer = document.getElementById('recipeIconContainer');
+			// --- NEW: Update Toggle State ---
+			const toggleEl = document.getElementById('recipeCraftableToggle');
+			if (toggleEl) {
+				// Update global state on render (or attach listener elsewhere, but this ensures sync)
+				filterCraftableInventory = toggleEl.checked;
+				// Attach listener if not already there (lazy way to ensure it works)
+				toggleEl.onchange = () => renderRecipes(document.getElementById('recipeSearchInput').value);
+			}
+			// --------------------------------
+
+			recipeListDiv.innerHTML = '';
+			iconContainer.innerHTML = '';
+			
+			const filterNormalized = normalizeForSearch(filterText);
 
 			const filteredRecipes = recipes.filter(r => {
-				// Normalize candidate strings
+				// 1. Check Craftable Filter
+				if (filterCraftableInventory) {
+					// Use player inventory (inventorySlots)
+					if (!hasMaterialsForRecipe(r, inventorySlots)) return false;
+				}
+
+				// 2. Check Text Search
+				if (filterNormalized === '') return true;
+
 				const nameCandidate = normalizeForSearch(r.name || '');
 				const outputCandidate = normalizeForSearch(r.output || '');
-				// check name or output
+				
 				if ((nameCandidate && nameCandidate.includes(filterNormalized)) || (outputCandidate && outputCandidate.includes(filterNormalized))) {
 					return true;
 				}
 
-				// Check ingredients (each r.input[i].type)
 				for (const key in r.input) {
 					const inputItem = r.input[key];
 					if (!inputItem) continue;
 					const inputTypeNorm = normalizeForSearch(inputItem.type || '');
 					if (inputTypeNorm.includes(filterNormalized)) return true;
 				}
-
-				// Check fuel: allow matching "fuel", "pure fuel", "coal", etc. Normalize recipe.fuel type if available.
-				// Some of your recipes store fuel as a count on pure_fuel; if you have a named fuel type, normalize it too.
-				if (r.fuel) {
-					// treat the word "fuel" specially: a user searching "fuel" should match recipes that require fuel
-					if ('fuel'.includes(filterNormalized) && filterNormalized.length > 0) {
-						// If the user typed only 'f' or 'fu' they'd match—avoid that by requiring the filter be at least 2 chars or exactly 'fuel'
-						if (filterNormalized === 'fuel' || filterNormalized.length >= 2) {
-							return true;
-						}
-					}
-					// If you have explicit fuel type string (e.g., r.fuelType), check it:
-					if (r.fuelType && normalizeForSearch(r.fuelType).includes(filterNormalized)) return true;
-					// Also allow matching the literal token "pure_fuel"
-					if (normalizeForSearch('pure_fuel').includes(filterNormalized)) return true;
-				}
-
-				// No match
 				return false;
 			});
 
-            for (const recipe of filteredRecipes) {
-                const recipeItemDiv = document.createElement('div');
-                recipeItemDiv.classList.add('recipe-item');
-                const inputGridDiv = document.createElement('div');
-                inputGridDiv.classList.add('recipe-input-grid');
-                const displayInput = recipe.altInputs?.[0] ?? recipe.input;
-                for (let i = 0; i < 16; i++) {
-                    const inputItem = displayInput[i];
-                    const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
-                    inputGridDiv.appendChild(slot);
-                }
-                recipeItemDiv.appendChild(inputGridDiv);
-                const arrowSpan = document.createElement('span');
-                arrowSpan.classList.add('crafting-arrow');
-                arrowSpan.textContent = '→';
-                recipeItemDiv.appendChild(arrowSpan);
-                const outputDiv = document.createElement('div');
-                outputDiv.classList.add('recipe-output');
-                const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
-                const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount, durability: outputItemProps?.isTool ? outputItemProps.maxDurability : null }, -1, 'recipe');
-                outputDiv.appendChild(outputSlot);
-                const outputNameSpan = document.createElement('span');
-                outputNameSpan.textContent = recipe.name || recipe.output.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                outputDiv.appendChild(outputNameSpan);
-                recipeItemDiv.appendChild(outputDiv);
-                recipeListDiv.appendChild(recipeItemDiv);
+			// Render List View
+			for (const recipe of filteredRecipes) {
+				const recipeItemDiv = document.createElement('div');
+				recipeItemDiv.classList.add('recipe-item');
+				const inputGridDiv = document.createElement('div');
+				inputGridDiv.classList.add('recipe-input-grid');
+				const displayInput = recipe.altInputs?.[0] ?? recipe.input;
+				for (let i = 0; i < 16; i++) {
+					const inputItem = displayInput[i];
+					const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
+					inputGridDiv.appendChild(slot);
+				}
+				recipeItemDiv.appendChild(inputGridDiv);
+				const arrowSpan = document.createElement('span');
+				arrowSpan.classList.add('crafting-arrow');
+				arrowSpan.textContent = '→';
+				recipeItemDiv.appendChild(arrowSpan);
+				const outputDiv = document.createElement('div');
+				outputDiv.classList.add('recipe-output');
+				const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
+				const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount, durability: outputItemProps?.isTool ? outputItemProps.maxDurability : null }, -1, 'recipe');
+				outputDiv.appendChild(outputSlot);
+				const outputNameSpan = document.createElement('span');
+				outputNameSpan.textContent = recipe.name || recipe.output.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+				outputDiv.appendChild(outputNameSpan);
+				recipeItemDiv.appendChild(outputDiv);
+				recipeListDiv.appendChild(recipeItemDiv);
+				
+				// Auto-fill grid on click (Cheat Mode)
 				if (cheatItems === true) {
 					recipeItemDiv.addEventListener('click', () => {
-						// Clear the current crafting grid
 						craftingGridSlots.fill(null);
-
-						// Populate the grid with the clicked recipe's items
 						for (const key in recipe.input) {
 							const required = recipe.input[key];
-							// Note: This shows the pattern but doesn't consume items yet.
 							craftingGridSlots[key] = { type: required.type, count: required.count };
 						}
-
-						// Update the UI to show the pattern in the grid
 						updateInventoryMenu();
 					});
 				}
-            }
+			}
+			// Render Icon View
 			for (const recipe of filteredRecipes) {
-                const iconSlot = createRecipeIconSlot(recipe);
-                iconContainer.appendChild(iconSlot);
-            }
-        }
+				const iconSlot = createRecipeIconSlot(recipe);
+				iconContainer.appendChild(iconSlot);
+			}
+		}
 		
 		function createRecipeIconSlot(recipe) {
             const slot = document.createElement('div');
@@ -19944,6 +20450,10 @@
             
             // 5. Refresh UI
             updateFurnaceMenu();
+			
+			// --- NEW: Refresh Recipe List ---
+			const searchVal = document.getElementById('ovenRecipeSearchInput').value;
+			renderFurnaceRecipes(searchVal);
         }
 		
 		function toggleAnvilMenu(col, row, type, power) {
@@ -20043,25 +20553,37 @@
         }
 
         function renderAnvilRecipes(filterText = '') {
-            const recipeListDiv = document.getElementById('anvilRecipeListContainer');
-            const iconContainer = document.getElementById('anvilRecipeIconContainer');
-            recipeListDiv.innerHTML = '';
-            iconContainer.innerHTML = '';
-            
-            if (!currentlyOpenAnvil) return;
-            const currentPower = currentlyOpenAnvil.power;
-            const filterNormalized = normalizeForSearch(filterText);
+			const recipeListDiv = document.getElementById('anvilRecipeListContainer');
+			const iconContainer = document.getElementById('anvilRecipeIconContainer');
+			// --- NEW: Update Toggle State ---
+			const toggleEl = document.getElementById('anvilCraftableToggle');
+			if (toggleEl) {
+				filterCraftableAnvil = toggleEl.checked;
+				toggleEl.onchange = () => renderAnvilRecipes(document.getElementById('anvilRecipeSearchInput').value);
+			}
+			// --------------------------------
 
-            const filteredRecipes = anvilRecipes.filter(r => {
-                // Filter by anvil power
-                if (r.anvilPower > currentPower) {
-                    return false;
-                }
-                
-                // Filter by search text
-                if (filterNormalized === '') return true;
+			recipeListDiv.innerHTML = '';
+			iconContainer.innerHTML = '';
+			
+			if (!currentlyOpenAnvil) return;
+			const currentPower = currentlyOpenAnvil.power;
+			const filterNormalized = normalizeForSearch(filterText);
 
-                const nameCandidate = normalizeForSearch(r.name || '');
+			const filteredRecipes = anvilRecipes.filter(r => {
+				// Filter by anvil power
+				if (r.anvilPower > currentPower) return false;
+				
+				// 1. Check Craftable Filter (Uses Player Inventory + Anvil Grid technically, but let's check Player Inventory for simplicity as "Source")
+				// NOTE: Anvils consume from their grid, but usually you want to know if you *have* the items in your bag to put in.
+				if (filterCraftableAnvil) {
+					if (!hasMaterialsForRecipe(r, inventorySlots)) return false;
+				}
+
+				// 2. Filter by search text
+				if (filterNormalized === '') return true;
+
+				const nameCandidate = normalizeForSearch(r.name || '');
 				const outputCandidate = normalizeForSearch(r.output || '');
 				if ((nameCandidate && nameCandidate.includes(filterNormalized)) || (outputCandidate && outputCandidate.includes(filterNormalized))) {
 					return true;
@@ -20075,32 +20597,33 @@
 				return false;
 			});
 
-            // Render List View
-            for (const recipe of filteredRecipes) {
-                const recipeItemDiv = document.createElement('div');
-                recipeItemDiv.classList.add('recipe-item');
-                const inputGridDiv = document.createElement('div');
-                inputGridDiv.classList.add('recipe-input-grid');
-                for (let i = 0; i < 16; i++) {
-                    const inputItem = recipe.input[i];
-                    const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
-                    inputGridDiv.appendChild(slot);
-                }
-                recipeItemDiv.appendChild(inputGridDiv);
-                const arrowSpan = document.createElement('span');
-                arrowSpan.classList.add('crafting-arrow');
-                arrowSpan.textContent = '→';
-                recipeItemDiv.appendChild(arrowSpan);
-                const outputDiv = document.createElement('div');
-                outputDiv.classList.add('recipe-output');
-                const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
-                const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount, durability: outputItemProps?.isTool ? outputItemProps.maxDurability : null }, -1, 'recipe');
-                outputDiv.appendChild(outputSlot);
-                const outputNameSpan = document.createElement('span');
-                outputNameSpan.textContent = recipe.name || recipe.output.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                outputDiv.appendChild(outputNameSpan);
-                recipeItemDiv.appendChild(outputDiv);
-                recipeListDiv.appendChild(recipeItemDiv);
+			// Render List View
+			for (const recipe of filteredRecipes) {
+				const recipeItemDiv = document.createElement('div');
+				recipeItemDiv.classList.add('recipe-item');
+				const inputGridDiv = document.createElement('div');
+				inputGridDiv.classList.add('recipe-input-grid');
+				for (let i = 0; i < 16; i++) {
+					const inputItem = recipe.input[i];
+					const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
+					inputGridDiv.appendChild(slot);
+				}
+				recipeItemDiv.appendChild(inputGridDiv);
+				const arrowSpan = document.createElement('span');
+				arrowSpan.classList.add('crafting-arrow');
+				arrowSpan.textContent = '→';
+				recipeItemDiv.appendChild(arrowSpan);
+				const outputDiv = document.createElement('div');
+				outputDiv.classList.add('recipe-output');
+				const outputItemProps = itemTypes[recipe.output] || blockTypes[recipe.output];
+				const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount, durability: outputItemProps?.isTool ? outputItemProps.maxDurability : null }, -1, 'recipe');
+				outputDiv.appendChild(outputSlot);
+				const outputNameSpan = document.createElement('span');
+				outputNameSpan.textContent = recipe.name || recipe.output.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+				outputDiv.appendChild(outputNameSpan);
+				recipeItemDiv.appendChild(outputDiv);
+				recipeListDiv.appendChild(recipeItemDiv);
+				
 				if (cheatItems === true) {
 					recipeItemDiv.addEventListener('click', () => {
 						anvilGridSlots.fill(null);
@@ -20111,15 +20634,14 @@
 						updateAnvilMenu();
 					});
 				}
-            }
-            
-            // Render Icon View
+			}
+			
+			// Render Icon View
 			for (const recipe of filteredRecipes) {
-                // We re-use createRecipeIconSlot, which is generic enough
-                const iconSlot = createRecipeIconSlot(recipe); 
-                iconContainer.appendChild(iconSlot);
-            }
-        }
+				const iconSlot = createRecipeIconSlot(recipe); 
+				iconContainer.appendChild(iconSlot);
+			}
+		}
 
         function checkAnvilRecipe() {
             anvilOutputSlot.innerHTML = '';
@@ -20231,31 +20753,47 @@
             }
         
             updateAnvilMenu();
+			
+			// --- NEW: Refresh Recipe List ---
+			const searchVal = document.getElementById('anvilRecipeSearchInput').value;
+			renderAnvilRecipes(searchVal);
         }
 		
         function renderFurnaceRecipes(filterText = '') {
-            const ovenRecipeListContainer = document.getElementById('ovenRecipeListContainer'); // Find new container ID
-            const iconContainer = document.getElementById('ovenRecipeIconContainer');
-            ovenRecipeListContainer.innerHTML = '';
-            iconContainer.innerHTML = '';
+			const ovenRecipeListContainer = document.getElementById('ovenRecipeListContainer');
+			const iconContainer = document.getElementById('ovenRecipeIconContainer');
+			// --- NEW: Update Toggle State ---
+			const toggleEl = document.getElementById('ovenCraftableToggle');
+			if (toggleEl) {
+				filterCraftableOven = toggleEl.checked;
+				toggleEl.onchange = () => renderFurnaceRecipes(document.getElementById('ovenRecipeSearchInput').value);
+			}
+			// --------------------------------
 
-			// Choose the correct recipe list
+			ovenRecipeListContainer.innerHTML = '';
+			iconContainer.innerHTML = '';
+
 			const stationConfig = craftingStations[currentlyOpenFurnace.type];
 			const recipeList = stationConfig ? stationConfig.recipes : [];
 
-            const filter = filterText.toLowerCase();
-            const filterNormalized = normalizeForSearch(filterText);
+			const filterNormalized = normalizeForSearch(filterText);
 
 			const filteredRecipes = recipeList.filter(r => {
-				// Normalize candidate strings
+				// 1. Check Craftable Filter
+				if (filterCraftableOven) {
+					// Checks if player inventory has inputs + fuel
+					if (!hasMaterialsForRecipe(r, inventorySlots)) return false;
+				}
+
+				// 2. Check Search Text
+				if (filterNormalized === '') return true;
+
 				const nameCandidate = normalizeForSearch(r.name || '');
 				const outputCandidate = normalizeForSearch(r.output || '');
-				// check name or output
 				if ((nameCandidate && nameCandidate.includes(filterNormalized)) || (outputCandidate && outputCandidate.includes(filterNormalized))) {
 					return true;
 				}
 
-				// Check ingredients (each r.input[i].type)
 				for (const key in r.input) {
 					const inputItem = r.input[key];
 					if (!inputItem) continue;
@@ -20263,77 +20801,64 @@
 					if (inputTypeNorm.includes(filterNormalized)) return true;
 				}
 
-				// Check fuel: allow matching "fuel", "pure fuel", "coal", etc. Normalize recipe.fuel type if available.
-				// Some of your recipes store fuel as a count on pure_fuel; if you have a named fuel type, normalize it too.
 				if (r.fuel) {
-					// treat the word "fuel" specially: a user searching "fuel" should match recipes that require fuel
 					if ('fuel'.includes(filterNormalized) && filterNormalized.length > 0) {
-						// If the user typed only 'f' or 'fu' they'd match—avoid that by requiring the filter be at least 2 chars or exactly 'fuel'
-						if (filterNormalized === 'fuel' || filterNormalized.length >= 2) {
-							return true;
-						}
+						if (filterNormalized === 'fuel' || filterNormalized.length >= 2) return true;
 					}
-					// If you have explicit fuel type string (e.g., r.fuelType), check it:
 					if (r.fuelType && normalizeForSearch(r.fuelType).includes(filterNormalized)) return true;
-					// Also allow matching the literal token "pure_fuel"
 					if (normalizeForSearch('pure_fuel').includes(filterNormalized)) return true;
 				}
 
-				// No match
 				return false;
 			});
 
+			// List View Render
 			for (const recipe of filteredRecipes) {
-                const recipeItemDiv = document.createElement('div');
-                recipeItemDiv.classList.add('recipe-item');
-                recipeItemDiv.style.justifyContent = 'center';
-                recipeItemDiv.style.gap = '10px';
-                
-                // CREATE A GRID CONTAINER for the inputs
-                const inputGridDiv = document.createElement('div');
-                inputGridDiv.style.display = 'grid';
-                inputGridDiv.style.gridTemplateColumns = 'repeat(3, 35px)'; // 3x3 grid
-                inputGridDiv.style.gap = '3px';
+				const recipeItemDiv = document.createElement('div');
+				recipeItemDiv.classList.add('recipe-item');
+				recipeItemDiv.style.justifyContent = 'center';
+				recipeItemDiv.style.gap = '10px';
+				
+				const inputGridDiv = document.createElement('div');
+				inputGridDiv.style.display = 'grid';
+				inputGridDiv.style.gridTemplateColumns = 'repeat(3, 35px)';
+				inputGridDiv.style.gap = '3px';
 
-                // LOOP 0-8 to create the full 3x3 grid
-                for (let i = 0; i < 9; i++) {
-                    const inputItem = recipe.input[i];
-                    const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
-                    // Adjust slot size to fit the recipe display
-                    slot.style.width = '35px';
-                    slot.style.height = '35px';
-                    inputGridDiv.appendChild(slot);
-                }
-                recipeItemDiv.appendChild(inputGridDiv);
+				for (let i = 0; i < 9; i++) {
+					const inputItem = recipe.input[i];
+					const slot = createInventorySlot(inputItem ? {type: inputItem.type, count: inputItem.count} : null, -1, 'recipe');
+					slot.style.width = '35px';
+					slot.style.height = '35px';
+					inputGridDiv.appendChild(slot);
+				}
+				recipeItemDiv.appendChild(inputGridDiv);
 
+				const fuelInfo = document.createElement('div');
+				fuelInfo.style.display = 'flex';
+				fuelInfo.style.alignItems = 'center';
+				fuelInfo.style.gap = '5px';
+				fuelInfo.innerHTML = `<span>+</span>`;
+				const fuelSlot = createInventorySlot({type: 'pure_fuel', count: recipe.fuel}, -1, 'recipe');
+				fuelInfo.appendChild(fuelSlot);
+				recipeItemDiv.appendChild(fuelInfo);
 
-                // Plus Sign and Fuel (This part was okay)
-                const fuelInfo = document.createElement('div');
-                fuelInfo.style.display = 'flex';
-                fuelInfo.style.alignItems = 'center';
-                fuelInfo.style.gap = '5px';
-                fuelInfo.innerHTML = `<span>+</span>`;
-                const fuelSlot = createInventorySlot({type: 'pure_fuel', count: recipe.fuel}, -1, 'recipe');
-                fuelInfo.appendChild(fuelSlot);
-                recipeItemDiv.appendChild(fuelInfo);
+				const arrowSpan = document.createElement('span');
+				arrowSpan.classList.add('crafting-arrow');
+				arrowSpan.textContent = '→';
+				recipeItemDiv.appendChild(arrowSpan);
 
-                // Arrow (This part was okay)
-                const arrowSpan = document.createElement('span');
-                arrowSpan.classList.add('crafting-arrow');
-                arrowSpan.textContent = '→';
-                recipeItemDiv.appendChild(arrowSpan);
+				const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount }, -1, 'recipe');
+				recipeItemDiv.appendChild(outputSlot);
 
-                // Display Output Item (This part was okay)
-                const outputSlot = createInventorySlot({ type: recipe.output, count: recipe.outputCount }, -1, 'recipe');
-                recipeItemDiv.appendChild(outputSlot);
-
-                ovenRecipeListContainer.appendChild(recipeItemDiv);
-            }
+				ovenRecipeListContainer.appendChild(recipeItemDiv);
+			}
+			
+			// Icon View Render
 			for (const recipe of filteredRecipes) {
-                const iconSlot = createRecipeIconSlot(recipe);
-                iconContainer.appendChild(iconSlot);
-            }
-        }
+				const iconSlot = createRecipeIconSlot(recipe);
+				iconContainer.appendChild(iconSlot);
+			}
+		}
 
         maintainDurabilityCheckbox.addEventListener('change', () => { maintainBlockDurability = maintainDurabilityCheckbox.checked; });
         autosaveCheckbox.addEventListener('change', () => { autosave = autosaveCheckbox.checked; });
@@ -20519,6 +21044,39 @@
                 }
             }
         }
+
+        function updateParkourTimer(dt) {
+            // Check block directly under player's feet
+            // We add +2 to playerHeight to ensure we are checking the block they are standing ON
+            const centerCol = Math.floor((player.x + playerWidth / 2) / tileSize);
+            const footRow = Math.floor((player.y + playerHeight + 2) / tileSize);
+            
+            const blockBelow = getBlockType(centerCol, footRow);
+        
+            // LOGIC: Start Timer
+            if (blockBelow === 'start_timer') {
+                parkourTimerState = 'running';
+                parkourStartTime = performance.now();
+                parkourFadeTimer = 0;
+            } 
+            // LOGIC: Stop Timer
+            else if (blockBelow === 'stop_timer' && parkourTimerState === 'running') {
+                parkourTimerState = 'finished';
+                parkourFinalTime = performance.now() - parkourStartTime;
+                parkourFadeTimer = 10000; // Show result for 10 seconds (10000ms)
+                
+                // Optional: Play a sound or particles here if you want
+                if (typeof playGameSound === 'function') playGameSound('menu_click_1');
+            }
+        
+            // LOGIC: Handle Fade Out
+            if (parkourTimerState === 'finished') {
+                parkourFadeTimer -= dt;
+                if (parkourFadeTimer <= 0) {
+                    parkourTimerState = 'inactive';
+                }
+            }
+        }
         
         let waiterGo = 0
 		let waiterGone = 0
@@ -20576,6 +21134,7 @@
 			updateAnimatedDrops(dt);
 			updateFire(dt);
 			updateBees(dt);
+            updateParkourTimer(dt);
 			updateBullets(dt);
             plantSpoilageAccumulator += dt;
 
@@ -21081,6 +21640,7 @@
 			if (isChristmasSeason() && isNightTime()) {
 				drawSnow();
 			}
+            drawParkourTimer();
         }
 		
 		function unlockAchievement(id) {
@@ -21328,6 +21888,13 @@
 				if (block.level) sanitizedBlock.lvl = block.level;
 				if (block.xp) sanitizedBlock.xp = block.xp;
 				if (block.trades) sanitizedBlock.trd = block.trades; // Save the trades
+				
+				// NEW SLAB PROPERTIES
+                if (block.orientation) sanitizedBlock.ori = block.orientation;
+                if (block.leftType) sanitizedBlock.lT = block.leftType;
+                if (block.rightType) sanitizedBlock.rT = block.rightType;
+                if (block.bottomType) sanitizedBlock.bT = block.bottomType;
+                if (block.topType) sanitizedBlock.tT = block.topType;
                 
                 sanitizedWorldBlocks[key] = sanitizedBlock;
             }
@@ -21472,6 +22039,14 @@
 					traderType: sBlock.tty || 'default',
 					level: sBlock.lvl || 1,
 					xp: sBlock.xp || 0,
+					
+					// NEW SLAB PROPERTIES
+                    orientation: sBlock.ori,
+                    leftType: sBlock.lT,
+                    rightType: sBlock.rT,
+                    bottomType: sBlock.bT,
+                    topType: sBlock.tT,
+					
 					trades: (() => {
 						// This IIFE (Immediately Invoked Function Expression)
 						// determines the correct trades to load.
@@ -21820,6 +22395,13 @@
 			  if (block.level) sanitizedBlock.lvl = block.level;
 			  if (block.xp) sanitizedBlock.xp = block.xp;
 			  if (block.trades) sanitizedBlock.trd = block.trades; // Save the trades
+			  
+			  // NEW SLAB PROPERTIES
+              if (block.orientation) sanitizedBlock.ori = block.orientation;
+              if (block.leftType) sanitizedBlock.lT = block.leftType;
+              if (block.rightType) sanitizedBlock.rT = block.rightType;
+              if (block.bottomType) sanitizedBlock.bT = block.bottomType;
+              if (block.topType) sanitizedBlock.tT = block.topType;
                 
               sanitizedWorldBlocks[key] = sanitizedBlock;
             }
@@ -22051,6 +22633,13 @@
 					if (block.level) sanitizedBlock.lvl = block.level;
 					if (block.xp) sanitizedBlock.xp = block.xp;
 					if (block.trades) sanitizedBlock.trd = block.trades;
+					
+					// NEW SLAB PROPERTIES
+					if (block.orientation) sanitizedBlock.ori = block.orientation;
+					if (block.leftType) sanitizedBlock.lT = block.leftType;
+					if (block.rightType) sanitizedBlock.rT = block.rightType;
+					if (block.bottomType) sanitizedBlock.bT = block.bottomType;
+					if (block.topType) sanitizedBlock.tT = block.topType;
 					
 					sanitizedWorldBlocks[key] = sanitizedBlock;
 				}

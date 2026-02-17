@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Layers Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87ceeb; /* Set body background to sky blue */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: sans-serif;
+            color: white;
+        }
+        canvas {
+            border: 2px solid #555;
+            display: block;
+            width: 100%; /* Make canvas fill container width */
+            height: 100%; /* Make canvas fill container height */
+        }
+        #gameContainer {
+            position: relative;
+            display: inline-block; /* To center the container */
+            width: 100vw; /* Ensure game container takes full viewport width */
+            height: 100vh; /* Ensure game container takes full viewport height */
+            overflow: hidden; /* Hide overflow from canvas scaling */
+        }
+        #hotbar {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 50;
+        }
+        .hotbar-slot {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #aaa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .hotbar-slot.selected {
+            border-color: yellow;
+        }
+        .hotbar-slot span {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
+            color: white; /* Ensure count is visible */
+            text-shadow: 1px 1px 2px black; /* Add shadow for readability */
+        }
+        .hotbar-slot img {
+             /* Represents the block image */
+            width: 30px;
+            height: 30px;
+            image-rendering: pixelated; /* Optional: for pixel art style */
+        }
+         /* Style for fallback text/color in hotbar if image fails */
+        .hotbar-slot .fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            text-align: center;
+            word-break: break-word; /* Prevent long names from overflowing */
+            padding: 2px;
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            z-index: 100;
+        }
+         #coordsDisplay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 50; /* Ensure it's above the canvas */
+        }
+        /* Save Menu Styles */
+        #saveMenuOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85); /* Darker, more opaque overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* On top of everything */
+            font-family: 'Inter', sans-serif; /* Use Inter font */
+            color: #E0E0E0; /* Light gray text */
+            flex-direction: column;
+            gap: 20px;
+            display: none; /* Hidden by default */
+        }
+
+        #saveMenu {
+            background-color: #333; /* Darker background for the menu */
+            padding: 30px;
+            border-radius: 15px; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 2px solid #555; /* Subtle border */
+        }
+
+        #saveMenu h2 {
+            color: #00BFFF; /* Deep sky blue for headings */
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em; /* Larger heading */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        #saveSlots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Responsive grid */
+            gap: 15px;
+            max-height: 400px; /* Scrollable area for slots */
+            overflow-y: auto;
+            padding-right: 10px; /* For scrollbar */
+        }
+
+        .save-slot {
+            background-color: #444; /* Slightly lighter than menu background */
+            border: 1px solid #666;
+            border-radius: 10px; /* Rounded corners for slots */
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out; /* Smooth transitions */
+            position: relative;
+            overflow: hidden; /* Hide overflow for thumbnail */
+        }
+
+        .save-slot:hover {
+            background-color: #555;
+            transform: translateY(-3px); /* Lift effect on hover */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .save-slot.selected-slot {
+            border-color: #00BFFF; /* Highlight selected slot */
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); /* Glow effect */
+        }
+
+        .save-slot img {
+            width: 100%;
+            height: 100px; /* Fixed height for thumbnails */
+            object-fit: cover; /* Cover the area, crop if necessary */
+            border-radius: 5px;
+            margin-bottom: 5px;
+            border: 1px solid #777; /* Border for thumbnail */
+        }
+
+        .save-slot-info {
+            font-size: 0.9em;
+            color: #CCC;
+        }
+
+        .save-slot-name {
+            font-weight: bold;
+            color: #FFF;
+            word-break: break-word; /* Ensure long names wrap */
+        }
+
+        #saveNameInput, #seedInput { /* Apply styles to both inputs */
+            width: calc(100% - 20px); /* Adjust for padding */
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #666;
+            border-radius: 8px;
+            background-color: #555;
+            color: white;
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding in width */
+        }
+
+        #saveNameInput::placeholder, #seedInput::placeholder {
+            color: #AAA;
+        }
+
+        .menu-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-buttons button:hover {
+            transform: translateY(-2px);
+        }
+
+        #saveButton {
+            background-color: #28a745; /* Green */
+            color: white;
+        }
+        #saveButton:hover {
+            background-color: #218838;
+        }
+
+        #loadButton {
+            background-color: #007bff; /* Blue */
+            color: white;
+        }
+        #loadButton:hover {
+            background-color: #0056b3;
+        }
+
+        #deleteButton {
+            background-color: #dc3545; /* Red */
+            color: white;
+        }
+        #deleteButton:hover {
+            background-color: #c82333;
+        }
+
+        #resumeButton, #newGameButton { /* Apply to New Game button as well */
+            background-color: #6c757d; /* Gray */
+            color: white;
+        }
+        #resumeButton:hover, #newGameButton:hover {
+            background-color: #5a6268;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 600px) {
+            #saveMenu {
+                padding: 20px;
+                width: 95%;
+            }
+            #saveMenu h2 {
+                font-size: 1.5em;
+            }
+            #saveSlots {
+                grid-template-columns: 1fr; /* Single column on small screens */
+                max-height: 300px;
+            }
+            .menu-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .menu-buttons button {
+                width: 100%;
+            }
+        }
+
+        /* Custom Message Box Styles */
+        #customMessageBoxOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Higher than save menu */
+            font-family: 'Inter', sans-serif;
+            color: white;
+            display: none; /* Hidden by default */
+        }
+
+        #customMessageBox {
+            background-color: #444;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 80%;
+            border: 1px solid #666;
+        }
+
+        #messageBoxText {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        #messageBoxButtons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        #messageBoxButtons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s ease;
+        }
+
+        #messageBoxButtons button:hover {
+            background-color: #0056b3;
+        }
+
+        #messageBoxCancelButton {
+            background-color: #6c757d;
+        }
+        #messageBoxCancelButton:hover {
+            background-color: #5a6268;
+        }
+
+        /* Inventory & Crafting Menu Styles */
+        #inventoryCraftingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-family: 'Inter', sans-serif;
+            color: #E0E0E0;
+        }
+
+        #inventoryCraftingMenu {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+            border: 2px solid #555;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #inventoryCraftingMenu h2 {
+            color: #00BFFF;
+            text-align: center;
+            margin: 0 0 10px 0;
+        }
+        
+        .inventory-section {
+            padding: 10px;
+            background-color: #444;
+            border-radius: 10px;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+        }
+
+        .inventory-slot {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #777;
+            background-color: #555;
+            border-radius: 5px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .inventory-slot:hover {
+            background-color: #666;
+        }
+        .inventory-slot img {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+        }
+        .inventory-slot .item-count {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+        /* New style for hotbar slots within the inventory menu */
+        #inventoryHotbarGrid .hotbar-slot {
+            border-color: yellow; /* Distinguish hotbar slots in inventory */
+        }
+
+
+        .crafting-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #craftingGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 45px); /* Changed to 4x4 */
+            grid-template-rows: repeat(4, 45px); /* Changed to 4x4 */
+            gap: 5px;
+        }
+        
+        .crafting-arrow {
+            font-size: 2em;
+            color: #999;
+        }
+
+        #craftingOutput {
+            width: 50px;
+            height: 50px;
+            border: 2px dashed #999;
+        }
+        
+        #craftButton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            align-self: center;
+        }
+        #craftButton:disabled {
+            background-color: #5a6268;
+            cursor: not-allowed;
+        }
+        /* Removed #heldItemCursor styles as it's no longer used */
+
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="hotbar">
+        </div>
+        <div id="loadingScreen">Loading Assets...</div>
+        <div id="coordsDisplay">Coords: (0, 0)</div>
+    </div>
+
+    <!-- Save Menu Overlay -->
+    <div id="saveMenuOverlay">
+        <div id="saveMenu">
+            <h2>Save / Load Game</h2>
+            <div class="menu-item" style="margin-bottom: 15px;">
+                <label for="seedInput" style="display: block; margin-bottom: 5px; color: #CCC; text-align: center;">World Seed (optional):</label>
+                <input type="text" id="seedInput" placeholder="Leave empty for random seed" style="width: calc(100% - 20px); padding: 10px; border-radius: 5px; border: 1px solid #555; background-color: #444; color: white;">
+            </div>
+            <input type="text" id="saveNameInput" placeholder="Enter save name (optional)">
+            <div id="saveSlots">
+                <!-- Save slots will be dynamically loaded here -->
+            </div>
+            <div class="menu-buttons">
+                <button id="newGameButton">New Game</button>
+                <button id="saveButton">Save Game</button>
+                <button id="loadButton">Load Game</button>
+                <button id="deleteButton">Delete Save</button>
+                <button id="resumeButton">Resume Game</button>
+            </div>
+            <label style="margin-top: 10px; display: flex; align-items: center; justify-content: center;">
+                <input type="checkbox" id="maintainDurabilityCheckbox" style="margin-right: 8px;"> Maintain Block Durability
+            </label>
+        </div>
+    </div>
+
+    <!-- Inventory & Crafting Menu Overlay -->
+    <div id="inventoryCraftingOverlay">
+        <div id="inventoryCraftingMenu">
+            <h2>Inventory & Crafting</h2>
+            <div class="inventory-section">
+                <h3>Crafting</h3>
+                <div class="crafting-area">
+                    <div id="craftingGrid">
+                        <!-- Crafting grid slots will be dynamically generated here -->
+                    </div>
+                    <div class="crafting-arrow">&#10144;</div>
+                    <div class="inventory-slot" id="craftingOutput"></div>
+                </div>
+                 <button id="craftButton" disabled>Craft</button>
+            </div>
+            <div class="inventory-section">
+                <h3>Your Inventory</h3>
+                <div id="playerInventoryGrid" class="inventory-grid">
+                    <!-- Player's full inventory will be shown here -->
+                </div>
+            </div>
+             <div class="inventory-section">
+                <h3>Hotbar Slots</h3>
+                <div id="inventoryHotbarGrid" class="inventory-grid">
+                    <!-- Hotbar slots will be duplicated here for rearrangement -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box Overlay -->
+    <div id="customMessageBoxOverlay">
+        <div id="customMessageBox">
+            <p id="messageBoxText"></p>
+            <div id="messageBoxButtons">
+                <!-- Buttons will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const hotbarSize = 10;
+
+        const hotbarDiv = document.getElementById('hotbar');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const coordsDisplay = document.getElementById('coordsDisplay');
+        
+        // Save Menu
+        const saveMenuOverlay = document.getElementById('saveMenuOverlay');
+        const saveSlotsContainer = document.getElementById('saveSlots');
+        const saveNameInput = document.getElementById('saveNameInput');
+        const seedInput = document.getElementById('seedInput');
+        const newGameButton = document.getElementById('newGameButton');
+        const saveButton = document.getElementById('saveButton');
+        const loadButton = document.getElementById('loadButton');
+        const deleteButton = document.getElementById('deleteButton');
+        const resumeButton = document.getElementById('resumeButton');
+        const maintainDurabilityCheckbox = document.getElementById('maintainDurabilityCheckbox');
+
+        // Inventory/Crafting Menu
+        const inventoryCraftingOverlay = document.getElementById('inventoryCraftingOverlay');
+        const playerInventoryGrid = document.getElementById('playerInventoryGrid');
+        const inventoryHotbarGrid = document.getElementById('inventoryHotbarGrid');
+        const craftingGridDiv = document.getElementById('craftingGrid'); // Reference to the 4x4 crafting grid container
+        const craftingOutputSlot = document.getElementById('craftingOutput');
+        const craftButton = document.getElementById('craftButton');
+
+        // Custom Message Box elements
+        const customMessageBoxOverlay = document.getElementById('customMessageBoxOverlay');
+        const messageBoxText = document.getElementById('messageBoxText');
+        const messageBoxButtons = document.getElementById('messageBoxButtons');
+
+        let heldItem = null;
+        let heldItemCount = 0;
+
+        const tileSize = 40;
+        const playerHeightBlocks = 3;
+        const playerWidthBlocks = 1;
+        const playerHeight = playerHeightBlocks * tileSize;
+        const playerWidth = playerWidthBlocks * tileSize;
+
+        // World generation parameters
+        const baseSurfaceLevel = 15;
+        const minSurfaceVariation = 0;
+        const maxSurfaceVariation = 2;
+        const surfaceLevelRange = maxSurfaceVariation - minSurfaceVariation + 1;
+        const dirtLayerDepth = 6;
+        const stoneLayerDepth = 18;
+        const compactingStoneLayerDepth = 1;
+        const soilPatchProbability = 0.0005;
+        const soilPatchDepth = 10;
+        const soilInfluenceRadius = 6;
+        const soilVeinProbability = 0.02;
+        const coalVeinProbability = 0.01;
+        const copperVeinProbability = 0.005;
+        const treeProbability = 0.08;
+        const grassProbability = 0.4;
+        const tallGrassProbability = 0.1;
+
+        const columnSurfaceHeights = {};
+        const soilPatchCenters = [];
+        const maxSoilPatchCenters = 50;
+        const worldBlocks = {};
+
+        // --- Seeded PRNG Implementation ---
+        function mulberry32(a) {
+            return function() {
+                var t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ t >>> 15, t | 1);
+                t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+
+        let currentSeed = Date.now();
+        let random = mulberry32(currentSeed);
+
+        function setSeed(seed) {
+            currentSeed = seed;
+            random = mulberry32(seed);
+        }
+
+        // Block types and their properties (imgSrc, solid, mining hardness, drop, color - for fallback)
+        const blockTypes = {
+            'sky': { imgSrc: null, solid: false, miningHardness: 0, drop: null, color: '#87ceeb' },
+            'grass_dirt': { imgSrc: 'Grass Dirt Block.png', solid: true, miningHardness: 100, drop: 'dirt', color: '#8B4513' },
+            'dirt': { imgSrc: 'Dirt Block.png', solid: true, miningHardness: 100, drop: 'dirt', color: '#A0522D' },
+            'stone': { imgSrc: 'Stone Block.png', solid: true, miningHardness: 500, drop: 'stone', color: '#808080' },
+            'compacting_stone': { imgSrc: 'Compacting Stone Block.png', solid: true, miningHardness: 1000, drop: 'compacted_stone', color: '#696969' },
+            'compacted_stone': { imgSrc: 'Compacted Stone Block.png', solid: true, miningHardness: 2000, drop: 'compacted_stone', color: '#708090' },
+            'grass_soil': { imgSrc: 'Grass Soil Block.png', solid: true, miningHardness: 80, drop: 'soil', color: '#90EE90' },
+            'soil': { imgSrc: 'Soil Block.png', solid: true, miningHardness: 70, drop: 'soil', color: '#A0522D' },
+            'coal_stone': { imgSrc: 'Coal Stone Block.png', solid: true, miningHardness: 600, drop: 'coal', color: '#36454F' },
+            'copper_compacted_stone': { imgSrc: 'Copper Compacted Stone Block.png', solid: true, miningHardness: 2500, drop: 'copper_ore', color: '#B87333' },
+            // Oak Blocks
+            'raw_oak': { imgSrc: 'Raw Oak Block.png', solid: true, miningHardness: 150, drop: 'raw_oak', color: '#654321' },
+            'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drop: null, color: '#228B22' },
+            'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 120, drop: 'planked_oak', color: '#D2B48C' },
+            // Birch Blocks
+            'raw_birch': { imgSrc: 'Raw Birch Block.png', solid: true, miningHardness: 150, drop: 'raw_birch', color: '#C0C0C0' },
+            'birch_bush': { imgSrc: 'Birch Bush Block.png', solid: true, miningHardness: 20, drop: null, color: '#6B8E23' },
+            'planked_birch': { imgSrc: 'Planked Birch Block.png', solid: true, miningHardness: 120, drop: 'planked_birch', color: '#F5DEB3' },
+            // Spruce Blocks
+            'raw_spruce': { imgSrc: 'Raw Spruce Block.png', solid: true, miningHardness: 150, drop: 'raw_spruce', color: '#4A3B2F' },
+            'spruce_bush': { imgSrc: 'Spruce Bush Block.png', solid: true, miningHardness: 20, drop: null, color: '#0A4A2A' },
+            'planked_spruce': { imgSrc: 'Planked Spruce Block.png', solid: true, miningHardness: 120, drop: 'planked_spruce', color: '#8B4513' },
+            // New Blocks: Grass, Tall Grass, Planted Seeds, Wheat
+            'grass': { imgSrc: 'Grass.png', solid: false, miningHardness: 10, drop: 'seeds', dropChance: 0.2, color: '#7CFC00' },
+            'tall_grass': { imgSrc: 'Tall Grass.png', solid: false, miningHardness: 10, drop: 'seeds', dropChance: 0.3, color: '#6B8E23' },
+            'planted_seeds': { imgSrc: null, solid: true, miningHardness: 100, drop: null, color: '#D2B48C' }, // Make planted_seeds solid
+            'wheat': { imgSrc: 'Wheat.png', solid: false, miningHardness: 10, drop: 'wheat_item', color: '#F5DEB3' },
+            'seed_dirt_block': { imgSrc: 'Seed Dirt Block.png', solid: true, miningHardness: 100, drop: ['dirt', 'seeds'], color: '#A0522D' }, // Now solid and drops dirt + seeds
+            'seed_soil_block': { imgSrc: 'Seed Soil Block.png', solid: true, miningHardness: 70, drop: ['soil', 'seeds'], color: '#A0522D' } // Now solid and drops soil + seeds
+        };
+
+        const itemTypes = {
+             'coal': { imgSrc: 'Coal Nugget.png', color: '#36454F' },
+             'copper_ore': { imgSrc: 'Copper Nugget.png', color: '#B87333' },
+             'seeds': { imgSrc: 'Seeds.png', color: '#8B4513' },
+             'wheat_item': { imgSrc: 'Wheat.png', color: '#F5DEB3' }
+        };
+
+        const breakingStageAssets = {
+            'breaking_stage_1': { imgSrc: 'Breaking Stage 1.png' },
+            'breaking_stage_2': { imgSrc: 'Breaking Stage 2.png' },
+            'breaking_stage_3': { imgSrc: 'Breaking Stage 3.png' }
+        };
+
+        const assetsToLoadList = { ...blockTypes, ...itemTypes, ...breakingStageAssets };
+        const assets = {};
+        let assetsToLoad = 0;
+        let assetsLoaded = 0;
+        const failedAssets = {};
+
+        function loadAssets() {
+            for (const type in assetsToLoadList) {
+                if (assetsToLoadList[type].imgSrc) {
+                    assetsToLoad++;
+                    const img = new Image();
+                    img.onload = () => {
+                        assetsLoaded++;
+                        assets[type] = img;
+                        checkAllAssetsLoaded();
+                    };
+                    img.onerror = () => {
+                        console.error(`Failed to load asset: ${assetsToLoadList[type].imgSrc}`);
+                        failedAssets[type] = true;
+                        assetsLoaded++;
+                        checkAllAssetsLoaded();
+                    };
+                    img.src = assetsToLoadList[type].imgSrc;
+                }
+            }
+            if (assetsToLoad === 0) {
+                 loadingScreen.style.display = 'none';
+                 init();
+            }
+        }
+
+        function checkAllAssetsLoaded() {
+             if (assetsLoaded === assetsToLoad) {
+                 loadingScreen.style.display = 'none';
+                 init();
+            }
+        }
+
+        const player = {
+            x: 10 * tileSize, y: 0, dx: 0, dy: 0,
+            speed: 5, jumpStrength: -15, onGround: false, gravity: 0.8
+        };
+
+        const playerMiningPower = 1;
+        const camera = { x: 0, y: 0 };
+        const keys = {};
+        const mouse = { x: 0, y: 0, down: false, rightDown: false };
+        let miningTarget = null;
+        
+        const inventory = {};
+        const hotbarItems = new Array(hotbarSize).fill(null);
+        let selectedHotbarSlot = 0;
+
+        let isGameActive = true;
+        let isGamePaused = false;
+        let maintainBlockDurability = false;
+
+        function isTreeBlock(type) {
+            return type === 'raw_oak' || type === 'oak_bush' ||
+                   type === 'raw_birch' || type === 'birch_bush' ||
+                   type === 'raw_spruce' || type === 'spruce_bush';
+        }
+
+        function generateTree(col, surfaceRow, treeType) {
+            let trunkBlockType;
+            let bushBlockType;
+            let minTrunkHeight;
+            let maxTrunkHeight;
+            let trunkHeight;
+            let canopyBaseWidth;
+            let canopyTopHeight;
+            let minCanopyRadius;
+            let maxCanopyRadius;
+            let horizontalSpreadFactorMin;
+            let horizontalSpreadFactorMax;
+
+            if (treeType === 'oak') {
+                trunkBlockType = 'raw_oak';
+                bushBlockType = 'oak_bush';
+                minTrunkHeight = 4;
+                maxTrunkHeight = 6;
+                trunkHeight = minTrunkHeight + Math.floor(random() * (maxTrunkHeight - minTrunkHeight + 1));
+                minCanopyRadius = 2;
+                maxCanopyRadius = 3;
+                horizontalSpreadFactorMin = 0.5;
+                horizontalSpreadFactorMax = 1.0;
+            } else if (treeType === 'birch') {
+                trunkBlockType = 'raw_birch';
+                bushBlockType = 'birch_bush';
+                minTrunkHeight = 5;
+                maxTrunkHeight = 8;
+                trunkHeight = minTrunkHeight + Math.floor(random() * (maxTrunkHeight - minTrunkHeight + 1));
+                minCanopyRadius = 1;
+                maxCanopyRadius = 2;
+                horizontalSpreadFactorMin = 0.7;
+                horizontalSpreadFactorMax = 0.9;
+            } else if (treeType === 'spruce') {
+                trunkBlockType = 'raw_spruce';
+                bushBlockType = 'spruce_bush';
+                minTrunkHeight = 6;
+                maxTrunkHeight = 10;
+                trunkHeight = minTrunkHeight + Math.floor(random() * (maxTrunkHeight - minTrunkHeight + 1));
+                canopyBaseWidth = 5;
+                canopyTopHeight = (trunkHeight - 2) + 3 + Math.floor(random() * 3);
+            }
+            else {
+                console.warn("Unknown tree type:", treeType);
+                return;
+            }
+
+            const trunkBaseWidth = random() < 0.4 && treeType === 'oak' ? 2 : 1;
+
+            for (let i = 0; i < trunkHeight; i++) {
+                const currentTrunkWidth = (i === 0 && trunkBaseWidth === 2) ? 2 : 1;
+                for (let w = 0; w < currentTrunkWidth; w++) {
+                    const trunkCol = col - Math.floor((currentTrunkWidth - 1) / 2) + w;
+                    const key = `${trunkCol},${surfaceRow - 1 - i}`;
+                    if (isSolid(trunkCol, surfaceRow - i) || (i === 0 && getBlockType(trunkCol, surfaceRow) === 'grass_dirt')) {
+                        worldBlocks[key] = { type: trunkBlockType, miningProgress: 0 };
+                    }
+                }
+            }
+
+            const topOfTrunkRow = surfaceRow - trunkHeight;
+
+            if (treeType === 'oak' || treeType === 'birch') {
+                const canopyRadius = minCanopyRadius + Math.floor(random() * (maxCanopyRadius - minCanopyRadius + 1));
+
+                for (let yOffset = 0; yOffset <= canopyRadius + 2; yOffset++) {
+                    let currentLayerRadius = canopyRadius - Math.floor(yOffset / 1.5);
+                    currentLayerRadius = Math.max(0, currentLayerRadius);
+
+                    const horizontalSpread = horizontalSpreadFactorMin + random() * (horizontalSpreadFactorMax - horizontalSpreadFactorMin);
+                    const effectiveRadius = currentLayerRadius * horizontalSpread;
+
+                    for (let x = -Math.ceil(effectiveRadius); x <= Math.ceil(effectiveRadius); x++) {
+                        if (random() < 0.85) {
+                            const leafCol = col + Math.round(x);
+                            const leafRow = topOfTrunkRow - yOffset;
+
+                            const key = `${leafCol},${leafRow}`;
+                            if (!worldBlocks[key] || worldBlocks[key].type !== trunkBlockType) {
+                                worldBlocks[key] = { type: bushBlockType, miningProgress: 0 };
+                            }
+                        }
+                    }
+                }
+                
+                if (treeType === 'oak') {
+                    const branchCount = Math.floor(random() * 3);
+                    for(let i = 0; i < branchCount; i++) {
+                        const branchY = topOfTrunkRow + 1 - Math.floor(random() * 3);
+                        const branchDir = random() < 0.5 ? -1 : 1;
+                        const branchLength = 1 + Math.floor(random() * 2);
+                        for(let l = 1; l <= branchLength; l++) {
+                            const branchKey = `${col + (l * branchDir)},${branchY}`;
+                            if(!worldBlocks[branchKey]) {
+                                 worldBlocks[branchKey] = { type: trunkBlockType, miningProgress: 0 };
+                            }
+                        }
+                        const leafClusterRadius = 1 + Math.floor(random() * 1.5);
+                        for (let lx = -leafClusterRadius; lx <= leafClusterRadius; lx++) {
+                            for (let ly = -leafClusterRadius; ly <= leafClusterRadius; ly++) {
+                                if (lx*lx + ly*ly <= leafClusterRadius*leafClusterRadius && random() < 0.9) {
+                                    const leafKey = `${col + (branchLength * branchDir) + lx},${branchY - 1 + ly}`;
+                                    if(!worldBlocks[leafKey] || worldBlocks[leafKey].type !== trunkBlockType) {
+                                        worldBlocks[leafKey] = { type: bushBlockType, miningProgress: 0 };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (treeType === 'spruce') {
+                const canopyBottomRow = topOfTrunkRow + Math.floor(trunkHeight * 0.3);
+
+                for (let r = canopyBottomRow; r >= topOfTrunkRow - 3; r--) {
+                    const heightFromCanopyBottom = canopyBottomRow - r;
+                    let currentCanopyRadius = Math.max(0, Math.floor(canopyBaseWidth / 2 - heightFromCanopyBottom / 1.5));
+                    
+                    for (let x = -currentCanopyRadius; x <= currentCanopyRadius; x++) {
+                        const leafCol = col + x;
+                        const key = `${leafCol},${r}`;
+                        if (!worldBlocks[key] || worldBlocks[key].type !== trunkBlockType) {
+                            if (random() < 0.95) {
+                                worldBlocks[key] = { type: bushBlockType, miningProgress: 0 };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function getBlockData(col, row) {
+            const key = `${col},${row}`;
+            if (worldBlocks[key] !== undefined) {
+                return worldBlocks[key];
+            }
+
+            let surfaceHeight;
+            if (columnSurfaceHeights[col] !== undefined) {
+                surfaceHeight = columnSurfaceHeights[col];
+            } else {
+                let prevSurface = baseSurfaceLevel + Math.floor(surfaceLevelRange / 2);
+                if (columnSurfaceHeights[col - 1] !== undefined) {
+                    prevSurface = columnSurfaceHeights[col - 1];
+                } else if (columnSurfaceHeights[col + 1] !== undefined) {
+                     prevSurface = columnSurfaceHeights[col + 1];
+                }
+                const offset = Math.floor(random() * 3) - 1;
+                let potentialHeight = prevSurface + offset;
+                surfaceHeight = Math.max(baseSurfaceLevel + minSurfaceVariation, Math.min(baseSurfaceLevel + maxSurfaceVariation, potentialHeight));
+                columnSurfaceHeights[col] = surfaceHeight;
+            }
+
+            let blockType;
+            if (row < surfaceHeight) {
+                blockType = 'sky';
+            } else if (row === surfaceHeight) {
+                blockType = 'grass_dirt';
+            } else if (row > surfaceHeight && row <= surfaceHeight + dirtLayerDepth) {
+                blockType = 'dirt';
+            } else if (row > surfaceHeight + dirtLayerDepth && row <= surfaceHeight + dirtLayerDepth + stoneLayerDepth) {
+                blockType = 'stone';
+            } else if (row > surfaceHeight + dirtLayerDepth && row <= surfaceHeight + dirtLayerDepth + stoneLayerDepth + compactingStoneLayerDepth) {
+                 blockType = 'compacting_stone';
+            } else {
+                 blockType = 'compacted_stone';
+            }
+
+            if ((blockType === 'dirt' || blockType === 'grass_dirt') && random() < soilVeinProbability) {
+                 if (row === surfaceHeight) blockType = 'grass_soil';
+                 else blockType = 'soil';
+            }
+            if (blockType === 'stone' && random() < coalVeinProbability) {
+                 blockType = 'coal_stone';
+            }
+            if (blockType === 'compacted_stone' && random() < copperVeinProbability) {
+                 blockType = 'copper_compacted_stone';
+            }
+
+            // --- Grass & Tall Grass Generation ---
+            // Only generate if the block is grass_dirt or grass_soil and the block above is sky
+            if ((blockType === 'grass_dirt' || blockType === 'grass_soil') && getBlockType(col, row - 1) === 'sky') {
+                if (random() < tallGrassProbability) { // Prioritize tall grass
+                    worldBlocks[`${col},${row - 1}`] = { type: 'tall_grass', miningProgress: 0 };
+                } else if (random() < grassProbability) { // Then normal grass
+                    worldBlocks[`${col},${row - 1}`] = { type: 'grass', miningProgress: 0 };
+                }
+            }
+
+            // --- Tree Generation Call ---
+            // A tree can only grow on grass_dirt, and check a random chance
+            if (blockType === 'grass_dirt' && random() < treeProbability) {
+                const checkWidth = 9; 
+                const checkHeight = 17; 
+
+                const startCheckCol = col - Math.floor(checkWidth / 2);
+                const endCheckCol = col + Math.floor(checkWidth / 2);
+                const startCheckRow = surfaceHeight - checkHeight + 1;
+                const endCheckRow = surfaceHeight;
+
+                let canPlaceTree = true;
+
+                for (let c = startCheckCol; c <= endCheckCol; c++) {
+                    for (let r = startCheckRow; r <= endCheckRow; r++) {
+                        const existingBlockData = worldBlocks[`${c},${r}`];
+                        if (existingBlockData && isTreeBlock(existingBlockData.type)) {
+                            canPlaceTree = false;
+                            break;
+                        }
+                    }
+                    if (!canPlaceTree) break;
+                }
+
+                if (canPlaceTree) {
+                    const treeTypeRoll = random();
+                    let treeTypeToGenerate;
+                    if (treeTypeRoll < 0.33) {
+                        treeTypeToGenerate = 'oak';
+                    } else if (treeTypeRoll < 0.66) {
+                        treeTypeToGenerate = 'birch';
+                    } else {
+                        treeTypeToGenerate = 'spruce';
+                    }
+                    generateTree(col, row, treeTypeToGenerate);
+                }
+            }
+
+            const newBlockData = { type: blockType, miningProgress: 0 };
+            worldBlocks[key] = newBlockData;
+            return newBlockData;
+        }
+
+        function getBlockType(col, row) {
+            return getBlockData(col, row).type;
+        }
+
+        function isSolid(col, row) {
+            const blockData = getBlockData(col, row);
+            // If it's a planted_seeds block, its solidity depends on its baseBlockType
+            if (blockData.type === 'planted_seeds') {
+                // planted_seeds is now explicitly solid in blockTypes definition
+                return blockTypes['planted_seeds'].solid;
+            }
+            return blockTypes[blockData.type] && blockTypes[blockData.type].solid;
+        }
+
+        function worldToGrid(x, y) {
+            return { col: Math.floor(x / tileSize), row: Math.floor(y / tileSize) };
+        }
+
+        function gridToWorld(col, row) {
+            return { x: col * tileSize, y: row * tileSize };
+        }
+
+        function rectIntersects(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width && rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height && rect1.y + rect1.height > rect2.y;
+        }
+
+        function updatePlayer(dt) {
+            const factor = isGameActive ? dt / 1000 * 60 : 0;
+            player.dy += player.gravity * factor;
+            if (keys['ArrowLeft']) player.dx = -player.speed;
+            else if (keys['ArrowRight']) player.dx = player.speed;
+            else player.dx = 0;
+
+            let nextPlayerX = player.x + player.dx * factor;
+            let nextPlayerY = player.y + player.dy * factor;
+
+            const playerRectY = { x: player.x, y: nextPlayerY, width: playerWidth, height: playerHeight };
+            const startRowY = Math.floor(Math.min(player.y, nextPlayerY) / tileSize) - 1;
+            const endRowY = Math.ceil(Math.max(player.y + playerHeight, nextPlayerY + playerHeight) / tileSize) + 1;
+            const startColY = Math.floor(player.x / tileSize);
+            const endColY = Math.floor((player.x + playerWidth - 1) / tileSize);
+
+            player.onGround = false;
+            for (let col = startColY; col <= endColY; col++) {
+                for (let row = startRowY; row <= endRowY; row++) {
+                    // Check solidity based on the actual block type, including planted_seeds
+                    if (isSolid(col, row)) {
+                        const blockRect = { x: col * tileSize, y: row * tileSize, width: tileSize, height: tileSize };
+                        if (rectIntersects(playerRectY, blockRect)) {
+                            if (player.dy > 0) {
+                                player.y = blockRect.y - playerHeight;
+                                player.dy = 0;
+                                player.onGround = true;
+                            } else if (player.dy < 0) {
+                                player.y = blockRect.y + tileSize;
+                                player.dy = 0;
+                            }
+                            nextPlayerY = player.y;
+                        }
+                    }
+                }
+            }
+            player.y = nextPlayerY;
+
+            const playerRectX = { x: nextPlayerX, y: player.y, width: playerWidth, height: playerHeight };
+            const startColX = Math.floor(Math.min(player.x, nextPlayerX) / tileSize) - 1;
+            const endColX = Math.ceil(Math.max(player.x + playerWidth, nextPlayerX + playerWidth) / tileSize) + 1;
+            const startRowX = Math.floor(player.y / tileSize);
+            const endRowX = Math.floor((player.y + playerHeight - 1) / tileSize);
+
+            for (let col = startColX; col <= endColX; col++) {
+                for (let row = startRowX; row <= endRowX; row++) {
+                    // Check solidity based on the actual block type, including planted_seeds
+                    if (isSolid(col, row)) {
+                        const blockRect = { x: col * tileSize, y: row * tileSize, width: tileSize, height: tileSize };
+                        if (rectIntersects(playerRectX, blockRect)) {
+                            if (player.dx > 0) nextPlayerX = blockRect.x - playerWidth;
+                            else if (player.dx < 0) nextPlayerX = blockRect.x + tileSize;
+                            player.dx = 0;
+                        }
+                    }
+                }
+            }
+            player.x = nextPlayerX;
+
+            if (keys['ArrowUp'] && player.onGround) {
+                player.dy = player.jumpStrength;
+                player.onGround = false;
+            }
+        }
+
+        function updateCamera() {
+            camera.x = player.x + playerWidth / 2 - canvas.width / 2;
+            camera.y = player.y + playerHeight / 2 - canvas.height / 2;
+        }
+
+        function updateMining(dt) {
+            if (!isGameActive || isGamePaused) return;
+
+            const worldMouseX = mouse.x + camera.x;
+            const worldMouseY = mouse.y + camera.y;
+            const targetCol = Math.floor(worldMouseX / tileSize);
+            const targetRow = Math.floor(worldMouseY / tileSize);
+            const targetKey = `${targetCol},${targetRow}`;
+            let blockData = worldBlocks[targetKey];
+            if (!blockData) blockData = getBlockData(targetCol, targetRow);
+
+            // Determine the effective block type for mining hardness and drop
+            let effectiveBlockType = blockData.type;
+            if (blockData.type === 'planted_seeds') {
+                // If it's planted_seeds, use its base block type to determine mining properties
+                effectiveBlockType = blockData.baseBlockType === 'dirt' ? 'seed_dirt_block' : 'seed_soil_block';
+            }
+            const blockPropsForMining = blockTypes[effectiveBlockType];
+
+
+            if (mouse.down && (!miningTarget || miningTarget.col !== targetCol || miningTarget.row !== targetRow)) {
+                if (blockData && blockPropsForMining?.miningHardness > 0) {
+                    miningTarget = {
+                        col: targetCol, row: targetRow,
+                        progress: maintainBlockDurability ? (blockData.miningProgress || 0) : 0,
+                        requiredProgress: blockPropsForMining.miningHardness // Use effective mining hardness
+                    };
+                } else {
+                    miningTarget = null;
+                }
+            }
+
+            if (mouse.down && miningTarget && miningTarget.col === targetCol && miningTarget.row === targetRow) {
+                if (!blockData || blockPropsForMining?.miningHardness === 0) { // Use effective mining hardness
+                    if (maintainBlockDurability && worldBlocks[targetKey]) worldBlocks[targetKey].miningProgress = 0;
+                    miningTarget = null;
+                    return;
+                }
+                miningTarget.progress += dt * playerMiningPower;
+                if (maintainBlockDurability) worldBlocks[targetKey].miningProgress = miningTarget.progress;
+
+                if (miningTarget.progress >= miningTarget.requiredProgress) {
+                    // Use the effective block properties for drops
+                    const minedBlockProps = blockTypes[effectiveBlockType];
+                    worldBlocks[targetKey] = { type: 'sky', miningProgress: 0 };
+
+                    // Handle drops, including multiple drops for seed blocks
+                    if (minedBlockProps?.drop) {
+                        if (Array.isArray(minedBlockProps.drop)) {
+                            minedBlockProps.drop.forEach(item => addToInventory(item));
+                        } else {
+                            addToInventory(minedBlockProps.drop);
+                        }
+                    }
+
+                    // --- NEW LOGIC: Break block above if it's grass, tall_grass, or wheat ---
+                    const blockAboveKey = `${targetCol},${targetRow - 1}`;
+                    const blockAboveData = worldBlocks[blockAboveKey];
+                    if (blockAboveData && (blockAboveData.type === 'grass' || blockAboveData.type === 'tall_grass' || blockAboveData.type === 'wheat')) {
+                        const blockAboveProps = blockTypes[blockAboveData.type];
+                        worldBlocks[blockAboveKey] = { type: 'sky', miningProgress: 0 }; // Break the block above
+                        if (blockAboveProps?.drop) { // Add its drop to inventory
+                            if (Array.isArray(blockAboveProps.drop)) {
+                                blockAboveProps.drop.forEach(item => addToInventory(item));
+                            } else {
+                                addToInventory(blockAboveProps.drop);
+                            }
+                        }
+                    }
+                    // --- END NEW LOGIC ---
+
+                    miningTarget = null;
+                }
+            } else if (!mouse.down && miningTarget) {
+                if (!maintainBlockDurability && worldBlocks[`${miningTarget.col},${miningTarget.row}`]) {
+                    worldBlocks[`${miningTarget.col},${miningTarget.row}`].miningProgress = 0;
+                }
+                miningTarget = null;
+            }
+        }
+
+        function handleBlockPlacement() {
+            if (!isGameActive || isGamePaused) return;
+             if (mouse.rightDown) {
+                const worldMouseX = mouse.x + camera.x;
+                const worldMouseY = mouse.y + camera.y;
+                const targetCol = Math.floor(worldMouseX / tileSize);
+                const targetRow = Math.floor(worldMouseY / tileSize);
+                const targetKey = `${targetCol},${targetRow}`;
+
+                const selectedItem = getSelectedItem();
+                const selectedItemProps = blockTypes[selectedItem] || itemTypes[selectedItem];
+
+                if (selectedItem && inventory[selectedItem] > 0) {
+                    const currentBlockAtTarget = getBlockType(targetCol, targetRow);
+                    const blockDataAtTarget = worldBlocks[targetKey] || getBlockData(targetCol, targetRow);
+
+                    const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
+                    const playerRect = { x: player.x, y: player.y, width: playerWidth, height: playerHeight };
+
+                    if (selectedItem === 'seeds') {
+                        if (currentBlockAtTarget === 'dirt' || currentBlockAtTarget === 'soil') {
+                            worldBlocks[targetKey] = {
+                                type: 'planted_seeds',
+                                miningProgress: 0,
+                                plantTime: Date.now(),
+                                baseBlockType: currentBlockAtTarget
+                            };
+                            inventory[selectedItem]--;
+                            if (inventory[selectedItem] <= 0) {
+                                delete inventory[selectedItem];
+                                const hotbarIdx = hotbarItems.indexOf(selectedItem);
+                                if (hotbarIdx !== -1) hotbarItems[hotbarIdx] = null;
+                            }
+                            updateHotbar();
+                        }
+                    } else if (blockTypes[selectedItem]?.solid) {
+                        if (rectIntersects(placementRect, playerRect)) { // Prevent placing on player
+                            mouse.rightDown = false;
+                            return;
+                        }
+                        // --- NEW LOGIC: Allow placement on sky, grass, tall_grass, or wheat ---
+                        if (currentBlockAtTarget === 'sky' || currentBlockAtTarget === 'grass' || currentBlockAtTarget === 'tall_grass' || currentBlockAtTarget === 'wheat') {
+                            // If replacing a plant, handle its drop
+                            if (currentBlockAtTarget !== 'sky') {
+                                const replacedBlockProps = blockTypes[currentBlockAtTarget];
+                                if (replacedBlockProps?.drop) {
+                                    if (Array.isArray(replacedBlockProps.drop)) {
+                                        replacedBlockProps.drop.forEach(item => addToInventory(item));
+                                    } else {
+                                        addToInventory(replacedBlockProps.drop);
+                                    }
+                                }
+                            }
+                            worldBlocks[targetKey] = { type: selectedItem, miningProgress: 0 };
+                            inventory[selectedItem]--;
+                            if (inventory[selectedItem] <= 0) {
+                                delete inventory[selectedItem];
+                                const hotbarIdx = hotbarItems.indexOf(selectedItem);
+                                if (hotbarIdx !== -1) hotbarItems[hotbarIdx] = null;
+                            }
+                            updateHotbar();
+                        }
+                        // --- END NEW LOGIC ---
+                    }
+                }
+                mouse.rightDown = false; // Reset right-click state after attempt
+             }
+        }
+
+        function addToInventory(item, count = 1) {
+            if (blockTypes[item] || itemTypes[item]) {
+                 inventory[item] = (inventory[item] || 0) + count;
+                 if (!hotbarItems.includes(item)) {
+                    const emptySlotIndex = hotbarItems.indexOf(null);
+                    if (emptySlotIndex !== -1) {
+                        hotbarItems[emptySlotIndex] = item;
+                    }
+                 }
+                 updateHotbar();
+                 if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
+            }
+        }
+
+        function getSelectedItem() {
+            if (selectedHotbarSlot >= 0 && selectedHotbarSlot < hotbarSize) {
+                return hotbarItems[selectedHotbarSlot];
+            }
+            return null;
+        }
+
+        function updateHotbar() {
+            hotbarDiv.innerHTML = '';
+            for (let i = 0; i < hotbarSize; i++) {
+                const slot = document.createElement('div');
+                slot.classList.add('hotbar-slot');
+                if (i === selectedHotbarSlot) slot.classList.add('selected');
+                slot.dataset.slotIndex = i;
+
+                const itemName = hotbarItems[i];
+                const itemCount = inventory[itemName] || 0;
+
+                if (itemName && itemCount > 0) {
+                    const itemProps = blockTypes[itemName] || itemTypes[itemName];
+                    const itemImg = assets[itemName];
+
+                    if (itemImg && !failedAssets[itemName]) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = itemImg.src;
+                        imgElement.alt = itemName;
+                        slot.appendChild(imgElement);
+                    } else if (itemProps?.color) {
+                        const fallbackDiv = document.createElement('div');
+                        fallbackDiv.classList.add('fallback');
+                        fallbackDiv.style.backgroundColor = itemProps.color;
+                        slot.appendChild(fallbackDiv);
+                    }
+                    const countSpan = document.createElement('span');
+                    countSpan.textContent = itemCount;
+                    slot.appendChild(countSpan);
+                }
+                hotbarDiv.appendChild(slot);
+            }
+        }
+
+        function drawWorld() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const startCol = Math.floor(camera.x / tileSize) - 1;
+            const endCol = Math.ceil((camera.x + canvas.width) / tileSize) + 1;
+            const startRow = Math.floor(camera.y / tileSize) - 1;
+            const endRow = Math.ceil((camera.y + canvas.height) / tileSize) + 1;
+
+            for (let col = startCol; col < endCol; col++) {
+                for (let row = startRow; row < endRow; row++) {
+                    const blockData = worldBlocks[`${col},${row}`] || getBlockData(col, row);
+                    let blockType = blockData.type;
+                    let blockProps = blockTypes[blockType];
+                    const screenX = col * tileSize - camera.x;
+                    const screenY = row * tileSize - camera.y;
+
+                    if (blockData.type === 'planted_seeds') {
+                        if (blockData.baseBlockType === 'dirt') {
+                            blockType = 'seed_dirt_block';
+                        } else if (blockData.baseBlockType === 'soil') {
+                            blockType = 'seed_soil_block';
+                        }
+                        blockProps = blockTypes[blockType];
+                    }
+
+                    if (blockType !== 'sky' && blockProps) {
+                        const blockImg = assets[blockType];
+                        if (blockImg && !failedAssets[blockType]) {
+                            ctx.drawImage(blockImg, screenX, screenY, tileSize, tileSize);
+                        } else if (blockProps.color) {
+                             ctx.fillStyle = blockProps.color;
+                             ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                        }
+                        if (maintainBlockDurability && blockData.miningProgress > 0) {
+                            // Use the effective block's mining hardness for planted_seeds
+                            let effectiveMiningHardness = blockTypes[blockData.type].miningHardness;
+                            if (blockData.type === 'planted_seeds') {
+                                effectiveMiningHardness = blockTypes[blockData.baseBlockType === 'dirt' ? 'seed_dirt_block' : 'seed_soil_block'].miningHardness;
+                            }
+                            const progressRatio = blockData.miningProgress / effectiveMiningHardness;
+                            let overlayImage = null;
+                            if (progressRatio >= 0.75) overlayImage = assets['breaking_stage_3'];
+                            else if (progressRatio >= 0.50) overlayImage = assets['breaking_stage_2'];
+                            else if (progressRatio >= 0.25) overlayImage = assets['breaking_stage_1'];
+                            if (overlayImage) ctx.drawImage(overlayImage, screenX, screenY, tileSize, tileSize);
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawPlayer() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x - camera.x, player.y - camera.y, playerWidth, playerHeight);
+        }
+
+        function drawMiningProgress() {
+            if (miningTarget) {
+                const progressRatio = miningTarget.progress / miningTarget.requiredProgress;
+                const screenX = miningTarget.col * tileSize - camera.x;
+                const screenY = miningTarget.row * tileSize - camera.y;
+                let overlayImage = null;
+                if (progressRatio >= 0.75) overlayImage = assets['breaking_stage_3'];
+                else if (progressRatio >= 0.50) overlayImage = assets['breaking_stage_2'];
+                else if (progressRatio >= 0.25) overlayImage = assets['breaking_stage_1'];
+                if (overlayImage) ctx.drawImage(overlayImage, screenX, screenY, tileSize, tileSize);
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+
+            if (e.code === 'Escape') {
+                if (isGamePaused && inventoryCraftingOverlay.style.display === 'flex') {
+                    toggleInventoryMenu();
+                } else if (isGamePaused && saveMenuOverlay.style.display === 'flex') {
+                    toggleSaveMenu();
+                } else {
+                     toggleSaveMenu();
+                }
+            }
+            
+            if (e.code === 'KeyE') {
+                if (!isGamePaused || (isGamePaused && inventoryCraftingOverlay.style.display === 'flex')) {
+                    toggleInventoryMenu();
+                }
+            }
+
+            if (!isGamePaused) {
+                if (e.key >= '1' && e.key <= '9') {
+                    selectedHotbarSlot = parseInt(e.key) - 1;
+                    updateHotbar();
+                } else if (e.key === '0') {
+                     selectedHotbarSlot = 9;
+                     updateHotbar();
+                }
+            }
+             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+        canvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if (!isGamePaused) {
+                if (e.button === 0) mouse.down = true;
+                else if (e.button === 2) mouse.rightDown = true;
+            }
+        });
+        canvas.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            if (e.button === 0) mouse.down = false;
+            else if (e.button === 2) mouse.rightDown = false;
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.y;
+        });
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('visibilitychange', () => {
+            isGameActive = !document.hidden;
+            if (isGameActive) lastTime = performance.now();
+        });
+        window.addEventListener('resize', resizeCanvas);
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            draw();
+        }
+
+        function showMessageBox(message, type = 'alert', callback = null, buttons = null) {
+            messageBoxText.textContent = message;
+            messageBoxButtons.innerHTML = '';
+
+            return new Promise(resolve => {
+                if (buttons) {
+                    buttons.forEach(btnInfo => {
+                        const button = document.createElement('button');
+                        button.textContent = btnInfo.text;
+                        button.onclick = () => {
+                            customMessageBoxOverlay.style.display = 'none';
+                            resolve(btnInfo.value);
+                            if (callback) callback(btnInfo.value);
+                        };
+                        messageBoxButtons.appendChild(button);
+                    });
+                } else {
+                    const okButton = document.createElement('button');
+                    okButton.id = 'messageBoxOkButton';
+                    okButton.textContent = 'OK';
+                    okButton.onclick = () => { customMessageBoxOverlay.style.display = 'none'; resolve(true); if (callback) callback(true); };
+                    messageBoxButtons.appendChild(okButton);
+
+                    if (type === 'confirm') {
+                        const cancelButton = document.createElement('button');
+                        cancelButton.id = 'messageBoxCancelButton';
+                        cancelButton.textContent = 'Cancel';
+                        cancelButton.onclick = () => { customMessageBoxOverlay.style.display = 'none'; resolve(false); if (callback) callback(false); };
+                        messageBoxButtons.appendChild(cancelButton);
+                    }
+                }
+                customMessageBoxOverlay.style.display = 'flex';
+            });
+        }
+
+        // --- Inventory & Crafting Logic ---
+        const recipes = [
+            // Simple 1-input recipe for now, checking the first slot of the 4x4 grid
+            { input: { 0: { type: 'raw_oak', count: 1 } }, output: 'planked_oak', outputCount: 3 },
+            { input: { 0: { type: 'raw_birch', count: 1 } }, output: 'planked_birch', outputCount: 3 },
+            { input: { 0: { type: 'raw_spruce', count: 1 } }, output: 'planked_spruce', outputCount: 3 }
+        ];
+        // Crafting grid represented as an array of 16 slots
+        let craftingGridSlots = new Array(16).fill(null); // Each slot can be { item: 'itemName', count: N } or null
+
+        function toggleInventoryMenu() {
+            if (saveMenuOverlay.style.display === 'flex' && !isGamePaused) return;
+
+            isGamePaused = !isGamePaused;
+            if (isGamePaused) {
+                inventoryCraftingOverlay.style.display = 'flex';
+                updateInventoryMenu();
+            } else {
+                inventoryCraftingOverlay.style.display = 'none';
+                // Return crafting items to inventory when closing
+                for(let i = 0; i < craftingGridSlots.length; i++) {
+                    const slot = craftingGridSlots[i];
+                    if (slot && slot.item && slot.count > 0) {
+                        addToInventory(slot.item, slot.count);
+                        craftingGridSlots[i] = null; // Clear the slot
+                    }
+                }
+                // If an item is still "held" when closing, return it to inventory
+                if (heldItem) {
+                    addToInventory(heldItem, heldItemCount);
+                    heldItem = null;
+                    heldItemCount = 0;
+                }
+                lastTime = performance.now();
+            }
+        }
+
+        function updateInventoryMenu() {
+            playerInventoryGrid.innerHTML = '';
+            const nonHotbarItems = Object.keys(inventory).filter(item => !hotbarItems.includes(item));
+
+            for (const itemName of nonHotbarItems) {
+                if (inventory[itemName] > 0) {
+                    const slot = createInventorySlot(itemName, inventory[itemName]);
+                    slot.onclick = () => handleInventorySlotClick(itemName, false, -1);
+                    playerInventoryGrid.appendChild(slot);
+                }
+            }
+
+            inventoryHotbarGrid.innerHTML = '';
+            for (let i = 0; i < hotbarSize; i++) {
+                const itemName = hotbarItems[i];
+                const itemCount = inventory[itemName] || 0;
+
+                const slot = createInventorySlot(itemName, itemCount);
+                slot.classList.add('hotbar-slot');
+                slot.dataset.hotbarIndex = i;
+                slot.onclick = () => handleInventorySlotClick(itemName, true, i);
+                inventoryHotbarGrid.appendChild(slot);
+            }
+
+            // Update Crafting Grid
+            craftingGridDiv.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const slotData = craftingGridSlots[i];
+                const itemName = slotData ? slotData.item : null;
+                const itemCount = slotData ? slotData.count : 0;
+                const slot = createInventorySlot(itemName, itemCount);
+                slot.dataset.craftingIndex = i; // Store index for click handling
+                slot.onclick = () => handleCraftingSlotClick(i);
+                craftingGridDiv.appendChild(slot);
+            }
+
+            checkCraftingRecipe();
+        }
+
+        function createInventorySlot(itemName, itemCount) {
+            const slot = document.createElement('div');
+            slot.classList.add('inventory-slot');
+            
+            if (heldItem === itemName && heldItemCount > 0) {
+                slot.classList.add('held-item-source');
+            }
+
+            if (itemName && itemCount > 0) {
+                const itemProps = blockTypes[itemName] || itemTypes[itemName];
+                const itemImg = assets[itemName];
+                if (itemImg && !failedAssets[itemName]) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = itemImg.src;
+                    imgElement.alt = itemName;
+                    slot.appendChild(imgElement);
+                } else if (itemProps?.color) {
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.classList.add('fallback');
+                    fallbackDiv.style.backgroundColor = itemProps.color;
+                    slot.appendChild(fallbackDiv);
+                }
+                const countSpan = document.createElement('span');
+                countSpan.classList.add('item-count');
+                countSpan.textContent = itemCount;
+                slot.appendChild(countSpan);
+            }
+            return slot;
+        }
+
+        function handleInventorySlotClick(clickedItemName, isHotbarSlot, hotbarIndex) {
+            if (heldItem === null) {
+                // PICKING UP AN ITEM
+                if (clickedItemName && inventory[clickedItemName] > 0) {
+                    heldItem = clickedItemName;
+                    heldItemCount = inventory[clickedItemName];
+                    delete inventory[clickedItemName];
+                    if (isHotbarSlot) {
+                        hotbarItems[hotbarIndex] = null;
+                    }
+                }
+            } else {
+                // PLACING OR SWAPPING AN ITEM
+                if (clickedItemName === null) {
+                    // Placing into an empty slot
+                    if (isHotbarSlot) {
+                        hotbarItems[hotbarIndex] = heldItem;
+                    }
+                    inventory[heldItem] = (inventory[heldItem] || 0) + heldItemCount;
+                    heldItem = null;
+                    heldItemCount = 0;
+                } else if (clickedItemName === heldItem) {
+                    // Stacking with existing item of same type
+                    inventory[heldItem] = (inventory[heldItem] || 0) + heldItemCount;
+                    heldItem = null;
+                    heldItemCount = 0;
+                } else {
+                    // Swapping items
+                    const tempItem = clickedItemName;
+                    const tempCount = inventory[clickedItemName];
+                    
+                    delete inventory[clickedItemName];
+                    if (isHotbarSlot) {
+                        hotbarItems[hotbarIndex] = heldItem;
+                    }
+                    inventory[heldItem] = (inventory[heldItem] || 0) + heldItemCount;
+                    
+                    heldItem = tempItem;
+                    heldItemCount = tempCount;
+                }
+            }
+            updateInventoryMenu();
+            updateHotbar();
+        }
+
+        function handleCraftingSlotClick(slotIndex) {
+            const slotData = craftingGridSlots[slotIndex];
+            const clickedItemName = slotData ? slotData.item : null;
+            const clickedItemCount = slotData ? slotData.count : 0;
+
+            if (heldItem === null) {
+                // PICKING UP FROM CRAFTING GRID
+                if (clickedItemName && clickedItemCount > 0) {
+                    heldItem = clickedItemName;
+                    heldItemCount = clickedItemCount;
+                    craftingGridSlots[slotIndex] = null; // Clear the slot
+                }
+            } else {
+                // PLACING OR SWAPPING INTO CRAFTING GRID
+                if (clickedItemName === null) {
+                    // Place into empty slot
+                    craftingGridSlots[slotIndex] = { item: heldItem, count: heldItemCount };
+                    heldItem = null;
+                    heldItemCount = 0;
+                } else if (clickedItemName === heldItem) {
+                    // Stack with existing item
+                    craftingGridSlots[slotIndex].count += heldItemCount;
+                    heldItem = null;
+                    heldItemCount = 0;
+                } else {
+                    // Swap items
+                    const tempHeldItem = heldItem;
+                    const tempHeldCount = heldItemCount;
+
+                    heldItem = clickedItemName;
+                    heldItemCount = clickedItemCount;
+
+                    craftingGridSlots[slotIndex] = { item: tempHeldItem, count: tempHeldCount };
+                }
+            }
+            updateInventoryMenu(); // This will also call checkCraftingRecipe
+        }
+
+        function checkCraftingRecipe() {
+            craftingOutputSlot.innerHTML = '';
+            craftButton.disabled = true;
+
+            // For now, only check the first slot for simple recipes
+            const firstCraftingSlot = craftingGridSlots[0];
+
+            for (const recipe of recipes) {
+                const requiredInput = recipe.input[0]; // Assuming recipe.input is an object like { 0: { type: 'raw_oak', count: 1 } }
+                
+                if (firstCraftingSlot && firstCraftingSlot.item === requiredInput.type && firstCraftingSlot.count >= requiredInput.count) {
+                    const outputSlotContent = createInventorySlot(recipe.output, recipe.outputCount);
+                    craftingOutputSlot.appendChild(outputSlotContent);
+                    craftButton.disabled = false;
+                    craftButton.onclick = () => executeCraft(recipe);
+                    return;
+                }
+            }
+        }
+
+        function executeCraft(recipe) {
+            const requiredInput = recipe.input[0]; // Still checking only the first slot for consumption
+            const firstCraftingSlot = craftingGridSlots[0];
+
+            if (firstCraftingSlot && firstCraftingSlot.item === requiredInput.type && firstCraftingSlot.count >= requiredInput.count) {
+                firstCraftingSlot.count -= requiredInput.count;
+                if (firstCraftingSlot.count <= 0) {
+                    craftingGridSlots[0] = null;
+                }
+                addToInventory(recipe.output, recipe.outputCount);
+                updateInventoryMenu();
+            }
+        }
+
+        function updatePlantGrowth(dt) {
+            const currentTime = Date.now();
+            for (const key in worldBlocks) {
+                const blockData = worldBlocks[key];
+                const coords = key.split(',').map(Number);
+                const col = coords[0];
+                const row = coords[1];
+
+                if (blockData.type === 'planted_seeds') {
+                    const growthTimeRequired = blockData.baseBlockType === 'soil' ? 60000 : 120000;
+                    if (currentTime - blockData.plantTime >= growthTimeRequired) {
+                        if (getBlockType(col, row - 1) === 'sky') {
+                            worldBlocks[`${col},${row - 1}`] = { type: 'wheat', miningProgress: 0 };
+                            blockData.type = blockData.baseBlockType; 
+                            delete blockData.plantTime;
+                            delete blockData.baseBlockType;
+                        }
+                    }
+                }
+            }
+        }
+
+        const SAVE_PREFIX = 'blockGameSave_';
+        let selectedSaveSlotId = null;
+
+        function toggleSaveMenu() {
+            if (inventoryCraftingOverlay.style.display === 'flex' && !isGamePaused) return;
+
+            isGamePaused = !isGamePaused;
+            if (isGamePaused) {
+                saveMenuOverlay.style.display = 'flex';
+                loadSaveSlots();
+                saveNameInput.value = '';
+                selectedSaveSlotId = null;
+                updateSaveMenuButtons();
+                maintainDurabilityCheckbox.checked = maintainDurability;
+                seedInput.value = currentSeed;
+            } else {
+                saveMenuOverlay.style.display = 'none';
+                resolvePlayerVerticalCollision();
+                lastTime = performance.now();
+            }
+        }
+
+        function loadSaveSlots() {
+            saveSlotsContainer.innerHTML = '';
+            const saves = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith(SAVE_PREFIX)) {
+                    try {
+                        const saveData = JSON.parse(localStorage.getItem(key));
+                        saves.push({ id: key.substring(SAVE_PREFIX.length), ...saveData });
+                    } catch (e) { console.error(`Error parsing save data for key ${key}:`, e); }
+                }
+            }
+            saves.sort((a, b) => b.timestamp - a.timestamp);
+            if (saves.length === 0) {
+                saveSlotsContainer.innerHTML = '<p style="text-align: center; color: #AAA;">No saved games found.</p>';
+                return;
+            }
+            saves.forEach(save => {
+                const slotDiv = document.createElement('div');
+                slotDiv.classList.add('save-slot');
+                slotDiv.dataset.saveId = save.id;
+                slotDiv.innerHTML = `<img src="${save.thumbnail || 'https://placehold.co/180x100/333333/FFFFFF?text=No+Preview'}" alt="Save thumbnail">
+                                     <div class="save-slot-info">
+                                         <span class="save-slot-name">${save.name || 'Unnamed Save'}</span><br>
+                                         <span>${new Date(save.timestamp).toLocaleString()}</span>
+                                     </div>`;
+                slotDiv.addEventListener('click', () => {
+                    if (selectedSaveSlotId === save.id) {
+                        selectedSaveSlotId = null;
+                        slotDiv.classList.remove('selected-slot');
+                        saveNameInput.value = '';
+                    } else {
+                        selectedSaveSlotId = save.id;
+                        document.querySelectorAll('.save-slot').forEach(s => s.classList.remove('selected-slot'));
+                        slotDiv.classList.add('selected-slot');
+                        saveNameInput.value = save.name || '';
+                    }
+                    updateSaveMenuButtons();
+                });
+                saveSlotsContainer.appendChild(slotDiv);
+            });
+            updateSaveMenuButtons();
+        }
+
+        function updateSaveMenuButtons() {
+            const hasSelectedSlot = selectedSaveSlotId !== null;
+            loadButton.disabled = !hasSelectedSlot;
+            deleteButton.disabled = !hasSelectedSlot;
+            saveButton.disabled = !(saveNameInput.value.trim() !== '' || hasSelectedSlot);
+        }
+
+        saveNameInput.addEventListener('input', updateSaveMenuButtons);
+        maintainDurabilityCheckbox.addEventListener('change', () => { maintainBlockDurability = maintainDurabilityCheckbox.checked; });
+
+        saveButton.addEventListener('click', async () => {
+            const saveName = saveNameInput.value.trim();
+            let saveId = selectedSaveSlotId || `save_${Date.now()}`;
+            if (!saveName && !selectedSaveSlotId) {
+                await showMessageBox("Please enter a name for your save or select a slot to overwrite.");
+                return;
+            }
+            
+            const thumbnailCanvas = document.createElement('canvas');
+            thumbnailCanvas.width = 180; thumbnailCanvas.height = 100;
+            const tempCtx = thumbnailCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 180, 100);
+            const thumbnailDataUrl = thumbnailCanvas.toDataURL('image/png');
+
+            const gameState = {
+                player, camera, worldBlocks, columnSurfaceHeights, soilPatchCenters,
+                inventory, hotbarItems, selectedHotbarSlot, maintainBlockDurability,
+                name: saveName || `Game Save ${new Date().toLocaleString()}`,
+                timestamp: Date.now(), thumbnail: thumbnailDataUrl,
+                seed: currentSeed,
+                craftingGridSlots // Save the crafting grid state
+            };
+            try {
+                localStorage.setItem(SAVE_PREFIX + saveId, JSON.stringify(gameState));
+                loadSaveSlots();
+                await showMessageBox("Game saved successfully!");
+            } catch (e) { 
+                console.error("Failed to save game:", e);
+                await showMessageBox("Failed to save game. Local storage might be full or an error occurred."); 
+            }
+        });
+
+        loadButton.addEventListener('click', async () => {
+            if (selectedSaveSlotId) {
+                try {
+                    const savedData = JSON.parse(localStorage.getItem(SAVE_PREFIX + selectedSaveSlotId));
+                    if (savedData) {
+                        Object.assign(player, savedData.player);
+                        Object.assign(camera, savedData.camera);
+                        Object.keys(worldBlocks).forEach(key => delete worldBlocks[key]);
+                        Object.assign(worldBlocks, savedData.worldBlocks);
+                        Object.keys(columnSurfaceHeights).forEach(key => delete columnSurfaceHeights[key]);
+                        Object.assign(columnSurfaceHeights, savedData.columnSurfaceHeights);
+                        soilPatchCenters.length = 0;
+                        soilPatchCenters.push(...savedData.soilPatchCenters);
+                        Object.keys(inventory).forEach(key => delete inventory[key]);
+                        Object.assign(inventory, savedData.inventory);
+                        
+                        hotbarItems.length = 0;
+                        hotbarItems.push(...(savedData.hotbarItems || new Array(hotbarSize).fill(null)));
+                        
+                        selectedHotbarSlot = savedData.selectedHotbarSlot;
+                        maintainBlockDurability = savedData.maintainDurability || false;
+
+                        currentSeed = savedData.seed || Date.now();
+                        setSeed(currentSeed);
+                        seedInput.value = currentSeed;
+
+                        // Load crafting grid slots
+                        craftingGridSlots.length = 0;
+                        craftingGridSlots.push(...(savedData.craftingGridSlots || new Array(16).fill(null)));
+
+                        updateHotbar();
+                        toggleSaveMenu();
+                        resolvePlayerVerticalCollision();
+                        await showMessageBox(`Game loaded: ${savedData.name}`);
+                    }
+                } catch (e) { 
+                    console.error("Failed to load game:", e);
+                    await showMessageBox("Failed to load game. Data might be corrupted."); 
+                }
+            }
+        });
+
+        deleteButton.addEventListener('click', async () => {
+            if (selectedSaveSlotId) {
+                const confirmed = await showMessageBox("Are you sure you want to delete this save?", 'confirm');
+                if (confirmed) {
+                    try {
+                        localStorage.removeItem(SAVE_PREFIX + selectedSaveSlotId);
+                        selectedSaveSlotId = null;
+                        saveNameInput.value = '';
+                        loadSaveSlots();
+                        showMessageBox("Save deleted successfully!");
+                    } catch (e) {
+                        console.error("Failed to delete save:", e);
+                        showMessageBox("Failed to delete save.");
+                    }
+                }
+            }
+        });
+
+        newGameButton.addEventListener('click', async () => {
+            const confirmed = await showMessageBox("Starting a new game will overwrite current progress. Are you sure?", 'confirm');
+            if (!confirmed) return;
+
+            let newSeedValue = seedInput.value.trim();
+            let seedToUse;
+
+            if (newSeedValue === '') {
+                seedToUse = Date.now();
+            } else {
+                let hash = 0;
+                for (let i = 0; i < newSeedValue.length; i++) {
+                    const char = newSeedValue.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash |= 0;
+                }
+                seedToUse = hash;
+            }
+
+            setSeed(seedToUse);
+
+            Object.keys(worldBlocks).forEach(key => delete worldBlocks[key]);
+            Object.keys(columnSurfaceHeights).forEach(key => delete columnSurfaceHeights[key]);
+            soilPatchCenters.length = 0;
+            player.x = 10 * tileSize;
+            player.y = 0;
+            player.dx = 0;
+            player.dy = 0;
+            player.onGround = false;
+
+            Object.keys(inventory).forEach(key => delete inventory[key]);
+            hotbarItems.fill(null);
+            selectedHotbarSlot = 0;
+            craftingGridSlots.fill(null); // Reset crafting grid for new game
+            updateHotbar();
+
+            init();
+
+            toggleSaveMenu();
+            showMessageBox(`New game started with seed: ${seedToUse}`);
+        });
+
+
+        resumeButton.addEventListener('click', toggleSaveMenu);
+
+        function resolvePlayerVerticalCollision() {
+            const playerCol = Math.floor(player.x / tileSize);
+            const playerRow = Math.floor(player.y / tileSize);
+            player.onGround = false;
+            for (let r = playerRow; r < playerRow + playerHeightBlocks + 2; r++) {
+                for (let c = playerCol; c < playerCol + playerWidthBlocks; c++) {
+                    if (isSolid(c, r)) {
+                        player.y = r * tileSize - playerHeight;
+                        player.dy = 0;
+                        player.onGround = true;
+                        return;
+                    }
+                }
+            }
+        }
+
+        let lastTime = 0;
+        function gameLoop(currentTime) {
+            const dt = currentTime - lastTime;
+            lastTime = currentTime;
+            if (isGameActive && !isGamePaused) {
+                update(dt);
+                updatePlantGrowth(dt);
+            }
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update(dt) {
+            updatePlayer(dt);
+            updateCamera();
+            updateMining(dt);
+            handleBlockPlacement();
+            const playerGridCoords = worldToGrid(player.x + playerWidth / 2, player.y + playerHeight / 2);
+            coordsDisplay.textContent = `Coords: (${playerGridCoords.col}, ${playerGridCoords.row})`;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawWorld();
+            drawPlayer();
+            drawMiningProgress();
+        }
+
+        function init() {
+            resizeCanvas();
+            setSeed(currentSeed); 
+
+            const playerStartCol = Math.floor(player.x / tileSize);
+            const initialPatchGenerationRange = 200;
+            const startPatchCol = playerStartCol - initialPatchGenerationRange / 2;
+            for (let i = 0; i < maxSoilPatchCenters; i++) {
+                const patchCol = startPatchCol + Math.floor(random() * initialPatchGenerationRange);
+                const estimatedSurfaceHeight = baseSurfaceLevel + Math.floor(surfaceLevelRange / 2);
+                const patchRow = estimatedSurfaceHeight + Math.floor(Math.random() * soilPatchDepth);
+                soilPatchCenters.push({ col: patchCol, row: patchRow });
+            }
+            let actualSurfaceRowAtStart = baseSurfaceLevel;
+            while(getBlockType(playerStartCol, actualSurfaceRowAtStart) === 'sky') {
+                 actualSurfaceRowAtStart++;
+            }
+            player.y = (actualSurfaceRowAtStart - playerHeightBlocks) * tileSize;
+            resolvePlayerVerticalCollision();
+            updateHotbar();
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        loadAssets();
+    </script>
+</body>
+</html>
