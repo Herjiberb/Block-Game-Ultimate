@@ -2906,8 +2906,8 @@
         let insomnia = 0;
         let guanoMined = 0;
         // END ACHIEVEMENT VARIABLES
-		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass', 'lush_grass', 'forest_leaves', 'sagebrush', 'saltbrush', 'rabbitbrush', 'wildberry_bush'];
-		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass', 'lush_grass', 'forest_leaves', 'fern', 'sagebrush', 'saltbrush', 'rabbitbrush', 'wildberry_bush'];
+		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass', 'lush_grass', 'forest_leaves', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
+		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass', 'lush_grass', 'forest_leaves', 'fern', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
 		let portals = []; // Will store all portal locations and links
@@ -3186,7 +3186,7 @@
 					else activeContainers.delete(key);
 
 					// Track Plants (to fix the other lag source)
-					if (block.growth !== undefined) activePlants.add(key);
+					if (block.plantTime !== undefined) activePlants.add(key);
 					else activePlants.delete(key);
 				} else {
 					activeContainers.delete(key);
@@ -4886,9 +4886,9 @@
             'wheat_fertilizer': { imgSrc: 'Wheat Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#F5DEB3', shovelBlock: true },
 			'planted_wheat_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#F5DEB3' },
 			'barley': { imgSrc: 'Barley.png', solid: false, miningHardness: 10, drops: [{item: 'barley_item', chance: 1, min: 1, max: 2}, {item: 'barley_seeds', chance: 0.5, min: 0, max: 3}], color: '#E6BF83' },
-            'barley_dirt': { imgSrc: 'Barley Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#E6BF83', shovelBlock: true },
-            'barley_soil': { imgSrc: 'Barley Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#E6BF83', shovelBlock: true },
-            'barley_fertilizer': { imgSrc: 'Barley Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'wheat_seeds', chance: 1, min: 1, max: 1}], color: '#E6BF83', shovelBlock: true },
+            'barley_dirt': { imgSrc: 'Barley Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'barley_seeds', chance: 1, min: 1, max: 1}], color: '#E6BF83', shovelBlock: true },
+            'barley_soil': { imgSrc: 'Barley Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'barley_seeds', chance: 1, min: 1, max: 1}], color: '#E6BF83', shovelBlock: true },
+            'barley_fertilizer': { imgSrc: 'Barley Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'barley_seeds', chance: 1, min: 1, max: 1}], color: '#E6BF83', shovelBlock: true },
 			'planted_barley_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#E6BF83' },
 			'pumpkin': { imgSrc: 'Pumpkin.png', solid: false, miningHardness: 10, drops: [{item: 'pumpkin', chance: 1, min: 1, max: 3}, {item: 'pumpkin_seeds', chance: 0.5, min: 0, max: 3}], color: '#FFA500', spoilable: { into: 'plant_mush', time: 300000 } },
             'pumpkin_dirt': { imgSrc: 'Pumpkin Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'pumpkin_seeds', chance: 1, min: 1, max: 1}], color: '#FFA500', shovelBlock: true },
