@@ -2260,6 +2260,26 @@
 				scrollbar-color: #666 #333;
 			}
 		}
+		
+		/* Mod Management Menu Styles */
+        #modMenuOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85); display: none;
+            justify-content: center; align-items: center; z-index: 2000;
+            font-family: 'Inter', sans-serif; color: #E0E0E0;
+        }
+        #modMenu {
+            background-color: #333; padding: 20px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); width: 90%; max-width: 500px;
+            border: 2px solid #555; display: flex; flex-direction: column; gap: 15px;
+        }
+        #modMenu h2 { color: #00BFFF; text-align: center; margin: 0 0 10px 0; }
+        #uploadNewModButton:hover { background-color: #218838 !important; }
+        
+        .mod-item-card { background: #444; border: 1px solid #666; border-radius: 8px; padding: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
+        .mod-item-title { font-weight: bold; color: #FFD700; font-size: 1.2em; text-shadow: 1px 1px 2px black; }
+        .mod-item-author { font-size: 0.9em; color: #00BFFF; margin-top: 4px; font-style: italic; }
+        .mod-item-version { font-size: 0.85em; color: #aaa; margin-top: 4px; }
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -2780,6 +2800,18 @@
 			</div>
 		</div>
 	</div>
+	
+	<div id="modMenuOverlay" oncontextmenu="return false;">
+        <div id="modMenu">
+            <h2>Mod Management</h2>
+            <button class="mobile-close-button">X</button>
+            <div id="modList" class="inventory-section" style="max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                </div>
+            <button id="uploadNewModButton" style="background-color: #28a745; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1em; transition: background-color 0.2s;">
+                + Upload New Mod
+            </button>
+        </div>
+    </div>
 	
     <!-- Custom Message Box Overlay -->
     <div id="customMessageBoxOverlay" oncontextmenu="return false;">
@@ -3409,7 +3441,7 @@
                 id: 'HOME_SWEET_HOME',
                 name: 'Home Sweet Home',
                 desc: 'Place a bed.',
-                icon: 'Bed.png',
+                icon: 'Bed Icon.png',
                 xp: 5
             },
             'KABOOM': {
@@ -3451,7 +3483,7 @@
                 id: 'COOL_IT',
                 name: 'Cool It On The Drinks',
                 desc: 'Get your Blood Alcohol level over 100.',
-                icon: 'Drunk Mask Icon.png',
+                icon: 'Armor/Drunk Mask Icon.png',
                 xp: 10
             },
             'PERSISTENT': {
@@ -4346,15 +4378,15 @@
         const _worldBlocksStore = {}; 
         worldBlocks = new Proxy(_worldBlocksStore, {
             set: function(target, prop, value) {
-                // If a mod is active and has replacements
-                if (activeModData && activeModData.blockReplacements && value && typeof value === 'object' && value.type) {
-                    for (const rule of activeModData.blockReplacements) {
-                        // Check if the block type matches the target
-                        if (rule.target === value.type) {
-                            // CRITICAL: Only replace if the 'structures' flag is set to 1
-                            if (rule.structures === 1) {
-                                if (Math.random() < rule.chance) {
-                                    value.type = rule.replaceWith;
+                // If mods are active, check all of them sequentially for replacements
+                if (loadedMods.length > 0 && value && typeof value === 'object' && value.type) {
+                    for (const mod of loadedMods) {
+                        if (mod.blockReplacements) {
+                            for (const rule of mod.blockReplacements) {
+                                if (rule.target === value.type && rule.structures === 1) {
+                                    if (Math.random() < rule.chance) {
+                                        value.type = rule.replaceWith;
+                                    }
                                 }
                             }
                         }
@@ -4623,7 +4655,8 @@
 			'void_crystal': { imgSrc: 'Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_crystal', chance: 1, min: 1, max: 1}], color: '#de65b7', requiredMiningPower: 0.2 },
 			'red_void_crystal': { imgSrc: 'Red Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'red_void_crystal', chance: 1, min: 1, max: 1}], color: '#DC143C', requiredMiningPower: 0.2 },
 			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#191919', requiredMiningPower: 2.5, slab: true },
-			'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#451b1b', slab: true },
+			'mine': { imgSrc: 'Mine.png', solid: true, miningHardness: 50, drops: [], color: '#451b1b', mineBoom: "octogen_bomb" },
+            'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#451b1b', slab: true },
 			'hellrock': { imgSrc: 'Hellrock Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellrock', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'magma_stone_block': { imgSrc: 'Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff8700' },
 			'chasm_magma_stone_block': { imgSrc: 'Chasm Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'chasm_magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff00af' },
@@ -5751,7 +5784,7 @@
 			hellfireOn: true
 		};
 
-		let activeModData = null; // Stores the currently loaded mod
+		let loadedMods = []; // Stores all currently loaded mods sequentially
 
 		// --- Deep Merge Helper (The magic that lets you edit specific properties) ---
 		function deepMerge(target, source) {
@@ -5890,10 +5923,10 @@
         });
 
 		function activateMod(mod) {
-			console.log(`activating Mod: ${mod.name}...`);
-			activeModData = mod; // Save mod data to memory
+			console.log(`Activating Mod: ${mod.title || mod.name}...`);
+			loadedMods.push(mod); // Add the new mod to the array
 			
-			// Check for custom textures requirement
+			// Check for custom textures requirement in THIS specific mod
 			let assetsMissing = false;
 			if (mod.newBlocks) {
 				for (const [key, props] of Object.entries(mod.newBlocks)) if (props.imgSrc && !assets[key]) assetsMissing = true;
@@ -5902,108 +5935,144 @@
 				for (const [key, props] of Object.entries(mod.newItems)) if (props.imgSrc && !assets[key]) assetsMissing = true;
 			}
 
-			applyModFeatures(); // Apply immediately
+			applyAllMods(); // Re-apply the entire stack of mods
 			
-			let msg = `Mod "${mod.name}" active!`;
+			let msg = `Mod "${mod.title || mod.name}" added successfully!`;
 			if (assetsMissing) msg += " Custom textures detected - please upload texture pack next.";
 			
 			showMessageBox(msg, 'alert', () => {
 				if (assetsMissing) triggerTextureUpload();
-				// Force a re-render of hotbar/inventory to show changes immediately
 				updateHotbar();
 				if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
+                if (modMenuOverlay.style.display === 'flex') updateModMenu(); // Refresh the list
 			});
-			// --- FEATURE: RECIPE REMOVAL ---
-			if (mod.removeRecipes) {
-				const removalSet = new Set(Array.isArray(mod.removeRecipes) ? mod.removeRecipes : [mod.removeRecipes]);
-				const filterFn = (r) => !removalSet.has(r.output) && !removalSet.has(r.name);
-
-				if (mod.removeRecipes === "all") {
-					recipes = []; ovenRecipes = []; furnaceRecipes = []; forgeRecipes = []; anvilRecipes = [];
-					for (const key in craftingStations) craftingStations[key].recipes = [];
-				} else {
-					recipes = recipes.filter(filterFn);
-					ovenRecipes = ovenRecipes.filter(filterFn);
-					furnaceRecipes = furnaceRecipes.filter(filterFn);
-					forgeRecipes = forgeRecipes.filter(filterFn);
-					anvilRecipes = anvilRecipes.filter(filterFn);
-					for (const key in craftingStations) {
-						craftingStations[key].recipes = craftingStations[key].recipes.filter(filterFn);
-					}
-				}
-				console.log("Recipes removed.");
-			}
-
-			// 6. CRAFTING STATIONS & RECIPES (Add/Overwrite)
-			// Handle standard arrays
-			if (mod.newRecipes) recipes.push(...mod.newRecipes);
-			if (mod.newOvenRecipes) ovenRecipes.push(...mod.newOvenRecipes);
-			if (mod.newFurnaceRecipes) furnaceRecipes.push(...mod.newFurnaceRecipes);
-			if (mod.newForgeRecipes) forgeRecipes.push(...mod.newForgeRecipes);
-			if (mod.newAnvilRecipes) anvilRecipes.push(...mod.newAnvilRecipes);
-
-			if (mod.craftingStations) {
-				for (const [key, stationData] of Object.entries(mod.craftingStations)) {
-					// If station exists, we update it. If not, we create it.
-					if (!craftingStations[key]) {
-						craftingStations[key] = { 
-							title: stationData.title || "Station", 
-							recipes: []
-						};
-					}
-					
-					const station = craftingStations[key];
-					if (stationData.title) station.title = stationData.title;
-
-					// Append recipes if provided
-					if (stationData.recipes && Array.isArray(stationData.recipes)) {
-						station.recipes.push(...stationData.recipes);
-					}
-				}
-			}
 			startNewGame(Date.now());
 		}
-		
-		// --- NEW: MOD STRUCTURE GENERATOR ---
-		function generateModStructure(startCol, surfaceRow, structure) {
-			console.log(`Generating Mod Structure: ${structure.id} at ${startCol}, ${surfaceRow}`);
-			
-			const width = structure.layout[0].length;
-			const height = structure.layout.length;
 
-			// Reserve columns
-			for (let i = -2; i < width + 2; i++) {
-				modStructureColumns.add(startCol + i);
-			}
+		// Applies ALL loaded mods sequentially. Called on upload AND on game reset.
+		function applyAllMods() {
+			if (loadedMods.length === 0) return;
 
-			const startY = surfaceRow - height + 1; 
+			console.log(`Applying ${loadedMods.length} Mods in sequence...`);
 
-			for (let r = 0; r < height; r++) {
-				for (let c = 0; c < width; c++) {
-					const blockToken = structure.layout[r][c];
-					
-					if (blockToken === "" || blockToken === "air") continue;
+			// 1. Reset ALL Defaults first
+			Object.assign(blockTypes, JSON.parse(JSON.stringify(defaultBlockTypes)));
+			Object.assign(itemTypes, JSON.parse(JSON.stringify(defaultItemTypes)));
+            recipes = JSON.parse(JSON.stringify(defaultRecipes));
+            ovenRecipes = JSON.parse(JSON.stringify(defaultOvenRecipes));
+            furnaceRecipes = JSON.parse(JSON.stringify(defaultFurnaceRecipes));
+            forgeRecipes = JSON.parse(JSON.stringify(defaultForgeRecipes));
+            anvilRecipes = JSON.parse(JSON.stringify(defaultAnvilRecipes));
+            craftingStations = JSON.parse(JSON.stringify(defaultCraftingStations));
 
-					const worldCol = startCol + c;
-					const worldRow = startY + r;
-					const key = `${worldCol},${worldRow}`;
+            // 2. Apply each mod one by one
+            for (const mod of loadedMods) {
+                // Feature: CSS Injection
+                if (mod.css) {
+                    const styleId = `mod-css-${mod.name ? mod.name.replace(/\s/g, '-') : Math.random()}`;
+                    let style = document.getElementById(styleId);
+                    if (!style) {
+                        style = document.createElement('style');
+                        style.id = styleId;
+                        document.head.appendChild(style);
+                    }
+                    style.textContent = mod.css;
+                }
 
-					// --- FEATURE: SPECIAL BLOCKS SUPPORT ---
-					if (structure.specialBlocks && structure.specialBlocks[blockToken]) {
-						// Deep copy the special block data (like chests with loot)
-						const specialData = JSON.parse(JSON.stringify(structure.specialBlocks[blockToken]));
-						
-						// Ensure mandatory fields exist
-						specialData.mineProg = 0;
-						if (!specialData.type) specialData.type = 'chest'; // Fallback
-						
-						worldBlocks[key] = specialData;
-					} else {
-						// Standard block placement
-						worldBlocks[key] = { type: blockToken, mineProg: 0 };
-					}
-				}
-			}
+                // Apply Variable Edits
+                if (mod.variableEdits) {
+                    if (mod.variableEdits.maxStackSize !== undefined) maxStackSize = mod.variableEdits.maxStackSize;
+                    if (mod.variableEdits.inventorySize !== undefined) inventorySize = mod.variableEdits.inventorySize;
+                    if (mod.variableEdits.gravity !== undefined) player.gravity = mod.variableEdits.gravity;
+                    if (mod.variableEdits.playerSpeed !== undefined) player.speed = mod.variableEdits.playerSpeed;
+                    if (mod.variableEdits.jumpStrength !== undefined) player.jumpStrength = mod.variableEdits.jumpStrength;
+                    if (mod.variableEdits.handMiningPower !== undefined) handMiningPower = mod.variableEdits.handMiningPower;
+                    if (mod.variableEdits.caveProbability !== undefined) caveProbability = mod.variableEdits.caveProbability;
+                    if (mod.variableEdits.dungeonProbability !== undefined) dungeonProbability = mod.variableEdits.dungeonProbability;
+                    if (mod.variableEdits.skyIslandProbability !== undefined) skyIslandProbability = mod.variableEdits.skyIslandProbability;
+                    if (mod.variableEdits.hellfireOn !== undefined) hellfireOn = mod.variableEdits.hellfireOn;
+                    if (mod.variableEdits.showBlockOutline !== undefined) showBlockOutline = mod.variableEdits.showBlockOutline;
+                    if (mod.variableEdits.bombs !== undefined) bombs = mod.variableEdits.bombs;
+                    if (mod.variableEdits.bombDamagePatterns !== undefined) bombDamagePatterns = mod.variableEdits.bombDamagePatterns;
+                }
+
+                // Register New Blocks & Items
+                if (mod.newBlocks) {
+                    for (const [key, props] of Object.entries(mod.newBlocks)) blockTypes[key] = props;
+                }
+                if (mod.newItems) {
+                    for (const [key, props] of Object.entries(mod.newItems)) itemTypes[key] = props;
+                }
+
+                // Apply Overwrites
+                if (mod.overwrites) {
+                    if (mod.overwrites.blocks) {
+                        for (const [key, props] of Object.entries(mod.overwrites.blocks)) {
+                            if (blockTypes[key]) deepMerge(blockTypes[key], props);
+                        }
+                    }
+                    if (mod.overwrites.items) {
+                        for (const [key, props] of Object.entries(mod.overwrites.items)) {
+                            if (itemTypes[key]) deepMerge(itemTypes[key], props);
+                        }
+                    }
+                }
+
+                // Custom Crafting Stations
+                if (mod.newCraftingStations) {
+                    for (const [key, stationData] of Object.entries(mod.newCraftingStations)) {
+                        craftingStations[key] = {
+                            title: stationData.title || "Custom Station",
+                            recipes: stationData.recipes || [],
+                            inventorySize: stationData.inventorySize || 12
+                        };
+                    }
+                }
+
+                // Recipe Removals
+                if (mod.removeRecipes) {
+                    const removalSet = new Set(Array.isArray(mod.removeRecipes) ? mod.removeRecipes : [mod.removeRecipes]);
+                    const filterFn = (r) => !removalSet.has(r.output) && !removalSet.has(r.name);
+
+                    if (mod.removeRecipes === "all") {
+                        recipes = []; ovenRecipes = []; furnaceRecipes = []; forgeRecipes = []; anvilRecipes = [];
+                        for (const key in craftingStations) craftingStations[key].recipes = [];
+                    } else {
+                        recipes = recipes.filter(filterFn);
+                        ovenRecipes = ovenRecipes.filter(filterFn);
+                        furnaceRecipes = furnaceRecipes.filter(filterFn);
+                        forgeRecipes = forgeRecipes.filter(filterFn);
+                        anvilRecipes = anvilRecipes.filter(filterFn);
+                        for (const key in craftingStations) {
+                            craftingStations[key].recipes = craftingStations[key].recipes.filter(filterFn);
+                        }
+                    }
+                }
+
+                // Add New Recipes
+                if (mod.newRecipes) recipes.push(...mod.newRecipes);
+                if (mod.newOvenRecipes) ovenRecipes.push(...mod.newOvenRecipes);
+                if (mod.newFurnaceRecipes) furnaceRecipes.push(...mod.newFurnaceRecipes);
+                if (mod.newForgeRecipes) forgeRecipes.push(...mod.newForgeRecipes);
+                if (mod.newAnvilRecipes) anvilRecipes.push(...mod.newAnvilRecipes);
+
+                if (mod.craftingStations) {
+                    for (const [key, stationData] of Object.entries(mod.craftingStations)) {
+                        if (!craftingStations[key]) craftingStations[key] = { title: stationData.title || "Station", recipes: [] };
+                        const station = craftingStations[key];
+                        if (stationData.title) station.title = stationData.title;
+                        if (stationData.recipes && Array.isArray(stationData.recipes)) station.recipes.push(...stationData.recipes);
+                    }
+                }
+
+                // Custom Functions
+                if (mod.customFunctions) {
+                    for (const [funcName, funcBody] of Object.entries(mod.customFunctions)) {
+                        try { window[funcName] = new Function(funcBody); } catch (e) { console.warn(`Failed to register mod function ${funcName}`, e); }
+                    }
+                }
+            }
+			console.log("All modifications applied successfully.");
 		}
 		
 		// --- MODDING HELPER FUNCTIONS ---
@@ -6054,104 +6123,6 @@
 					worldBlocks[key] = { type: blockType, mineProg: 0 };
 				}
 			}
-		}
-
-		// Applies all mod changes. Called on upload AND on game reset.
-		function applyModFeatures() {
-			if (!activeModData) return;
-			const mod = activeModData;
-
-			console.log(`Applying Mod: ${mod.name}`);
-
-			// 1. Reset Defaults
-			Object.assign(blockTypes, JSON.parse(JSON.stringify(defaultBlockTypes)));
-			Object.assign(itemTypes, JSON.parse(JSON.stringify(defaultItemTypes)));
-			
-			// --- FEATURE: CSS INJECTION ---
-			if (mod.css) {
-				const styleId = `mod-css-${mod.name.replace(/\s/g, '-')}`;
-				let style = document.getElementById(styleId);
-				if (!style) {
-					style = document.createElement('style');
-					style.id = styleId;
-					document.head.appendChild(style);
-				}
-				style.textContent = mod.css;
-				console.log("Mod CSS injected.");
-			}
-
-			
-
-			// 2. Apply Variable Edits
-			if (mod.variableEdits) {
-				if (mod.variableEdits.maxStackSize !== undefined) maxStackSize = mod.variableEdits.maxStackSize;
-				if (mod.variableEdits.inventorySize !== undefined) inventorySize = mod.variableEdits.inventorySize;
-				if (mod.variableEdits.gravity !== undefined) player.gravity = mod.variableEdits.gravity;
-				if (mod.variableEdits.playerSpeed !== undefined) player.speed = mod.variableEdits.playerSpeed;
-				if (mod.variableEdits.jumpStrength !== undefined) player.jumpStrength = mod.variableEdits.jumpStrength;
-				if (mod.variableEdits.handMiningPower !== undefined) handMiningPower = mod.variableEdits.handMiningPower;
-				if (mod.variableEdits.caveProbability !== undefined) caveProbability = mod.variableEdits.caveProbability;
-				if (mod.variableEdits.dungeonProbability !== undefined) dungeonProbability = mod.variableEdits.dungeonProbability;
-				if (mod.variableEdits.skyIslandProbability !== undefined) skyIslandProbability = mod.variableEdits.skyIslandProbability;
-				if (mod.variableEdits.hellfireOn !== undefined) hellfireOn = mod.variableEdits.hellfireOn;
-                if (mod.variableEdits.showBlockOutline !== undefined) showBlockOutline = mod.variableEdits.showBlockOutline;
-			}
-
-			// 3. Register New Blocks
-			if (mod.newBlocks) {
-				for (const [key, props] of Object.entries(mod.newBlocks)) {
-					blockTypes[key] = props;
-				}
-			}
-
-			// 4. Register New Items
-			if (mod.newItems) {
-				for (const [key, props] of Object.entries(mod.newItems)) {
-					itemTypes[key] = props;
-				}
-			}
-
-			// 5. Apply Overwrites
-			if (mod.overwrites) {
-				if (mod.overwrites.blocks) {
-					for (const [key, props] of Object.entries(mod.overwrites.blocks)) {
-						if (blockTypes[key]) deepMerge(blockTypes[key], props);
-					}
-				}
-				if (mod.overwrites.items) {
-					for (const [key, props] of Object.entries(mod.overwrites.items)) {
-						if (itemTypes[key]) deepMerge(itemTypes[key], props);
-					}
-				}
-			}
-
-			// --- FEATURE: CUSTOM CRAFTING STATIONS ---
-			if (mod.newCraftingStations) {
-				for (const [key, stationData] of Object.entries(mod.newCraftingStations)) {
-					craftingStations[key] = {
-						title: stationData.title || "Custom Station",
-						recipes: stationData.recipes || [] // Load the custom recipe list
-					};
-					// Ensure the block definition handles the inventory size automatically if not set
-					if (blockTypes[key] && !blockTypes[key].inventorySize) {
-						// Default furnace setup: 9 input + 1 fuel + 1 output + 1 byproduct = 12
-						// You can customize this later if you want bigger stations
-					}
-				}
-			}
-
-			// 7. Register Custom Functions
-			if (mod.customFunctions) {
-				for (const [funcName, funcBody] of Object.entries(mod.customFunctions)) {
-					try {
-						window[funcName] = new Function(funcBody);
-					} catch (e) {
-						console.warn(`Failed to register mod function ${funcName}`, e);
-					}
-				}
-			}
-			
-			console.log("Mod application complete.");
 		}
 		
 		let skinTriggerSequence = "";
@@ -8422,7 +8393,9 @@
                 } else if (random() < boneSpineProbability) {
                     generateSpinalVein(col, row, 'bone_block', 20, 30);
                     blockType = 'bone_block';
-                }
+                } else if (random() < 0.005) {
+					blockType = 'mine';
+				}
             }
 
             // Surface cover / foliage generation
@@ -8832,22 +8805,24 @@
                         generateTree(col, row, 'dirt_column');
                     }
                 }
-				if (activeModData && activeModData.structures) {
+				if (loadedMods.length > 0) {
 					// Only try to spawn if this column is free
 					if (!modStructureColumns.has(col)) {
-						for (const struct of activeModData.structures) {
-							// Check Biome (if defined)
-							const currentBiome = getBiome(col);
-							const allowedBiomes = struct.biomes || ["all"]; // Default to all if missing
-							
-							if (allowedBiomes.includes("all") || allowedBiomes.includes(currentBiome)) {
-								// Roll for chance
-								if (random() < struct.chance) {
-									generateModStructure(col, row, struct);
-									break; // Only spawn one structure per column
-								}
-							}
-						}
+                        for (const mod of loadedMods) {
+                            if (mod.structures) {
+                                for (const struct of mod.structures) {
+                                    const currentBiome = getBiome(col);
+                                    const allowedBiomes = struct.biomes || ["all"]; 
+                                    
+                                    if (allowedBiomes.includes("all") || allowedBiomes.includes(currentBiome)) {
+                                        if (random() < struct.chance) {
+                                            generateModStructure(col, row, struct);
+                                            break; // Only spawn one structure per column to avoid stacking overlap
+                                        }
+                                    }
+                                }
+                            }
+                        }
 					}
 				}
             }
@@ -8882,14 +8857,17 @@
 
             // --- MOD HOOK: REPLACEMENTS ---
             let finalBlockType = blockType;
-            if (activeModData && activeModData.blockReplacements) {
-                for (const rule of activeModData.blockReplacements) {
-                    if (finalBlockType === rule.target && Math.random() < rule.chance) {
-                        finalBlockType = rule.replaceWith;
+            if (loadedMods.length > 0) {
+                for (const mod of loadedMods) {
+                    if (mod.blockReplacements) {
+                        for (const rule of mod.blockReplacements) {
+                            if (finalBlockType === rule.target && Math.random() < rule.chance) {
+                                finalBlockType = rule.replaceWith;
+                            }
+                        }
                     }
                 }
             }
-            // -----------------------------
 
             const newBlockData = { type: finalBlockType, mineProg: 0 };
             worldBlocks[key] = newBlockData;
@@ -12166,6 +12144,10 @@
 
 							worldBlocks[targetKey] = { type: '', mineProg: 0 };
 							exploredMap[targetKey] = '#000000';
+
+                            if (blockProps && blockProps.mineBoom) {
+                                detonateBomb(targetCol, footRow, blockProps.mineBoom);
+                            }
 						}
 					}
 				}
@@ -13361,6 +13343,10 @@
                             break;
                         }
                     }
+
+                    if (minedBlockProps && minedBlockProps.mineBoom) {
+                        detonateBomb(targetCol, targetRow, minedBlockProps.mineBoom);
+                    }
                     
                     miningTarget = null;
 				}
@@ -13390,8 +13376,8 @@
 				const blockData = worldBlocks[burningBlockKey];
 				const blockType = blockData ? blockData.type : '';
 
-				// Check if fire should go out
-				if (!blockData || !isAxeBlock(blockType)) {
+				// Check if fire should go out (Keep burning if it's Hellstone)
+				if (!blockData || (!isAxeBlock(blockType) && blockType !== 'hellstone')) {
 					keysToDelete.push(fireKey);
 					continue;
 				}
@@ -13405,51 +13391,57 @@
 					// Apply damage
 					const blockProps = blockTypes[blockType];
 					if (blockProps) {
-						blockData.mineProg = (blockData.mineProg || 0) + 1; // Add 3 durability damage
+                        // Prevent Hellstone from taking fire damage
+                        if (blockType !== 'hellstone') {
+                            blockData.mineProg = (blockData.mineProg || 0) + 1; // Add 3 durability damage
 
-						// Check if block is destroyed
-						if (blockData.mineProg >= blockProps.miningHardness) {
-							worldBlocks[burningBlockKey] = (random() < 0.1) ? { type: 'ash', mineProg: 0 } : { type: '', mineProg: 0 };
-							// Fire goes out because the block it was burning is gone
-							keysToDelete.push(fireKey); 
-							continue; // Stop processing this fire, it's out
-						}
+                            // Check if block is destroyed
+                            if (blockData.mineProg >= blockProps.miningHardness) {
+                                worldBlocks[burningBlockKey] = (random() < 0.1) ? { type: 'ash', mineProg: 0 } : { type: '', mineProg: 0 };
+                                // Fire goes out because the block it was burning is gone
+                                keysToDelete.push(fireKey); 
+                                continue; // Stop processing this fire, it's out
+                            }
+                        }
 					}
 
 					// --- NEW: Fire Spreading Logic ---
-                    // Get the coordinates of the block that is *actually burning* (the wood)
-					const [burningCol, burningRow] = burningBlockKey.split(',').map(Number);
+                    // Prevent Hellstone from spreading fire to adjacent blocks
+                    if (blockType !== 'hellstone') {
+                        // Get the coordinates of the block that is *actually burning* (the wood)
+                        const [burningCol, burningRow] = burningBlockKey.split(',').map(Number);
 
-					// Define neighbors to check (4-way spread)
-					const neighbors = [
-						{ dx: -1, dy: 0 }, { dx: 1, dy: 0 }, // Left/Right
-						{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }  // Up/Down
-					];
+                        // Define neighbors to check (4-way spread)
+                        const neighbors = [
+                            { dx: -1, dy: 0 }, { dx: 1, dy: 0 }, // Left/Right
+                            { dx: 0, dy: -1 }, { dx: 0, dy: 1 }  // Up/Down
+                        ];
 
-					for (const n of neighbors) {
-						// Check spread chance
-						if (random() < FIRE_SPREAD_CHANCE) {
-							
-                            // 1. Get the coordinates and type of the neighboring block
-							const targetBlockKey = `${burningCol + n.dx},${burningRow + n.dy}`;
-							const targetBlockType = getBlockType(burningCol + n.dx, burningRow + n.dy);
+                        for (const n of neighbors) {
+                            // Check spread chance
+                            if (random() < FIRE_SPREAD_CHANCE) {
+                                
+                                // 1. Get the coordinates and type of the neighboring block
+                                const targetBlockKey = `${burningCol + n.dx},${burningRow + n.dy}`;
+                                const targetBlockType = getBlockType(burningCol + n.dx, burningRow + n.dy);
 
-							// 2. Is this neighbor block burnable (an "axe block")?
-							if (isAxeBlock(targetBlockType)) {
+                                // 2. Is this neighbor block burnable (an "axe block" OR Hellstone)?
+                                if (isAxeBlock(targetBlockType) || targetBlockType === 'hellstone') {
 								
-								// 3. Find the block this new target block
-								const fireSpotKey = `${burningCol + n.dx},${burningRow + n.dy}`;
-								const fireSpotType = getBlockType(burningCol + n.dx, burningRow + n.dy);
+									// 3. Find the block this new target block
+									const fireSpotKey = `${burningCol + n.dx},${burningRow + n.dy}`;
+									const fireSpotType = getBlockType(burningCol + n.dx, burningRow + n.dy);
 
-								// 4. If the spot is not already on fire...
-								if (!fireBlocks[fireSpotKey]) {
-									
-									// ...Light it on fire!
-									fireBlocks[fireSpotKey] = {
-										animFrame: 1,
-										animTimer: 0,
-										burningBlockKey: targetBlockKey // This new fire now burns the target block
-									};
+									// 4. If the spot is not already on fire...
+									if (!fireBlocks[fireSpotKey]) {
+										
+										// ...Light it on fire!
+										fireBlocks[fireSpotKey] = {
+											animFrame: 1,
+											animTimer: 0,
+											burningBlockKey: targetBlockKey // This new fire now burns the target block
+										};
+									}
 								}
 							}
 						}
@@ -13873,7 +13865,7 @@
             }
         }
 
-		const bombDamagePatterns = {
+		let bombDamagePatterns = {
 			'napalm_bomb': [90, 80, 70, 60, 50, 40, 30, 20, 10], // Radius 9
 			'dynamite_bomb': [90, 80, 70, 60, 50, 40, 30, 20, 10], // Radius 9, more focused power
 			'octogen_bomb': [90, 80, 70, 60, 50, 40, 30, 20, 10], // Radius 9, much stronger
@@ -13884,94 +13876,129 @@
 			'trap_compacted_stone': [90, 80, 70, 60, 50, 40, 30, 20, 10], // Radius 9
 			'trap_compressed_stone': [150, 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10], // Radius 15
 		};
+        
+        let bombs = ['napalm_bomb','dynamite_bomb','octogen_bomb','weak_nuclear_bomb','subnuclear_bomb','nuclear_bomb', 'trap_stone', 'trap_compacted_stone', 'trap_compressed_stone'];
 
-		function detonateBomb(col, row, bombType) {
-			const bombProps = blockTypes[bombType];
-			if (!bombProps) {
-				console.error(`Bomb properties not found for type: ${bombType}`);
-				return;
-			}
-			if (bombType === 'nuclear_bomb') unlockAchievement('KABOOM');
+		// --- NEW: Global queue to prevent Maximum Call Stack Size Exceeded ---
+        let isProcessingExplosions = false;
+        let explosionQueue = [];
 
-			const radius = bombProps.bombRadius;
-			const bombDamage = bombProps.bombDamage;
-			const damageLayers = bombDamagePatterns[bombType];
+		function detonateBomb(startCol, startRow, startBombType) {
+            // Push the initial explosion to the queue
+            explosionQueue.push({ col: startCol, row: startRow, bombType: startBombType });
 
-			if (!damageLayers) return;
+            // If a chain reaction is already being processed, just return and let the loop handle it
+            if (isProcessingExplosions) return;
+            isProcessingExplosions = true;
 
-			// Particle Burst
-			const originalParticleCount = particleCount;
-			particleCount = 10;
-			createBlockBreakParticles(col, row, bombType);
-			particleCount = originalParticleCount;
+            try {
+                // Process all explosions in the queue sequentially (flattened recursion)
+                while (explosionQueue.length > 0) {
+                    const currentExplosion = explosionQueue.shift();
+                    const col = currentExplosion.col;
+                    const row = currentExplosion.row;
+                    const bombType = currentExplosion.bombType;
 
-			for (let x = col - radius; x <= col + radius; x++) {
-				for (let y = row - radius; y <= row + radius; y++) {
-					const distance = Math.floor(Math.sqrt(Math.pow(x - col, 2) + Math.pow(y - row, 2)));
+                    const bombProps = blockTypes[bombType];
+                    if (!bombProps) {
+                        console.error(`Bomb properties not found for type: ${bombType}`);
+                        continue;
+                    }
+                    if (bombType === 'nuclear_bomb') unlockAchievement('KABOOM');
 
-					if (distance < radius) {
-						const targetKey = `${x},${y}`;
-						const blockData = worldBlocks[targetKey];
-						if (!blockData || blockData.type === 'sky' || blockData.type === '') continue;
+                    const radius = bombProps.bombRadius;
+                    const bombDamage = bombProps.bombDamage;
+                    const damageLayers = bombDamagePatterns[bombType];
 
-						// --- COOLSES UPDATE: Indestructible BGU Blocks ---
-						if (['b_of_creation', 'g_of_creation', 'u_of_creation'].includes(blockData.type)) {
-							continue; // Skip these blocks entirely
-						}
-						// ------------------------------------------------
+                    if (!damageLayers) continue;
 
-						const blockProps = blockTypes[blockData.type];
-						if (!blockProps || blockProps.miningHardness === 0 || blockProps.miningHardness > 250000) continue;
-						if (blockProps.requiredTool) continue;
-						
-						const damageMultiplier = damageLayers[distance] || 0;
-						const damageDealt = bombDamage * (damageMultiplier);
-						
-						if (!blockData.mineProg) blockData.mineProg = 0;
-						blockData.mineProg += damageDealt;
+                    // Particle Burst
+                    const originalParticleCount = particleCount;
+                    particleCount = 10;
+                    createBlockBreakParticles(col, row, bombType);
+                    particleCount = originalParticleCount;
 
-						if (blockData.mineProg >= blockProps.miningHardness) {
-							// --- COOLSES UPDATE: Bomb Beehive Summoning ---
-							if (blockData.type === 'beehive') {
-								// Calculate world coords for bees
-								const wx = x * tileSize + tileSize / 2;
-								const wy = y * tileSize + tileSize / 2;
-								spawnBeeSwarm(wx, wy);
-							}
-							// ----------------------------------------------
+                    for (let x = col - radius; x <= col + radius; x++) {
+                        for (let y = row - radius; y <= row + radius; y++) {
+                            const distance = Math.floor(Math.sqrt(Math.pow(x - col, 2) + Math.pow(y - row, 2)));
 
-							handleBombDrops(blockProps, targetKey);
-								
-							const tempParticleCount = particleCount;
-							particleCount = 3;
-							createBlockBreakParticles(x, y, blockData.type);
-							particleCount = tempParticleCount;
+                            if (distance < radius) {
+                                const targetKey = `${x},${y}`;
+                                const blockData = worldBlocks[targetKey];
+                                if (!blockData || blockData.type === 'sky' || blockData.type === '') continue;
 
-							worldBlocks[targetKey] = { type: '', mineProg: 0 };
-							exploredMap[targetKey] = '#000000';
-						}
-					}
-				}
-			}
-			worldBlocks[`${col},${row}`] = { type: '', mineProg: 0 };
-			exploredMap[`${col},${row}`] = '#000000';
+                                // --- COOLSES UPDATE: Indestructible BGU Blocks ---
+                                if (['b_of_creation', 'g_of_creation', 'u_of_creation'].includes(blockData.type)) {
+                                    continue; // Skip these blocks entirely
+                                }
+                                // ------------------------------------------------
 
-			// Player Damage
-			const playerCenterX = player.x + playerWidth / 2;
-			const playerCenterY = player.y + playerHeight / 2;
-			const bombCenterX = col * tileSize + tileSize / 2;
-			const bombCenterY = row * tileSize + tileSize / 2;
+                                const blockProps = blockTypes[blockData.type];
+                                if (!blockProps || blockProps.miningHardness === 0 || blockProps.miningHardness > 250000) continue;
+                                if (blockProps.requiredTool) continue;
+                                
+                                const damageMultiplier = damageLayers[distance] || 0;
+                                const damageDealt = bombDamage * (damageMultiplier);
+                                
+                                if (!blockData.mineProg) blockData.mineProg = 0;
+                                blockData.mineProg += damageDealt;
 
-			const distancePixels = Math.sqrt(Math.pow(playerCenterX - bombCenterX, 2) + Math.pow(playerCenterY - bombCenterY, 2));
-			const distanceTiles = distancePixels / tileSize;
+                                if (blockData.mineProg >= blockProps.miningHardness) {
+                                    // --- COOLSES UPDATE: Bomb Beehive Summoning ---
+                                    if (blockData.type === 'beehive') {
+                                        // Calculate world coords for bees
+                                        const wx = x * tileSize + tileSize / 2;
+                                        const wy = y * tileSize + tileSize / 2;
+                                        spawnBeeSwarm(wx, wy);
+                                    }
+                                    // ----------------------------------------------
 
-			if (distanceTiles < radius) {
-				const { playerDamageMin, playerDamageMax } = bombProps;
-				const damage = playerDamageMax - (distanceTiles / radius) * (playerDamageMax - playerDamageMin);
-				if (damage > 0) {
-					applyDamage(Math.floor(damage));
-				}
-			}
+                                    handleBombDrops(blockProps, targetKey);
+                                        
+                                    const tempParticleCount = particleCount;
+                                    particleCount = 3;
+                                    createBlockBreakParticles(x, y, blockData.type);
+                                    particleCount = tempParticleCount;
+
+                                    // --- FIX: Delete block BEFORE processing secondary explosions ---
+                                    // This guarantees we don't evaluate the same block twice
+                                    worldBlocks[targetKey] = { type: '', mineProg: 0 };
+                                    exploredMap[targetKey] = '#000000';
+
+                                    // --- Explosion Chain Reactions ---
+                                    if (blockProps && blockProps.mineBoom) {
+                                        // Queue it up instead of crashing the stack
+                                        explosionQueue.push({ col: x, row: y, bombType: blockProps.mineBoom });
+                                    }
+                                    // --------------------------------------
+                                }
+                            }
+                        }
+                    }
+                    worldBlocks[`${col},${row}`] = { type: '', mineProg: 0 };
+                    exploredMap[`${col},${row}`] = '#000000';
+
+                    // Player Damage
+                    const playerCenterX = player.x + playerWidth / 2;
+                    const playerCenterY = player.y + playerHeight / 2;
+                    const bombCenterX = col * tileSize + tileSize / 2;
+                    const bombCenterY = row * tileSize + tileSize / 2;
+
+                    const distancePixels = Math.sqrt(Math.pow(playerCenterX - bombCenterX, 2) + Math.pow(playerCenterY - bombCenterY, 2));
+                    const distanceTiles = distancePixels / tileSize;
+
+                    if (distanceTiles < radius) {
+                        const { playerDamageMin, playerDamageMax } = bombProps;
+                        const damage = playerDamageMax - (distanceTiles / radius) * (playerDamageMax - playerDamageMin);
+                        if (damage > 0) {
+                            applyDamage(Math.floor(damage));
+                        }
+                    }
+                }
+            } finally {
+                // Ensure this resets even if an error gets thrown
+                isProcessingExplosions = false;
+            }
 		}
 		
 		function isPowerSource(col, row) {
@@ -14092,7 +14119,6 @@
 			}
 
 			// Collect neighboring bombs to detonate
-			const bombs = ['napalm_bomb','dynamite_bomb','octogen_bomb','weak_nuclear_bomb','subnuclear_bomb','nuclear_bomb', 'trap_stone', 'trap_compacted_stone', 'trap_compressed_stone'];
 			for (const lt of componentLitCoords) {
 			  const [lc, lr] = lt.split(',').map(Number);
 			  const neighbors = [
@@ -14415,13 +14441,16 @@
                 const blockToIgnite = getBlockType(targetCol, targetRow);
                 const blockBelow = getBlockType(targetCol, targetRow + 1);
     
+                // Helper to check burnability
+                const isBurnable = (type) => isAxeBlock(type) || type === 'hellstone';
+
                 // We can light the top of a burnable block OR the side of one
-                if (isAxeBlock(blockToIgnite) || (blockAtTarget.type === '' && isAxeBlock(blockBelow))) {
+                if (isBurnable(blockToIgnite) || (blockAtTarget.type === '' && isBurnable(blockBelow))) {
     
                     // If we clicked in the air, but the block below is burnable, place fire in the air block
                     // Otherwise, place it in the block we clicked
                     const fireKey = targetKey; 
-                    const blockKey = isAxeBlock(blockToIgnite) ? targetKey : `${targetCol},${targetRow + 1}`;
+                    const blockKey = isBurnable(blockToIgnite) ? targetKey : `${targetCol},${targetRow + 1}`;
     
                     if (!fireBlocks[fireKey]) { // Don't light a block that's already on fire
                         fireBlocks[fireKey] = {
@@ -16453,8 +16482,13 @@
         window.addEventListener('keydown', (e) => {
 			const key = e.key.toLowerCase();
 			keys[key] = true;
-			// --- QUICK DELETE & CLEAR INVENTORY LOGIC ---
-            if (e.key === 'Delete') {
+			if (e.code === 'Tab') {
+                e.preventDefault(); // Prevents the browser from focusing off the canvas
+                if (!isConsoleOpen && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    toggleModMenu();
+                }
+                return;
+            } else if (e.key === 'Delete') {
                 const now = Date.now();
                 
                 // Check for triple press (400ms threshold between presses)
@@ -16610,6 +16644,8 @@
 					toggleGameMenu();
 				} else if (isGamePaused && traderLevelUpOverlay.style.display === 'flex') {
 					closeTraderLevelUpMenu();
+				} else if (isGamePaused && modMenuOverlay.style.display === 'flex') {
+                    toggleModMenu();
 				} else {
 					toggleGameMenu();
 				}
@@ -18058,6 +18094,14 @@
 			worldBlocks[`${col},${row-2}`]   = { type: 'trader', part: 'top', mineProg: 0 };
 			return true;
 		}
+		
+		// Deep copies of original recipe arrays so mods can stack correctly on reset
+		const defaultRecipes = JSON.parse(JSON.stringify(recipes));
+		const defaultOvenRecipes = JSON.parse(JSON.stringify(ovenRecipes));
+		const defaultFurnaceRecipes = JSON.parse(JSON.stringify(furnaceRecipes));
+		const defaultForgeRecipes = JSON.parse(JSON.stringify(forgeRecipes));
+		const defaultAnvilRecipes = JSON.parse(JSON.stringify(anvilRecipes));
+		const defaultCraftingStations = JSON.parse(JSON.stringify(craftingStations));
 
         let craftingGridSlots = new Array(16).fill(null);
 
@@ -20968,7 +21012,7 @@
             // Close any open trader UI
             if (isTraderMenuOpen) toggleTraderMenu();
             
-			applyModFeatures();
+			applyAllMods();
 			
             // Re-initialize and show message
             updateHotbar();
@@ -21564,6 +21608,10 @@
                                 }
                             }
                             // --- END OF FOLIAGE LOGIC ---
+
+                            if (blockProps && blockProps.mineBoom) {
+                                detonateBomb(gridCol, gridRow, blockProps.mineBoom);
+                            }
                         }
                     }
                     bullets.splice(i, 1); // Remove bullet on impact
@@ -21773,6 +21821,70 @@
 				mineProg: 0,
 			};
 		}
+		
+		// --- MOD MENU UI LOGIC ---
+        const modMenuOverlay = document.getElementById('modMenuOverlay');
+
+        function toggleModMenu() {
+            // Prevent opening if console is active
+            if (isConsoleOpen) return;
+            if (isGamePaused && modMenuOverlay.style.display !== 'flex') return;
+
+            isGamePaused = !isGamePaused;
+            if (isGamePaused) {
+                modMenuOverlay.style.display = 'flex';
+                updateModMenu();
+            } else {
+                modMenuOverlay.style.display = 'none';
+                lastTime = performance.now();
+            }
+        }
+
+        function updateModMenu() {
+            const modList = document.getElementById('modList');
+            modList.innerHTML = '';
+
+            if (loadedMods.length === 0) {
+                modList.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 20px;">No mods currently loaded.</p>';
+                return;
+            }
+
+            // Reverse list to show the most recently loaded mod at the top
+            const reversedMods = [...loadedMods].reverse();
+            
+            reversedMods.forEach((mod) => {
+                const card = document.createElement('div');
+                card.className = 'mod-item-card';
+
+                const title = document.createElement('div');
+                title.className = 'mod-item-title';
+                title.textContent = mod.title || mod.name || 'Unnamed Mod';
+                card.appendChild(title);
+
+                if (mod.author) {
+                    const author = document.createElement('div');
+                    author.className = 'mod-item-author';
+                    author.textContent = `Author: ${mod.author}`;
+                    card.appendChild(author);
+                }
+
+                if (mod.version) {
+                    const version = document.createElement('div');
+                    version.className = 'mod-item-version';
+                    version.textContent = `Version: ${mod.version}`;
+                    card.appendChild(version);
+                }
+
+                modList.appendChild(card);
+            });
+        }
+
+        // Add Listeners
+        document.getElementById('uploadNewModButton').addEventListener('click', triggerModUpload);
+        document.querySelector('#modMenuOverlay .mobile-close-button').addEventListener('click', toggleModMenu);
+        
+        // --- EVENT LISTENER FOR TAB KEY ---
+        // Find your existing window.addEventListener('keydown'... block, and add this inside it:
 
         function init() {
             resizeCanvas();
