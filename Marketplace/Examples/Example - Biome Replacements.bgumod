@@ -1,0 +1,20 @@
+{
+    "name": "Example - Biome Replacements",
+    "author": "BGU Examples",
+	"notes": "Heaven Biomes Coming Soon!",
+    "blockReplacements": [
+        {
+            "target": "stone",
+            "replaceWith": "gold_compacted_stone",
+            "chance": 0.15,
+            "structures": 0,
+            "biomes": ["desert", "red_rocks"]
+        },
+        {
+            "target": "gilded_dirt_block",
+            "replaceWith": "flesh_block",
+            "chance": 0.05,
+            "biomes": ["golden_city"]
+        }
+    ]
+}
