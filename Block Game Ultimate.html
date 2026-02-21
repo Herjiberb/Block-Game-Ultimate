@@ -3304,16 +3304,23 @@
 				icon: 'Cloud Block.png',
 				xp: 10
 			},
+            'GO_BEYOND': {
+                id: 'GO_BEYOND',
+                name: 'We Need To Go Beyond!',
+                desc: 'Create a portal to super heaven.',
+                icon: 'Heaven Gate Brick Block.png',
+                xp: 20
+            },
 			'TIMBER': {
 				id: 'TIMBER',
-				name: 'TIMBER!',
+				name: 'Timber!',
 				desc: 'Use an axe to hover over an axe-suited block.',
 				icon: 'Wooden Axe.png',
 				xp: 5
 			},
-			'POOP_SCOOP': {
-				id: 'POOP_SCOOP',
-				name: 'Poop Scoop!',
+			'SLOPPY': {
+				id: 'SLOPPY',
+				name: 'Sloppy!',
 				desc: 'Use a shovel to hover over a shovel-suited block.',
 				icon: 'Wooden Shovel.png',
 				xp: 5
@@ -3329,7 +3336,7 @@
 				id: 'DUEL',
 				name: 'Duel!',
 				desc: 'Use a sword to hover over a sword-suited block.',
-				icon: 'Wooden sword.png',
+				icon: 'Wooden Sword.png',
 				xp: 5
 			},
 			'PEW_PEW': {
@@ -3337,6 +3344,13 @@
 				name: 'PEW PEW PEW!',
 				desc: 'Use a gun to hit any block.',
 				icon: 'Machine Gun.png',
+				xp: 5
+			},
+            'PYROMANIAC': {
+				id: 'PYROMANIAC',
+				name: 'Pyromaniac!',
+				desc: 'Use a lighter to light a block on fire.',
+				icon: 'Lighter.png',
 				xp: 5
 			},
 			'DEDICATED_ONE': {
@@ -3426,7 +3440,7 @@
             'ROCK_BOTTOM': {
 				id: 'ROCK_BOTTOM',
 				name: 'Rock Bottom',
-				desc: 'Drink a nice, refreshing glass of your own pee.', // It's sterile and I like the taste
+				desc: 'Drink a nice, refreshing glass of your own pee.', // Necessary? Is it necessary for me to drink my own urine? No, but I do it anyway because it's sterile and I like the taste.
 				icon: 'Cup Of Urine.png',
 				xp: 5
 			},
@@ -3450,6 +3464,34 @@
                 desc: 'Detonate a Nuclear Bomb.',
                 icon: 'Nuclear Bomb.png',
                 xp: 10
+            },
+            'EXOTIC_AERONAUTICS': {
+                id: 'EXOTIC_AERONAUTICS',
+                name: 'Exotic Aeronautics',
+                desc: 'Mine balloonite from a big balloon.',
+                icon: 'Balloon.png',
+                xp: 5
+            },
+            'FOREST_CONQUERER': {
+                id: 'FOREST_CONQUERER',
+                name: 'Forest Conquerer!',
+                desc: 'Collect a rare forest heart.',
+                icon: 'Forest Heart Block.png',
+                xp: 5
+            },
+            'MYCELIAL_MASTER': {
+                id: 'MYCELIAL_MASTER',
+                name: 'Mycelial Master!',
+                desc: 'Collect a rare fungal heart.',
+                icon: 'Fungal Heart Block.png',
+                xp: 5
+            },
+            'ARACHNOPHOBIA': {
+                id: 'ARACHNOPHOBIA',
+                name: 'Arachnophobia',
+                desc: 'Destroy a spider\'s egg sack.',
+                icon: 'Spider Egg Sack.png',
+                xp: 5
             },
             'GLOBETROTTER': {
                 id: 'GLOBETROTTER',
@@ -3484,14 +3526,21 @@
                 name: 'Cool It On The Drinks',
                 desc: 'Get your Blood Alcohol level over 100.',
                 icon: 'Armor/Drunk Mask Icon.png',
-                xp: 10
+                xp: 5
             },
             'PERSISTENT': {
                 id: 'PERSISTENT',
                 name: 'Persistent',
                 desc: 'Die 100 times. Ouch.',
                 icon: 'Dead Body Chest.png',
-                xp: 5
+                xp: 1
+            },
+            'PERSISTENT_II': {
+                id: 'PERSISTENT_II',
+                name: 'Persistent II',
+                desc: 'A THOUSAND!? Are you kidding me?',
+                icon: 'Player Hanging Top.png',
+                xp: 1
             }
 		};
 
@@ -4380,11 +4429,36 @@
             set: function(target, prop, value) {
                 // If mods are active, check all of them sequentially for replacements
                 if (loadedMods.length > 0 && value && typeof value === 'object' && value.type) {
+                    const [cStr, rStr] = prop.split(',');
+                    const col = parseInt(cStr);
+                    const row = parseInt(rStr);
+                    
+                    // Helper to get the correct biome context for structure replacements
+                    let currentBiome = "unknown";
+                    if (!isNaN(col) && !isNaN(row)) {
+                        if (row < -120) {
+                            currentBiome = getHeavenBiome(col);
+                        } else {
+                            const surfaceHeight = columnSurfaceHeights[col] !== undefined ? columnSurfaceHeights[col] : 0;
+                            if (row - surfaceHeight >= 300) {
+                                currentBiome = getUnderworldBiome(col);
+                            } else {
+                                currentBiome = getBiome(col);
+                            }
+                        }
+                    }
+
                     for (const mod of loadedMods) {
                         if (mod.blockReplacements) {
                             for (const rule of mod.blockReplacements) {
                                 if (rule.target === value.type && rule.structures === 1) {
-                                    if (Math.random() < rule.chance) {
+                                    // Verify Biome Constraints
+                                    let biomeMatch = true;
+                                    if (rule.biomes && Array.isArray(rule.biomes) && !rule.biomes.includes("all")) {
+                                        biomeMatch = rule.biomes.includes(currentBiome);
+                                    }
+                                    
+                                    if (biomeMatch && Math.random() < rule.chance) {
                                         value.type = rule.replaceWith;
                                     }
                                 }
@@ -5150,6 +5224,7 @@
 			 'silver_nugget': { imgSrc: 'Silver Nugget.png', color: '#FFD700' },
 			 'electrum_nugget': { imgSrc: 'Electrum Nugget.png', color: '#FFD700' },
 			 'hellsteel_nugget': { imgSrc: 'Hellsteel Nugget.png', color: '#FF4500' },
+             'locked_hellsteel_nugget': { imgSrc: 'Locked Hellsteel Nugget.png', color: '#FF4500' },
 			 'diviniron_nugget': { imgSrc: 'Diviniron Nugget.png', color: '#E6E8FA' },
 			 'mighterrum_nugget': { imgSrc: 'Mighterrum Nugget.png', color: '#FFFF00' },
 			 'heavensteel_nugget': { imgSrc: 'Heavensteel Nugget.png', color: '#F0EAD6' },
@@ -5956,14 +6031,16 @@
 			console.log(`Applying ${loadedMods.length} Mods in sequence...`);
 
 			// 1. Reset ALL Defaults first
-			Object.assign(blockTypes, JSON.parse(JSON.stringify(defaultBlockTypes)));
-			Object.assign(itemTypes, JSON.parse(JSON.stringify(defaultItemTypes)));
+            Object.assign(blockTypes, JSON.parse(JSON.stringify(defaultBlockTypes)));
+            Object.assign(itemTypes, JSON.parse(JSON.stringify(defaultItemTypes)));
             recipes = JSON.parse(JSON.stringify(defaultRecipes));
             ovenRecipes = JSON.parse(JSON.stringify(defaultOvenRecipes));
             furnaceRecipes = JSON.parse(JSON.stringify(defaultFurnaceRecipes));
             forgeRecipes = JSON.parse(JSON.stringify(defaultForgeRecipes));
             anvilRecipes = JSON.parse(JSON.stringify(defaultAnvilRecipes));
             craftingStations = JSON.parse(JSON.stringify(defaultCraftingStations));
+            bombs = [...defaultBombs];
+            bombDamagePatterns = JSON.parse(JSON.stringify(defaultBombDamagePatterns));
 
             // 2. Apply each mod one by one
             for (const mod of loadedMods) {
@@ -5992,8 +6069,16 @@
                     if (mod.variableEdits.skyIslandProbability !== undefined) skyIslandProbability = mod.variableEdits.skyIslandProbability;
                     if (mod.variableEdits.hellfireOn !== undefined) hellfireOn = mod.variableEdits.hellfireOn;
                     if (mod.variableEdits.showBlockOutline !== undefined) showBlockOutline = mod.variableEdits.showBlockOutline;
-                    if (mod.variableEdits.bombs !== undefined) bombs = mod.variableEdits.bombs;
-                    if (mod.variableEdits.bombDamagePatterns !== undefined) bombDamagePatterns = mod.variableEdits.bombDamagePatterns;
+                    // Dynamically append new bombs without overwriting other mods
+                    if (mod.variableEdits.bombs !== undefined) {
+                        for (const b of mod.variableEdits.bombs) {
+                            if (!bombs.includes(b)) bombs.push(b);
+                        }
+                    }
+                    // Deep merge the new patterns into the main object
+                    if (mod.variableEdits.bombDamagePatterns !== undefined) {
+                        Object.assign(bombDamagePatterns, mod.variableEdits.bombDamagePatterns);
+                    }
                 }
 
                 // Register New Blocks & Items
@@ -7410,6 +7495,7 @@
 						});
 
 						console.log("Super Heaven Portal Activated at:", portalAnchorKey);
+                        unlockAchievement('GO_BEYOND');
 						return; // Exit after finding and creating one portal
 					}
 				}
@@ -8858,11 +8944,29 @@
             // --- MOD HOOK: REPLACEMENTS ---
             let finalBlockType = blockType;
             if (loadedMods.length > 0) {
+                // Establish accurate biome context for natural gen replacements
+                let currentBiomeContext = biome; 
+                if (row < -120) {
+                    currentBiomeContext = getHeavenBiome(col);
+                } else if (depth >= 300) {
+                    currentBiomeContext = getUnderworldBiome(col);
+                }
+
                 for (const mod of loadedMods) {
                     if (mod.blockReplacements) {
                         for (const rule of mod.blockReplacements) {
-                            if (finalBlockType === rule.target && Math.random() < rule.chance) {
-                                finalBlockType = rule.replaceWith;
+                            // Ensure rule isn't restricted to structures ONLY
+                            if (finalBlockType === rule.target && (!rule.structures || rule.structures === 0)) {
+                                
+                                // Verify Biome Constraints
+                                let biomeMatch = true;
+                                if (rule.biomes && Array.isArray(rule.biomes) && !rule.biomes.includes("all")) {
+                                    biomeMatch = rule.biomes.includes(currentBiomeContext);
+                                }
+
+                                if (biomeMatch && Math.random() < rule.chance) {
+                                    finalBlockType = rule.replaceWith;
+                                }
                             }
                         }
                     }
@@ -11924,26 +12028,54 @@
 
 				// Copy items from player's inventory to the chest's inventory
 				for (let i = 0; i < inventorySlots.length; i++) {
-					if (inventorySlots[i]) {
-						let itemToDrop = inventorySlots[i];
-						
-						// Check if the player died in a rainforest AND the item is paper
-						if (biomeAtDeath === 'rainforest' && itemToDrop.type === 'paper' && deathRow <= 20 && deathRow >= -20 ) {
-							// Change the item's type to soggy_paper
-							itemToDrop.type = 'soggy_paper';
-						}
-
-						// --- ADDED: Immediate Spoilage Logic ---
-						const spoilInfo = itemTypes[itemToDrop.type]?.spoilable;
-						if (spoilInfo) {
-							itemToDrop.type = spoilInfo.into;
-							delete itemToDrop.acquiredTime;
-						}
-						// --- End of Immediate Spoilage Logic ---
-
-						deathChestInventory[i] = itemToDrop;
-					}
-				}
+                    if (inventorySlots[i]) {
+                        // Clone the item so we don't mutate the original slot reference
+                        let itemToDrop = { ...inventorySlots[i] }; 
+                        
+                        // Check if the player died in a rainforest AND the item is paper
+                        if (biomeAtDeath === 'rainforest' && itemToDrop.type === 'paper' && deathRow <= 20 && deathRow >= -20 ) {
+                            // Change the item's type to soggy_paper
+                            itemToDrop.type = 'soggy_paper';
+                        }
+                
+                        // --- Immediate Spoilage Logic ---
+                        const spoilInfo = itemTypes[itemToDrop.type]?.spoilable;
+                        if (spoilInfo) {
+                            itemToDrop.type = spoilInfo.into;
+                            delete itemToDrop.acquiredTime;
+                            delete itemToDrop.acquiredTimes; // Clean up arrays too
+                        }
+                
+                        // --- NEW: HELLFIRE DEATH CONSEQUENCES ---
+                        if (hellfireLevel === 0) {
+                            // 1. Vaporize all ice and snow (Skip adding them entirely)
+                            const meltables = ['hell_ice', 'ice', 'packed_ice', 'snow_block', 'snow_ball'];
+                            if (meltables.includes(itemToDrop.type)) {
+                                continue; 
+                            }
+                
+                            // 2. Lock the Hellsteel
+                            if (itemToDrop.type === 'hellsteel_nugget') {
+                                itemToDrop.type = 'locked_hellsteel_nugget';
+                            }
+                
+                            // 3. Melt rocks into magma
+                            if (itemToDrop.type === 'rock_block') {
+                                itemToDrop.type = 'magma_stone_block';
+                            }
+                
+                            // 4. Tools lose 15% of CURRENT durability
+                            const itemProps = itemTypes[itemToDrop.type] || blockTypes[itemToDrop.type];
+                            if (itemProps && itemProps.isTool && itemToDrop.durability !== undefined) {
+                                // Multiply by 0.85 (which is subtracting 15%) and ensure it doesn't drop below 1
+                                itemToDrop.durability = Math.max(1, Math.floor(itemToDrop.durability * 0.85));
+                            }
+                        }
+                        // --- END HELLFIRE CONSEQUENCES ---
+                
+                        deathChestInventory[i] = itemToDrop;
+                    }
+                }
 				
 				// --- START: NEW FEATURE - Cup of Urine on Death ---
 				// First, roll the dice for a 80% chance of this happening.
@@ -12602,6 +12734,18 @@
 				guanoMined += 1;
                 if (guanoMined >= 25) unlockAchievement('SPELUNKER')
 			}
+            if (blockData && blockData.type === 'balloonite') {
+                unlockAchievement('EXOTIC_AERONAUTICS')
+			}
+            if (blockData && blockData.type === 'forest_heart_block') {
+                unlockAchievement('FOREST_CONQUERER')
+			}
+            if (blockData && blockData.type === 'fungal_heart_block') {
+                unlockAchievement('MYCELIAL_MASTER')
+			}
+            if (blockData && blockData.type === 'spider_egg_sack') {
+                unlockAchievement('ARACHNOPHOBIA')
+			}
             
 			// If the block was a World Mover, drop its fuel first
             if (blockData && blockData.type === 'world_mover' && blockData.inventory) {
@@ -13031,7 +13175,7 @@
 					unlockAchievement('TIMBER');
 				} else if (isShovelBlock && equippedItemProps.shovelPower) {
 					currentMiningPower = equippedItemProps.shovelPower;
-					unlockAchievement('POOP_SCOOP');
+					unlockAchievement('SLOPPY');
 				} else if (isSwordBlock && equippedItemProps.swordPower) {
 					currentMiningPower = equippedItemProps.swordPower;
 					unlockAchievement('DUEL');
@@ -13878,7 +14022,10 @@
 		};
         
         let bombs = ['napalm_bomb','dynamite_bomb','octogen_bomb','weak_nuclear_bomb','subnuclear_bomb','nuclear_bomb', 'trap_stone', 'trap_compacted_stone', 'trap_compressed_stone'];
-
+		
+		const defaultBombDamagePatterns = JSON.parse(JSON.stringify(bombDamagePatterns));
+        const defaultBombs = [...bombs];
+		
 		// --- NEW: Global queue to prevent Maximum Call Stack Size Exceeded ---
         let isProcessingExplosions = false;
         let explosionQueue = [];
@@ -14178,6 +14325,33 @@
 						return; // Stop processing
 					}
 				}
+
+                if (isPlayerOnHellfire) {
+					// Check block directly under feet (using floor)
+					const feetCol = Math.floor((player.x + playerWidth/2) / tileSize);
+					const feetRow = Math.floor((player.y + playerHeight) / tileSize);
+					const blockBelow = getBlockType(feetCol, feetRow);
+
+					if (blockBelow === 'snow_block') {
+						// Sequence Step 1: Eat Golden Apple
+						if (selectedItemType === 'golden_apple') {
+							hellfireCureStage = 1;
+						}
+						// Sequence Step 2: Drink Milk (if stage is 1)
+						else if (selectedItemType === 'cup_of_milk' && hellfireCureStage === 1) {
+							// CURE!
+							hellfireLevel = 1.0; // Reset saturation
+                            isPlayerOnHellfire = false;
+							player.onFire = false;
+							hellfireCureStage = 0;
+						}
+					} else {
+						// Reset stage if not on snow
+						if (hellfireCureStage > 0) {
+							hellfireCureStage = 0;
+						}
+					}
+				}
 				
 				if ( selectedItemObject && selectedItemObject.count > 0 && itemTypes[selectedItemType]?.isFood && blockAtTarget.type !== 'item_frame' && blockAtTarget.type !== 'pit_toilet' && blockAtTarget.overlay !== 'pit_toilet' ) {
 				  const props = itemTypes[selectedItemType];
@@ -14284,35 +14458,6 @@
                   }
 				  mouse.rightDown = false;
 				  return; // Stop block placement
-				}
-				if (isPlayerOnHellfire) {
-					// Check block directly under feet (using floor)
-					const feetCol = Math.floor((player.x + playerWidth/2) / tileSize);
-					const feetRow = Math.floor((player.y + playerHeight) / tileSize);
-					const blockBelow = getBlockType(feetCol, feetRow);
-
-					if (blockBelow === 'snow_block') {
-						// Sequence Step 1: Eat Golden Apple
-						if (selectedItemType === 'golden_apple') {
-							hellfireCureStage = 1;
-							showMessageBox("The apple chills your burning soul... Now wash it down.", 'info');
-						}
-						// Sequence Step 2: Drink Milk (if stage is 1)
-						else if (selectedItemType === 'cup_of_milk' && hellfireCureStage === 1) {
-							// CURE!
-							isPlayerOnHellfire = false;
-							hellfireLevel = 1.0; // Reset saturation
-							player.onFire = false;
-							hellfireCureStage = 0;
-							showMessageBox("The Hellfire has been extinguished!", 'alert');
-						}
-					} else {
-						// Reset stage if not on snow
-						if (hellfireCureStage > 0) {
-							hellfireCureStage = 0;
-							showMessageBox("You stepped off the snow! Cure failed.", 'info');
-						}
-					}
 				}
 			const blockProps = blockTypes[blockAtTarget.type];
 			// --- NEW: World Builder Item-Use Logic (Tree Growing) ---
@@ -14467,6 +14612,8 @@
                                 updateHotbar();
                             }
                         }
+
+                        unlockAchievement('PYROMANIAC');
                     }
                 }
                 mouse.rightDown = false; // Consume the click
@@ -17915,6 +18062,7 @@
 			{ input: 'mythicalithium_pickaxe', output: 'mythicalithium_nugget', outputCount: 1 },
 			// Misc
 			{ input: 'branch', output: 'wooden_stick', outputCount: 2 },
+            { input: 'locked_hellsteel_nugget', output: 'hellsteel_nugget', outputCount: 1 },
 		];
 		// --- CENTRAL STATION REGISTRY ---
 		// Maps block types to their configuration.
