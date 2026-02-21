@@ -1,0 +1,38 @@
+{
+  "name": "Example - Adding Bombs And Explosives",
+  "author": "BGU Examples",
+  "variableEdits": {
+    "bombs": [
+      "dirt",
+      "halo_nuke"
+    ],
+    "bombDamagePatterns": {
+      "dirt": [90, 80, 70, 60, 50, 40, 30, 20, 10],
+      "halo_nuke": [500, 0, 0, 0, 0, 0, 0, 500, 500, 500]
+    }
+  },
+  "overwrites": {
+    "blocks": {
+      "dirt": {
+        "bombDamage": 3,
+        "bombRadius": 9,
+        "playerDamageMin": 10,
+        "playerDamageMax": 90
+      },
+      "soil": {
+        "mineBoom": "napalm_bomb"
+      }
+    }
+  },
+  "newBlocks": {
+    "halo_nuke": {
+      "solid": true,
+      "miningHardness": 15,
+      "color": "#ff0055",
+      "bombDamage": 60,
+      "bombRadius": 10,
+      "playerDamageMin": 10,
+      "playerDamageMax": 1000
+    }
+  }
+}
