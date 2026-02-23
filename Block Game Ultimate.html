@@ -2831,6 +2831,7 @@
         const loadingTipText = document.getElementById('loadingTipText');
 		
 		let showBlockOutline = false; // Toggle block outline on/off
+		let spoilageOn = 0
 		
 		let hotbarTooltipTimer = null;
 		function showHotbarSwitchTooltip(itemObject) {
@@ -2938,8 +2939,8 @@
         let insomnia = 0;
         let guanoMined = 0;
         // END ACHIEVEMENT VARIABLES
-		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass', 'lush_grass', 'forest_leaves', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
-		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass', 'lush_grass', 'forest_leaves', 'fern', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
+		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'flax', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass', 'lush_grass', 'forest_leaves', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
+		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'flax', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass', 'lush_grass', 'forest_leaves', 'fern', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
 		let portals = []; // Will store all portal locations and links
@@ -3213,16 +3214,11 @@
 				const block = worldBlocks[key];
 
 				if (block) {
-					// Track Containers
+					// Track Containers ONLY
 					if (block.inventory) activeContainers.add(key);
 					else activeContainers.delete(key);
-
-					// Track Plants (to fix the other lag source)
-					if (block.plantTime !== undefined) activePlants.add(key);
-					else activePlants.delete(key);
 				} else {
 					activeContainers.delete(key);
-					activePlants.delete(key);
 				}
 			}
 			worldKeyIndex = end;
@@ -4332,6 +4328,7 @@
         const ironVeinProbability = 0.0011;
 		const nickelVeinProbability = 0.0005;
 		const titaniumVeinProbability = 0.0008;
+		const cobaltVeinProbability = 0.0004;
 		const leadVeinProbability = 0.0006;
 		const tungstenVeinProbability = 0.0005;
 		const rareMineralProbability = 0.0008
@@ -4776,6 +4773,8 @@
 			'iron_compressed_stone': { imgSrc: 'Iron Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'iron_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.5 },
 			'nickel_compacted_stone': { imgSrc: 'Nickel Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'nickel_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.2 },
 			'tungsten_compacted_stone': { imgSrc: 'Tungsten Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'tungsten_nugget', chance: 1, min: 1, max: 1}], color: '#8B8B83', requiredMiningPower: 0.2 },
+			'cobalt_compacted_stone': { imgSrc: 'Cobalt Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'cobalt_nugget', chance: 1, min: 1, max: 1}], color: '#8B8B83', requiredMiningPower: 0.2 },
+			'cobalt_compressed_stone': { imgSrc: 'Cobalt Compressed Stone Block.png', solid: true, miningHardness: 15000, drops: [{item: 'cobalt_nugget', chance: 1, min: 1, max: 1}], color: '#A19D94', requiredMiningPower: 0.5 },
             'gold_compacted_stone': { imgSrc: 'Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'gold_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
             'pyrite_compacted_stone': { imgSrc: 'Gold Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'pyrite_nugget', chance: 1, min: 1, max: 1}], color: '#FFD700', requiredMiningPower: 0.2 },
             'ruby_compacted_stone': { imgSrc: 'Ruby Compacted Stone Block.png', solid: true, miningHardness: 1500, drops: [{item: 'ruby_nugget', chance: 1, min: 1, max: 1}], color: '#E0115F', requiredMiningPower: 0.2 },
@@ -4982,6 +4981,11 @@
             'cotton_soil': { imgSrc: 'Cotton Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
 			'cotton_fertilizer': { imgSrc: 'Cotton Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
 			'planted_cotton_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#F0F0F0' },
+			'flax': { imgSrc: 'Flax.png', solid: false, miningHardness: 10, drops: [{item: 'flax_item', chance: 1, min: 1, max: 1}, {item: 'flax_seeds', chance: 0.5, min: 0, max: 2}], color: '#F0F0F0' },
+			'flax_dirt': { imgSrc: 'Flax Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'flax_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
+            'flax_soil': { imgSrc: 'Flax Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'flax_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
+			'flax_fertilizer': { imgSrc: 'Flax Seed Fertilizer Block.png', solid: true, miningHardness: 140, drops: [{item: 'fertilizer', chance: 1, min: 1, max: 1}, {item: 'flax_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
+			'planted_flax_seeds': { imgSrc: null, solid: true, miningHardness: 100, drops: [], color: '#F0F0F0' },
 			'rice': { imgSrc: 'Rice.png', solid: false, miningHardness: 10, drops: [{item: 'rice_item', chance: 1, min: 1, max: 2}, {item: 'rice_seeds', chance: 0.5, min: 0, max: 2}], color: '#FFFFFF' },
             'rice_dirt': { imgSrc: 'Rice Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'rice_seeds', chance: 1, min: 1, max: 1}], color: '#F5F5DC', shovelBlock: true },
             'rice_soil': { imgSrc: 'Rice Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'rice_seeds', chance: 1, min: 1, max: 1}], color: '#F5F5DC', shovelBlock: true },
@@ -5218,7 +5222,9 @@
 			 'brass_nugget': { imgSrc: 'Brass Nugget.png', color: '#B5A642' },
              'iron_nugget': { imgSrc: 'Iron Nugget.png', color: '#A19D94' },
 			 'tungsten_nugget': { imgSrc: 'Tungsten Nugget.png', color: '#8B8B83' },
+			 'cobalt_nugget': { imgSrc: 'Cobalt Nugget.png', color: '#43464B' },
 			 'steel_nugget': { imgSrc: 'Steel Nugget.png', color: '#43464B' },
+			 'cobalt_steel_nugget': { imgSrc: 'Cobalt Steel Nugget.png', color: '#43464B' },
              'gold_nugget': { imgSrc: 'Gold Nugget.png', color: '#FFD700' },
              'pyrite_nugget': { imgSrc: 'Pyrite Nugget.png', color: '#FFD700' },
 			 'silver_nugget': { imgSrc: 'Silver Nugget.png', color: '#FFD700' },
@@ -5266,6 +5272,8 @@
 			 'barley_item': { imgSrc: 'Barley.png', color: '#E6BF83', spoilable: { into: 'plant_mush', time: 300000 } },
 			 'cotton_seeds': { imgSrc: 'Cotton Seeds.png', color: '#F0F0F0' },
              'cotton_item': { imgSrc: 'Cotton.png', color: '#F5F5F5', spoilable: { into: 'plant_mush', time: 300000 } },
+			 'flax_seeds': { imgSrc: 'Flax Seeds.png', color: '#F0F0F0' },
+             'flax_item': { imgSrc: 'Flax.png', color: '#F5F5F5', spoilable: { into: 'plant_mush', time: 300000 } },
              'rice_seeds': { imgSrc: 'Rice Seeds.png', color: '#F5F5DC' },
              'rice_item': { imgSrc: 'Rice.png', color: '#FFFFFF', spoilable: { into: 'plant_mush', time: 300000 } },
 			 'hop_seeds': { imgSrc: 'Hop Seeds.png', color: '#90EE90' },
@@ -7063,6 +7071,7 @@
 					['zinc_compacted_stone', (typeof zincVeinProbability === 'number' ? zincVeinProbability : 0)],
 					['coal_compacted_stone', (typeof deepCoalVeinProbability === 'number' ? deepCoalVeinProbability : 0)],
 					['iron_compacted_stone', (typeof ironVeinProbability === 'number' ? ironVeinProbability : 0)],
+					['cobalt_compacted_stone', (typeof cobaltVeinProbability === 'number' ? cobaltVeinProbability : 0)],
 					['nickel_compacted_stone', (typeof nickelVeinProbability === 'number' ? nickelVeinProbability : 0)],
 					['titanium_compacted_stone', (typeof titaniumVeinProbability === 'number' ? titaniumVeinProbability : 0)],
 					['lead_compacted_stone', (typeof leadVeinProbability === 'number' ? leadVeinProbability : 0)],
@@ -8215,7 +8224,8 @@
 						const b = random();
 						if (b < 0.005) blockType = 'iron_compressed_stone';
 						else if (b < 0.008) blockType = 'aluminum_compressed_stone';
-						else if (b < 0.0085) blockType = 'palladium_compressed_stone';
+						else if (b < 0.01) blockType = 'cobalt_compressed_stone';
+						else if (b < 0.0103) blockType = 'palladium_compressed_stone';
 						else if (b < 0.03) blockType = 'coal_compressed_stone';
 						else blockType = 'compressed_stone';
 					}
@@ -8448,12 +8458,13 @@
                      else if (random() < emeraldVeinProbability * oreSpawnMultiplier) blockType = 'emerald_compacted_stone';
 					 else if (random() < leadVeinProbability * oreSpawnMultiplier) blockType = 'lead_compacted_stone';
                 }
-                // Layer 6: Opal, Jade, Ametrine, And Painite
+                // Layer 6: Opal, Jade, Ametrine, Painite, And Cobalt
                 if (depth >= 65) {
                     if (random() < opalVeinProbability * oreSpawnMultiplier) blockType = 'opal_compacted_stone';
 					else if (random() < jadeVeinProbability * oreSpawnMultiplier) blockType = 'jade_compacted_stone';
 					else if (random() < ametrineVeinProbability * oreSpawnMultiplier) blockType = 'ametrine_compacted_stone';
 					else if (random() < painiteVeinProbability * oreSpawnMultiplier) blockType = 'painite_compacted_stone';
+					else if (random() < cobaltVeinProbability * oreSpawnMultiplier) blockType = 'cobalt_compacted_stone';
                 }
             }
 			
@@ -10041,7 +10052,7 @@
             const fridgeInventory = new Array(chestInventorySize).fill(null);
             
             // 1. Add 3 random types of seeds
-            const possibleSeeds = ['grass_seeds', 'moss_seeds', 'wheat_seeds', 'cotton_seeds', 'rice_seeds', 'hop_seeds', 'coffee_seeds', 'oat_seeds', 'corn_seeds', 'barley_seeds', 'pumpkin_seeds', 'tomato_seeds', 'onion_seeds', 'garlic_seeds', 'chili_pepper_seeds', 'potato_seeds'];
+            const possibleSeeds = ['grass_seeds', 'moss_seeds', 'wheat_seeds', 'cotton_seeds', 'flax_seeds', 'rice_seeds', 'hop_seeds', 'coffee_seeds', 'oat_seeds', 'corn_seeds', 'barley_seeds', 'pumpkin_seeds', 'tomato_seeds', 'onion_seeds', 'garlic_seeds', 'chili_pepper_seeds', 'potato_seeds'];
             // Shuffle the array and pick the first 3 unique seeds
             const selectedSeeds = possibleSeeds.sort(() => 0.5 - random()).slice(0, 3);
             for(let i = 0; i < selectedSeeds.length; i++) {
@@ -14631,7 +14642,7 @@
 				const selectedItemIsUrine = selectedItemType === 'cup_of_urine';
 				const selectedItemIsSword = selectedItemType.endsWith('_sword');
 				const selectedItemIsPlaceworthy = selectedItemType === 'cobweb' || selectedItemType.endsWith('_wall') || itemProps.nonsolidPlace === true || selectedItemType.endsWith('_present');
-                const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds' || selectedItemType === 'potato_seeds';
+                const selectedItemIsSeeds = selectedItemType === 'wheat_seeds' || selectedItemType === 'tomato_seeds' || selectedItemType === 'pumpkin_seeds' || selectedItemType === 'cotton_seeds' || selectedItemType === 'flax_seeds' || selectedItemType === 'rice_seeds' || selectedItemType === 'hop_seeds' || selectedItemType === 'coffee_seeds' || selectedItemType === 'oat_seeds' || selectedItemType === 'corn_seeds' || selectedItemType === 'barley_seeds' || selectedItemType === 'onion_seeds' || selectedItemType === 'garlic_seeds' || selectedItemType === 'chili_pepper_seeds' || selectedItemType === 'potato_seeds';
                 const currentBlockAtTarget = getBlockType(targetCol, targetRow);
                 const placementRect = { x: targetCol * tileSize, y: targetRow * tileSize, width: tileSize, height: tileSize };
                 const playerRect = { x: player.x, y: player.y, width: playerWidth, height: playerHeight };
@@ -16961,7 +16972,7 @@
 
         let recipes = [
             { name: "Bed",
-                input: { 0: { type: 'cotton_item', count: 1 }, 1: { type: 'cotton_item', count: 1 }, 2: { type: 'cotton_item', count: 1 }, 3: { type: 'cotton_item', count: 1 }, 4: { type: 'any_plank', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 7: { type: 'any_plank', count: 1 } },
+                input: { 0: { type: 'cotton_cloth', count: 1 }, 1: { type: 'cotton_cloth', count: 1 }, 2: { type: 'cotton_cloth', count: 1 }, 3: { type: 'cotton_cloth', count: 1 }, 4: { type: 'any_plank', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 7: { type: 'any_plank', count: 1 } },
                 output: 'bed', outputCount: 1,
             },
             { name: "Chest", 
@@ -17008,7 +17019,19 @@
 				input: { 0: { type: 'tungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 3: { type: 'tungsten_nugget', count: 1 }, 6: { type: 'tungsten_nugget', count: 1 }, 10: { type: 'tungsten_nugget', count: 1 }, 14: { type: 'tungsten_nugget', count: 1 }, 15: { type: 'tungsten_nugget', count: 1 } },
 				output: 'tungsten_anvil', outputCount: 1
 			},
-            { name: "Pumpkin Seeds",
+			{ name: "Saw Table",
+				input: { 1: { type: 'cobalt_steel_nugget', count: 1 }, 2: { type: 'cobalt_steel_nugget', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 8: { type: 'stone', count: 1 }, 9: { type: 'stone', count: 1 }, 10: { type: 'stone', count: 1 }, 11: { type: 'stone', count: 1 } },
+				output: 'saw_table', outputCount: 1
+			},
+            { name: "Cotton Cloth",
+				input: { 0: { type: 'cotton_item', count: 1 } },
+				output: 'cotton_cloth', outputCount: 1
+			},
+			{ name: "Linen Cloth",
+				input: { 0: { type: 'flax_item', count: 1 } },
+				output: 'linen_cloth', outputCount: 1
+			},
+			{ name: "Pumpkin Seeds",
 				input: { 0: { type: 'pumpkin', count: 1 } },
 				output: 'pumpkin_seeds', outputCount: 2
 			},
@@ -17238,6 +17261,10 @@
             { name: "Diamond Plated Steel Pickaxe",
                 input: { 0: { type: 'diamond_nugget', count: 1 }, 1: { type: 'steel_pickaxe', count: 1 }, 2: { type: 'diamond_nugget', count: 1 }, 5: { type: 'diamond_nugget', count: 1 } },
                 output: 'diamond_plated_steel_pickaxe', outputCount: 1
+            },
+			{ name: "Cobalt Steel Nugget",
+                input: { 0: { type: 'cobalt_nugget', count: 1 }, 1: { type: 'steel_nugget', count: 1 } },
+                output: 'cobalt_steel_nugget', outputCount: 1
             },
 			{ name: "Diviniron Pickaxe",
                 input: { 0: { type: 'diviniron_nugget', count: 1 }, 1: { type: 'diviniron_nugget', count: 1 }, 2: { type: 'diviniron_nugget', count: 1 }, 3: { type: 'diviniron_nugget', count: 1 }, 5: { type: 'wield_wooden_stick', count: 1 }, 9: { type: 'wield_wooden_stick', count: 1 }, 13: { type: 'wield_wooden_stick', count: 1 } },
@@ -17680,7 +17707,7 @@
                 output: 'wooden_cross', outputCount: 3
             },
 			{ name: "Pickaxe Of Creation",
-                input: { 0: { type: 'b_of_creation', count: 1 }, 1: { type: 'mythicalithium_pickaxe', count: 1 } },
+                input: { 0: { type: 'b_of_creation', count: 1 }, 1: { type: 'broken_mythicalithium_pickaxe', count: 1 } },
                 output: 'pickaxe_of_creation', outputCount: 1
             },
 			{ name: "Soup Of Creation",
@@ -19520,63 +19547,84 @@
             return slot;
         }
 
-        function updatePlantGrowth() {
-			if (isGamePaused) return;
-			const currentTime = gameTime;
-			
-			// Create a temporary set to store plants that are done growing
-			const plantsToRemove = new Set();
+        let activePlantsIterator = null;
 
-			// Loop over ONLY the active plants
-			for (const key of activePlants) {
+		function updatePlantGrowth(dt) {
+			if (isGamePaused || activePlants.size === 0) {
+				activePlantsIterator = null; // Reset memory if empty
+				return;
+			}
+
+			// Initialize or reset iterator if we finished a loop
+			if (!activePlantsIterator) {
+				activePlantsIterator = activePlants.keys();
+			}
+
+			const PLANTS_PER_FRAME = 15; // Checks 15 plants per frame (900 per second). Zero lag!
+			let checks = 0;
+			const currentTime = gameTime;
+
+			while (checks < PLANTS_PER_FRAME) {
+				const result = activePlantsIterator.next();
+				
+				if (result.done) {
+					activePlantsIterator = null; // Loop finished, reset for next frame
+					break;
+				}
+
+				checks++;
+				const key = result.value;
 				const blockData = worldBlocks[key];
 				
-				// If block was destroyed or changed, remove it from the list
+				// Auto-Cleanup: If block was destroyed or changed, remove it from the active list safely
 				if (!blockData || !blockData.type.startsWith('planted_')) {
-					plantsToRemove.add(key);
+					activePlants.delete(key);
 					continue;
 				}
 
+				// Determine required growth time
 				let growthTimeRequired;
-				if (blockData.baseBlockType === 'fertilizer') {
-					growthTimeRequired = 45000; // 45 seconds
-				} else if (blockData.baseBlockType === 'soil') {
-					growthTimeRequired = 90000; // 90 seconds
-				} else { // 'dirt'
-					growthTimeRequired = 180000; // 180 seconds
-				}
+				if (blockData.baseBlockType === 'fertilizer') growthTimeRequired = 45000;
+				else if (blockData.baseBlockType === 'soil') growthTimeRequired = 90000;
+				else growthTimeRequired = 180000; // 'dirt'
 				
+				// Check if ready to grow
 				if (currentTime - blockData.plantTime >= growthTimeRequired) {
-					const coords = key.split(',').map(Number);
-					if (getBlockType(coords[0], coords[1] - 1) === '') {
+					const coords = key.split(',');
+					const col = parseInt(coords[0], 10);
+					const row = parseInt(coords[1], 10);
+
+					// Ensure the space above the dirt/soil is still empty
+					if (getBlockType(col, row - 1) === '') {
 						let cropType;
-						if (blockData.type === 'planted_wheat_seeds') cropType = 'wheat';
-						else if (blockData.type === 'planted_tomato_seeds') cropType = 'tomato_bush';
-						else if (blockData.type === 'planted_pumpkin_seeds') cropType = 'pumpkin';
-						else if (blockData.type === 'planted_cotton_seeds') cropType = 'cotton';
-						else if (blockData.type === 'planted_rice_seeds') cropType = 'rice';
-						else if (blockData.type === 'planted_hop_seeds') cropType = 'hop';
-						else if (blockData.type === 'planted_coffee_seeds') cropType = 'coffee';
-						else if (blockData.type === 'planted_oat_seeds') cropType = 'oat';
-						else if (blockData.type === 'planted_corn_seeds') cropType = 'corn';
-						else if (blockData.type === 'planted_barley_seeds') cropType = 'barley';
-						else if (blockData.type === 'planted_onion_seeds') cropType = 'onion';
-						else if (blockData.type === 'planted_garlic_seeds') cropType = 'garlic';
-						else if (blockData.type === 'planted_chili_pepper_seeds') cropType = 'chili_pepper_bush';
-						else if (blockData.type === 'planted_potato_seeds') cropType = 'potato_stem';
-						
+						switch (blockData.type) {
+							case 'planted_wheat_seeds': cropType = 'wheat'; break;
+							case 'planted_tomato_seeds': cropType = 'tomato_bush'; break;
+							case 'planted_pumpkin_seeds': cropType = 'pumpkin'; break;
+							case 'planted_cotton_seeds': cropType = 'cotton'; break;
+							case 'planted_flax_seeds': cropType = 'flax'; break;
+							case 'planted_rice_seeds': cropType = 'rice'; break;
+							case 'planted_hop_seeds': cropType = 'hop'; break;
+							case 'planted_coffee_seeds': cropType = 'coffee'; break;
+							case 'planted_oat_seeds': cropType = 'oat'; break;
+							case 'planted_corn_seeds': cropType = 'corn'; break;
+							case 'planted_barley_seeds': cropType = 'barley'; break;
+							case 'planted_onion_seeds': cropType = 'onion'; break;
+							case 'planted_garlic_seeds': cropType = 'garlic'; break;
+							case 'planted_chili_pepper_seeds': cropType = 'chili_pepper_bush'; break;
+							case 'planted_potato_seeds': cropType = 'potato_stem'; break;
+						}
+
 						if (cropType) {
-							worldBlocks[`${coords[0]},${coords[1] - 1}`] = { type: cropType, mineProg: 0 };
+							// Grow the actual crop above the soil!
+							worldBlocks[`${col},${row - 1}`] = { type: cropType, mineProg: 0 };
+							// Revert the planted soil block back to regular soil
 							worldBlocks[key] = { type: blockData.baseBlockType, mineProg: 0 }; 
-							plantsToRemove.add(key); // Done growing, remove from list
+							// Growth complete, remove from processing queue
+							activePlants.delete(key);
 						}
 					}
 				}
-			}
-			
-			// Clean up the main set
-			for (const key of plantsToRemove) {
-				activePlants.delete(key);
 			}
 		}
 		
@@ -21125,6 +21173,8 @@
             anthillStructureColumns.clear();
             modStructureColumns.clear();
 			activeContainers.clear();
+			activePlants.clear();
+			activePlantsIterator = null;
 			hellDungeonGenerated = false;
 
             // Reset player
@@ -21328,13 +21378,13 @@
 			updateBees(dt);
             updateParkourTimer(dt);
 			updateBullets(dt);
-            plantSpoilageAccumulator += dt;
+
+			// Run the optimized time-sliced growth every frame!
+			updatePlantGrowth(dt); 
 
 			plantSpoilageAccumulator += dt;
 			if (plantSpoilageAccumulator >= PLANT_SPOILAGE_INTERVAL) {
-				// 2. These functions now use our optimized Sets
-				updatePlantGrowth();
-				updateSpoilage();
+				if (spoilageOn === 1) updateSpoilage();
 				plantSpoilageAccumulator = 0;
 			}
             waiterGo += 1
@@ -21348,7 +21398,7 @@
             if (waiterGo === 1) {
                 updateHeldItemAnimation(dt);
                 updateParticles(dt);
-				runBackgroundIndexer(500); 
+				if (spoilageOn === 1) runBackgroundIndexer(500); 
             }
             if (waiterGone >= 60) { // 60 frames = 1 second
                 waiterGone = 0;
@@ -22272,6 +22322,9 @@
 			forgottenCryptColumns.clear();
             anthillStructureColumns.clear();
 			modStructureColumns.clear();
+			activeContainers.clear();
+			activePlants.clear();
+			activePlantsIterator = null;
 			hellDungeonGenerated = data.hellDungeonGenerated || false;
 			exploredMap = {};
 			bees.length = 0;
@@ -22351,6 +22404,10 @@
 				if (newBlock.inventory) {
                     activeContainers.add(key);
                 }
+				
+				if (newBlock.type && newBlock.type.startsWith('planted_')) {
+					activePlants.add(key);
+				}
             }
 
             Object.assign(columnSurfaceHeights, data.heights || {});
