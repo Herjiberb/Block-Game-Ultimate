@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BGU Ultimate Marketplace</title>
-    <link rel="icon" type="image/png" href="Trailer.png">
     <style>
         :root {
             --bg-dark: #0f0f0f;
@@ -66,13 +65,14 @@
             outline: none;
         }
 
-        /* --- Filters --- */
+        /* --- Filters & Navigation --- */
+        .container { max-width: 1300px; margin: 2rem auto; padding: 0 20px; }
+        
         .filter-container {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
             flex-wrap: wrap;
-            padding: 0 5%;
         }
 
         .filter-btn {
@@ -95,8 +95,6 @@
         }
 
         /* --- Grid & Cards --- */
-        .container { max-width: 1300px; margin: 2rem auto; padding: 0 20px; }
-        
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -109,7 +107,6 @@
             padding: 15px;
             transition: var(--transition);
             border: 1px solid #2a2a2a;
-            cursor: pointer;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -121,6 +118,8 @@
             border-color: var(--accent);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+
+        .card-link { cursor: pointer; }
 
         .mod-logo-container {
             width: 100%;
@@ -137,7 +136,15 @@
         }
 
         .mod-info-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0; }
-        .mod-info-author { color: var(--accent); font-size: 0.85rem; font-weight: 500; }
+        .mod-info-author { 
+            color: var(--accent); 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .mod-info-author:hover { text-decoration: underline; }
+
         .mod-tag {
             background: #333;
             font-size: 0.7rem;
@@ -147,8 +154,8 @@
             text-transform: uppercase;
         }
 
-        /* --- Details View --- */
-        #mod-details { display: none; animation: fadeIn 0.4s ease; }
+        /* --- Details & Artist View --- */
+        #mod-details, #artist-view { display: none; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .back-btn {
@@ -167,17 +174,34 @@
         .download-btn {
             display: block;
             background: var(--accent);
-            color: #000;
+            color: #000 !important;
             text-align: center;
             padding: 15px;
             border-radius: 10px;
-            text-decoration: none;
+            text-decoration: none !important;
             font-weight: bold;
             margin-top: 20px;
             transition: 0.2s;
         }
 
         .download-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        /* --- Artist Bio Style --- */
+        .artist-header {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 1px solid #333;
+            border-left: 5px solid var(--accent);
+        }
+
+        .bio-text {
+            color: #bbb;
+            font-size: 1.1rem;
+            max-width: 800px;
+            line-height: 1.6;
+        }
 
         footer { text-align: center; padding: 60px; color: #555; border-top: 1px solid #222; margin-top: 50px; }
     </style>
@@ -196,8 +220,7 @@
 
 <div class="container">
     <div id="home-view">
-        <div class="filter-container" id="filter-bar">
-            </div>
+        <div class="filter-container" id="filter-bar"></div>
         <h2 id="view-title" style="margin-bottom: 25px; font-weight: 400; color: var(--text-dim);">Featured Mods</h2>
         <div class="grid" id="mods-grid"></div>
     </div>
@@ -206,6 +229,11 @@
         <button class="back-btn" onclick="showHome()">← Back to Marketplace</button>
         <div id="details-content"></div>
     </div>
+
+    <div id="artist-view">
+        <button class="back-btn" onclick="showHome()">← Back to Marketplace</button>
+        <div id="artist-content"></div>
+    </div>
 </div>
 
 <footer>
@@ -213,6 +241,13 @@
 </footer>
 
 <script>
+    const authorBios = {
+        "BGU Dev Team": "The official developers behind Block Game Ultimate. Focused on pushing the boundaries of what's possible in a 2D block world.",
+        "RAZOR Studios": "A dedicated modding studio specializing in expansion packs and tool overhauls.",
+        "ChatGPT": "An AI language model that occasionally dabbles in CSS and UI design. Expert in glassmorphism and buggy code.",
+        "BGU Examples": "Official templates and reference mods to help you start your own modding journey."
+    };
+
     const mods = [
         {
             id: 1,
@@ -351,7 +386,6 @@
     let currentCategory = 'All';
     let searchQuery = '';
 
-    // Initialize
     window.onload = () => {
         createFilterButtons();
         renderMods();
@@ -360,12 +394,8 @@
     function createFilterButtons() {
         const filterBar = document.getElementById('filter-bar');
         const categories = ['All', ...new Set(mods.map(m => m.category))];
-        
         filterBar.innerHTML = categories.map(cat => `
-            <button class="filter-btn ${cat === 'All' ? 'active' : ''}" 
-                    onclick="filterCategory('${cat}', this)">
-                ${cat}
-            </button>
+            <button class="filter-btn ${cat === 'All' ? 'active' : ''}" onclick="filterCategory('${cat}', this)">${cat}</button>
         `).join('');
     }
 
@@ -373,12 +403,29 @@
         currentCategory = cat;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        showHome();
         renderMods();
     }
 
     function handleSearch() {
         searchQuery = document.getElementById('searchInput').value.toLowerCase();
+        showHome();
         renderMods();
+    }
+
+    function createCard(mod) {
+        return `
+            <div class="mod-card">
+                <div class="card-link" onclick="openMod(${mod.id})">
+                    <div class="mod-logo-container">
+                        <img src="${mod.logo}" onerror="this.src='https://via.placeholder.com/300x300?text=${mod.title}'">
+                    </div>
+                    <div class="mod-tag">${mod.category}</div>
+                    <div class="mod-info-title">${mod.title}</div>
+                </div>
+                <div class="mod-info-author" onclick="openArtist('${mod.author}')">by ${mod.author}</div>
+            </div>
+        `;
     }
 
     function renderMods() {
@@ -390,17 +437,7 @@
                                 m.author.toLowerCase().includes(searchQuery);
             return matchesCat && matchesSearch;
         });
-
-        grid.innerHTML = filtered.map(mod => `
-            <div class="mod-card" onclick="openMod(${mod.id})">
-                <div class="mod-logo-container">
-                    <img src="${mod.logo}" onerror="this.src='https://via.placeholder.com/300x300?text=${mod.title}'">
-                </div>
-                <div class="mod-tag">${mod.category}</div>
-                <div class="mod-info-title">${mod.title}</div>
-                <div class="mod-info-author">by ${mod.author}</div>
-            </div>
-        `).join('');
+        grid.innerHTML = filtered.map(mod => createCard(mod)).join('');
     }
 
     function openMod(id) {
@@ -412,46 +449,60 @@
             <div class="details-layout">
                 <div class="details-sidebar">
                     <img src="${mod.logo}" onerror="this.src='https://via.placeholder.com/300'">
-                    <a href="${mod.fileUrl}" class="download-btn" download>Download Package</a>
+                    <a href="${mod.fileUrl}" class="download-btn" download="${mod.title}">Download Package</a>
                     <div style="margin-top: 20px; color: var(--text-dim); font-size: 0.9rem;">
                         <p><strong>Version:</strong> ${mod.version}</p>
                         <p><strong>Category:</strong> ${mod.category}</p>
                     </div>
                 </div>
                 <div class="details-main">
-                    <h1 style="font-size: 2.5rem; margin-top: 0;">${mod.title}</h1>
-                    <p class="mod-info-author" style="font-size: 1.1rem;">Created by ${mod.author}</p>
+                    <h1 style="font-size: 2.5rem; margin: 0;">${mod.title}</h1>
+                    <div class="mod-info-author" style="font-size: 1.1rem;" onclick="openArtist('${mod.author}')">Created by ${mod.author}</div>
                     <hr style="border: 0; border-top: 1px solid #333; margin: 30px 0;">
                     <h3>Description</h3>
                     <p style="font-size: 1.1rem; line-height: 1.8; color: #ccc;">${mod.description}</p>
-                    
                     ${mod.gallery.length > 0 ? `
                         <h3>Gallery</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             ${mod.gallery.map(img => `<img src="${img}" style="width:100%; border-radius: 10px; border: 1px solid #333;">`).join('')}
                         </div>
                     ` : ''}
-
-                    <div style="margin-top: 40px; padding: 25px; background: #111; border-radius: 12px; border: 1px solid #222;">
-                        <h3>Installation Guide</h3>
-                        <ol style="color: #bbb; padding-left: 20px;">
-                            <li>Download the mod file using the button on the left.</li>
-                            <li>Launch Block Game Ultimate.</li>
-                            <li>Press 'G' in the main menu to open the Mod Loader.</li>
-                            <li>Select the downloaded file to initialize.</li>
-                        </ol>
-                    </div>
                 </div>
             </div>
         `;
-
-        document.getElementById('home-view').style.display = 'none';
+        hideAll();
         detailsView.style.display = 'block';
         window.scrollTo(0,0);
     }
 
-    function showHome() {
+    function openArtist(name) {
+        const view = document.getElementById('artist-view');
+        const content = document.getElementById('artist-content');
+        const artistMods = mods.filter(m => m.author === name);
+        const bio = authorBios[name] || "";
+
+        content.innerHTML = `
+            <div class="artist-header">
+                <h1 style="margin:0; color:var(--accent);">${name}</h1>
+                ${bio ? `<p class="bio-text">${bio}</p>` : ""}
+            </div>
+            <div class="grid">
+                ${artistMods.map(m => createCard(m)).join('')}
+            </div>
+        `;
+        hideAll();
+        view.style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    function hideAll() {
+        document.getElementById('home-view').style.display = 'none';
         document.getElementById('mod-details').style.display = 'none';
+        document.getElementById('artist-view').style.display = 'none';
+    }
+
+    function showHome() {
+        hideAll();
         document.getElementById('home-view').style.display = 'block';
     }
 </script>
