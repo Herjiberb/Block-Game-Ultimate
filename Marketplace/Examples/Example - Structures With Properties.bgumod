@@ -1,0 +1,26 @@
+{
+    "name": "Example - Structures With Properties",
+    "author": "BGU Examples",
+    "structures": [
+        {
+            "id": "ruined_outpost",
+            "chance": 0.05,
+            "biomes": ["deciduous_forest", "grass_field", "desert", "rocky"],
+            "layout": [
+                ["stone_brick_block", "stone_brick_block", "stone_brick_block", "stone_brick_block", "stone_brick_block"],
+                ["stone_brick_block", "cobweb", "stone_brick_wall", "stone_brick_wall", "stone_brick_block"],
+                ["stone_brick_block", "stone_brick_wall", "stone_brick_wall", "stone_brick_wall", "stone_brick_block"],
+                ["stone_brick_block", {
+                    "type": "chest",
+                    "label": "Forgotten Stash",
+                    "loot": [
+                        { "type": "gold_coin", "count": 15 },
+                        { "type": "steel_sword", "count": 1, "durability": 5000, "maxDurability": 100000 },
+                        { "type": "book", "count": 1 }
+                    ]
+                }, "stone_brick_wall", "cobweb", "stone_brick_block"],
+                ["stone_brick_block", "stone_brick_block", "stone_brick_block", "stone_brick_block", "stone_brick_block"]
+            ]
+        }
+    ]
+}
