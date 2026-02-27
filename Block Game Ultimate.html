@@ -1018,15 +1018,14 @@
 		/* --- New "Skip Loading" Button Style --- */
 		#skipLoadingButton {
 			display: none; /* Hidden by default */
-			margin-top: 15px;
-			padding: 8px 12px;
+			margin-top: 10px;
+			padding: 6px 9px;
 			background-color: #555;
 			border: 1px solid #888;
 			color: white;
 			border-radius: 5px;
 			cursor: pointer;
-			font-family: 'Inter', sans-serif;
-			font-size: 14px;
+			font-size: 8px;
 			transition: background-color 0.2s;
 		}
 		#skipLoadingButton:hover {
@@ -2218,48 +2217,70 @@
 		}
 
 		/* DESKTOP LAYOUT (Side-by-Side) */
-		@media (min-width: 900px) {
-			#inventoryCraftingMenu {
-				/* Expand the menu width to fit both columns */
-				max-width: 1100px !important; 
-				width: 95%;
-				max-height: 90vh;
-				overflow: hidden; /* Prevent body scroll, let columns scroll */
-			}
-
-			.inventory-layout-wrapper {
-				flex-direction: row; /* Side by side */
-				align-items: flex-start;
-				height: 100%;
-				overflow: hidden; /* Contain the scroll areas */
-			}
-
-			/* LEFT SIDE: RECIPES */
-			.recipes-column {
-				flex: 0 0 320px; /* Fixed width for recipe sidebar */
-				display: flex;
-				flex-direction: column;
-				height: 100%;
-			}
-
-			#recipeMenu {
-				height: 100%;
-				max-height: 75vh; /* Adjust based on screen height */
-				margin-top: 0; /* Remove existing margin */
-			}
-
-			/* RIGHT SIDE: INVENTORY */
-			.inventory-main-column {
-				flex: 1; /* Take remaining space */
-				overflow-y: auto; /* Allow this side to scroll independently */
-				max-height: 75vh; /* Match height logic */
-				padding-right: 5px; /* Space for scrollbar */
-				
-				/* Custom Scrollbar */
-				scrollbar-width: thin;
-				scrollbar-color: #666 #333;
-			}
-		}
+        @media (min-width: 900px) {
+            #inventoryCraftingMenu, #ovenMenu, #anvilMenu {
+                max-width: 1100px !important; 
+                width: 95%;
+                /* Define a consistent height for the whole menu */
+                height: 85vh; 
+                max-height: 85vh;
+                overflow: hidden; 
+                display: flex;
+                flex-direction: column;
+            }
+        
+            .inventory-layout-wrapper {
+                display: flex;
+                flex-direction: row; /* Side by side */
+                align-items: stretch; /* Force both columns to be equal height */
+                height: 100%;
+                overflow: hidden; 
+            }
+        
+            /* LEFT SIDE: RECIPES */
+            .recipes-column {
+                flex: 0 0 350px; /* Slightly wider for better readability */
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                border-right: 1px solid #444; /* Visual separator */
+                padding-right: 10px;
+            }
+        
+            /* Target the specific internal recipe containers */
+            #recipeMenu, #ovenRecipeMenu, #anvilRecipeMenu {
+                height: 100%; /* Take up all available space in the column */
+                max-height: 100%; 
+                display: flex;
+                flex-direction: column;
+                overflow: hidden; 
+            }
+        
+            /* The actual scrollable lists */
+            #recipeListContainer, #recipeIconContainer,
+            #ovenRecipeListContainer, #ovenRecipeIconContainer,
+            #anvilRecipeListContainer, #anvilRecipeIconContainer {
+                overflow-y: auto; 
+                flex-grow: 1; /* Pushes to fill the bottom */
+                border-top: 1px solid #555;
+                margin-top: 5px;
+                padding-top: 5px;
+                scrollbar-width: thin;
+                scrollbar-color: #666 #333;
+            }
+        
+            /* RIGHT SIDE: INVENTORY */
+            .inventory-main-column {
+                flex: 1; 
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow-y: auto; 
+                padding-left: 15px;
+                scrollbar-width: thin;
+                scrollbar-color: #666 #333;
+            }
+        }
 		
 		/* Mod Management Menu Styles */
         #modMenuOverlay {
@@ -2280,6 +2301,24 @@
         .mod-item-title { font-weight: bold; color: #FFD700; font-size: 1.2em; text-shadow: 1px 1px 2px black; }
         .mod-item-author { font-size: 0.9em; color: #00BFFF; margin-top: 4px; font-style: italic; }
         .mod-item-version { font-size: 0.85em; color: #aaa; margin-top: 4px; }
+
+        /* --- Standardized Craft Button Styles --- */
+        #craftButton, #cookButton, #anvilCraftButton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            align-self: center;
+            margin-top: 10px;
+        }
+        #craftButton:disabled, #cookButton:disabled, #anvilCraftButton:disabled {
+            background-color: #5a6268;
+            cursor: not-allowed;
+        }
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -2558,43 +2597,43 @@
 	<div id="anvilOverlay" oncontextmenu="return false;">
         <div id="anvilMenu">
             <h2>Anvil</h2>
-            <div class="inventory-section">
-				<h3>Anvil Crafting</h3>
-                <div class="crafting-area">
-                    <button class="mobile-close-button">X</button>
-                    <div id="anvilGrid" class="inventory-grid" style="grid-template-columns: repeat(4, 45px); grid-template-rows: repeat(4, 45px);">
-                    </div>
-                    <div class="crafting-arrow">&#10144;</div>
-                    <div class="inventory-slot" id="anvilOutput"></div>
-                </div>
-                 <button id="anvilCraftButton" disabled>Craft</button>
-            </div>
-            
-            <div class="inventory-section">
-                <h3>Your Inventory</h3>
-                <div id="anvilPlayerInventoryGrid" class="inventory-grid">
-                </div>
-            </div>
-            <div class="inventory-section">
-                <h3>Hotbar Slots</h3>
-                <div id="anvilHotbarGrid" class="inventory-grid">
-                </div>
-            </div>
-            <div id="anvilRecipeMenu" class="inventory-section">
-                <h3>Recipes</h3>
+            <div class="inventory-layout-wrapper">
                 
-                <div class="recipe-controls">
-					<input type="text" id="anvilRecipeSearchInput" placeholder="Search recipes...">
-					<label><input type="checkbox" id="anvilCraftableToggle" checked> Craftable</label>
-					<button id="anvilRecipeViewToggleList" class="recipe-view-toggle active">List</button>
-					<button id="anvilRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
-				</div>
-
-                <div id="anvilRecipeIconContainer" style="display: none;">
+                <div class="recipes-column">
+                    <div id="anvilRecipeMenu" class="inventory-section">
+                        <h3>Recipes</h3>
+                        <div class="recipe-controls">
+                            <input type="text" id="anvilRecipeSearchInput" placeholder="Search recipes...">
+                            <label><input type="checkbox" id="anvilCraftableToggle" checked> Craftable</label>
+                            <button id="anvilRecipeViewToggleList" class="recipe-view-toggle active">List</button>
+                            <button id="anvilRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
+                        </div>
+                        <div id="anvilRecipeIconContainer" style="display: none;"></div>
+                        <div id="anvilRecipeListContainer" style="display: block;"></div>
+                    </div>
                 </div>
 
-                <div id="anvilRecipeListContainer" style="display: block;">
+                <div class="inventory-main-column">
+                    <div class="inventory-section">
+                        <h3>Anvil Crafting</h3>
+                        <div class="crafting-area">
+                            <button class="mobile-close-button">X</button>
+                            <div id="anvilGrid" class="inventory-grid" style="grid-template-columns: repeat(4, 45px); grid-template-rows: repeat(4, 45px);"></div>
+                            <div class="crafting-arrow">&#10144;</div>
+                            <div class="inventory-slot" id="anvilOutput"></div>
+                        </div>
+                         <button id="anvilCraftButton" disabled>Craft</button>
+                    </div>
+                    <div class="inventory-section">
+                        <h3>Your Inventory</h3>
+                        <div id="anvilPlayerInventoryGrid" class="inventory-grid"></div>
+                    </div>
+                    <div class="inventory-section">
+                        <h3>Hotbar Slots</h3>
+                        <div id="anvilHotbarGrid" class="inventory-grid"></div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -2629,58 +2668,54 @@
 	<div id="ovenOverlay" oncontextmenu="return false;">
         <div id="ovenMenu">
             <h2>Oven</h2>
-            <button class="mobile-close-button">X</button>
-            <div class="oven-ui-area">
-                <div class="inventory-section">
-                    <h3>Input</h3>
-                    <div id="ovenGrid" class="inventory-grid">
+            <div class="inventory-layout-wrapper">
+                
+                <div class="recipes-column">
+                    <div class="inventory-section" id="ovenRecipeMenu">
+                        <h3>Recipes</h3>
+                        <div class="recipe-controls">
+                            <input type="text" id="ovenRecipeSearchInput" placeholder="Search recipes...">
+                            <label><input type="checkbox" id="ovenCraftableToggle" checked> Craftable</label>
+                            <button id="ovenRecipeViewToggleList" class="recipe-view-toggle active">List</button>
+                            <button id="ovenRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
                         </div>
+                        <div id="ovenRecipeIconContainer" style="display: none;"></div>
+                        <div id="ovenRecipeListContainer" style="display: block;"></div>
+                    </div>
                 </div>
 
-                <div class="oven-fuel-section">
-                    <h3>Fuel</h3>
-                    <div id="ovenFuelSlot" class="inventory-slot">
+                <div class="inventory-main-column">
+                    <button class="mobile-close-button">X</button>
+                    <div class="oven-ui-area">
+                        <div class="inventory-section">
+                            <h3>Input</h3>
+                            <div id="ovenGrid" class="inventory-grid"></div>
                         </div>
-                </div>
-
-                <div class="crafting-arrow" style="font-size: 2em;">&#10144;</div>
-
-                <div class="inventory-section">
-                    <div style="display: flex; justify-content: space-around; text-align: center;">
-                        <div>
-                            <h3>Output</h3>
-                            <div id="ovenOutputSlot" class="inventory-slot">
+                        <div class="oven-fuel-section">
+                            <h3>Fuel</h3>
+                            <div id="ovenFuelSlot" class="inventory-slot"></div>
+                        </div>
+                        <div class="crafting-arrow" style="font-size: 2em;">&#10144;</div>
+                        <div class="inventory-section">
+                            <div style="display: flex; justify-content: space-around; text-align: center;">
+                                <div>
+                                    <h3>Output</h3>
+                                    <div id="ovenOutputSlot" class="inventory-slot"></div>
                                 </div>
-                        </div>
-                        <div>
-                            <h3>Byproduct</h3>
-                            <div id="ovenByproductSlot" class="inventory-slot">
+                                <div>
+                                    <h3>Byproduct</h3>
+                                    <div id="ovenByproductSlot" class="inventory-slot"></div>
                                 </div>
+                            </div>
                         </div>
+                    </div>
+                    <button id="cookButton" disabled>Cook</button>
+                    <div class="inventory-section">
+                        <h3>Your Inventory</h3>
+                        <div id="ovenPlayerInventoryGrid" class="inventory-grid"></div>
                     </div>
                 </div>
-            </div>
-            <button id="cookButton" disabled>Cook</button>
-            <div class="inventory-section">
-                <h3>Your Inventory</h3>
-                <div id="ovenPlayerInventoryGrid" class="inventory-grid">
-                    </div>
-            </div>
-            <div class="inventory-section" id="ovenRecipeMenu">
-                <h3>Recipes</h3>
 
-                <div class="recipe-controls">
-					<input type="text" id="ovenRecipeSearchInput" placeholder="Search recipes...">
-					<label><input type="checkbox" id="ovenCraftableToggle" checked> Craftable</label>
-					<button id="ovenRecipeViewToggleList" class="recipe-view-toggle active">List</button>
-					<button id="ovenRecipeViewToggleIcons" class="recipe-view-toggle">Icons</button>
-				</div>
-
-                <div id="ovenRecipeIconContainer" style="display: none;">
-                    </div>
-
-                <div id="ovenRecipeListContainer" style="display: block;">
-                    </div>
             </div>
         </div>
     </div>
@@ -2831,7 +2866,7 @@
         const loadingTipText = document.getElementById('loadingTipText');
 		
 		let showBlockOutline = false; // Toggle block outline on/off
-		let spoilageOn = 0
+		let spoilageOn = 1
 		
 		let hotbarTooltipTimer = null;
 		function showHotbarSwitchTooltip(itemObject) {
@@ -2883,7 +2918,7 @@
         let isLoadingAssets = true; // Flags if we are on the loading screen
         let currentLoadID = null; // Tracks the active loading process
 
-        const loadingTips = [
+        let loadingTips = [
             "Don't Eat Any Food When You Are At Full Health, You Dum Dum!!!",
             "Having A Bed Is Almost Like A Hack! You Can Press The ';' Key And You Will Teleport To Your Bed But At The Cost Of A Little Health. Farm Cotton First Though!",
             "When You Use Tools To Make New Tools, The Durability Resets. If You Ever Get A Steel Pickaxe, For Example, Save It At A Very Low Durability To Use It Later To Craft A Better Tool!",
@@ -2927,7 +2962,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let inventorySize = 40 //Non constant to enable console cheats
-		const hotbarSize = 10;
+		let hotbarSize = 10;
         let totalInventorySlots = hotbarSize + (inventorySize); // 10 + 40 = 50 slots
         let chestInventorySize = 27; // 2.7 rows of 10
         let maxStackSize = 120; // Max stack size for non-tool items, non constant to enable console cheats
@@ -2939,8 +2974,8 @@
         let insomnia = 0;
         let guanoMined = 0;
         // END ACHIEVEMENT VARIABLES
-		const foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'flax', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass', 'lush_grass', 'forest_leaves', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
-		const replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'flax', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass', 'lush_grass', 'forest_leaves', 'fern', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush'];
+		let foliageTypes = ['grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'guano', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'flax', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pinecone_pile', 'pine_needle_pile', 'leaf_pile', 'mossy_root', 'fern', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'fern_stalk', 'sugarcane', 'sunflower_stem', 'sunflower_top', 'milkweed', 'pine_needle_pile', 'clay_grass', 'lush_grass', 'lush_red_grass', 'forest_leaves', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush', 'alfalfa' ];
+		let replaceableBlocks = ['', 'grass', 'tall_grass', 'grass_sprouts', 'wheat', 'snow', 'large_snow_pile', 'desert_brush', 'desert_grass', 'prickly_pear_cactus', 'tomato_bush', 'pumpkin', 'anthill_sand_mound', 'moss', 'dark_moss', 'weed', 'shroom', 'cotton', 'flax', 'rice', 'hop', 'coffee', 'oat', 'corn', 'barley', 'pine_needle_pile', 'pinecone_pile', 'leaf_pile', 'leaf_plant', 'blue_flower', 'yellow_flower', 'red_flower', 'orange_flower', 'green_flower', 'purple_flower', 'onion', 'garlic', 'chili_pepper_bush', 'potato_stem', 'milkweed', 'clay_grass', 'lush_grass', 'lush_red_grass', 'forest_leaves', 'fern', 'sagebrush', 'saltbrush', 'rabbitbrush', 'yucca', 'wildberry_bush', 'alfalfa'];
 		
 		const SUPER_HEAVEN_Y_OFFSET = -100000; // Y-coords below this are Super Heaven
 		let portals = []; // Will store all portal locations and links
@@ -2956,7 +2991,7 @@
 		let filterCraftableOven = true;
 
 		// --- NEW HELPER: Check if player has materials for a recipe ---
-		function hasMaterialsForRecipe(recipe, inventory) {
+		function hasMaterialsForRecipe(recipe, inventory, secondaryGrid = []) {
 			const counts = {};
 
 			// 1. Tally Player Inventory
@@ -2966,13 +3001,10 @@
 				}
 			}
 
-			// 2. Tally Crafting Grid (NEW ADDITION)
-			// Checks if the crafting grid variable exists and adds those items to the available count
-			if (typeof craftingGridSlots !== 'undefined') {
-				for (const slot of craftingGridSlots) {
-					if (slot) {
-						counts[slot.type] = (counts[slot.type] || 0) + slot.count;
-					}
+			// 2. Tally Secondary Grid (Crafting/Anvil/Oven)
+			for (const slot of secondaryGrid) {
+				if (slot) {
+					counts[slot.type] = (counts[slot.type] || 0) + slot.count;
 				}
 			}
 
@@ -3038,7 +3070,7 @@
         
 		const moonColumns = new Set(); // Tracks vertical chunks checked for moon spawns
         const moonRegions = []; // Stores bounding boxes of generated moons to prevent overlap
-        const moonProbability = 0.03; // 3% chance to attempt spawning a moon per vertical chunk
+        let moonProbability = 0.03; // 3% chance to attempt spawning a moon per vertical chunk
 		
         // Game Menu
         const gameMenuOverlay = document.getElementById('gameMenuOverlay');
@@ -3145,7 +3177,7 @@
 		let currentFps = 0;
 	
         let isCreativeMode = 0;
-        const CREATIVE_FLIGHT_SPEED = 5; // How fast the player flies in creative mode (adjust as needed)
+        let CREATIVE_FLIGHT_SPEED = 5; // How fast the player flies in creative mode (adjust as needed)
 		
 		let godParticlesEnabled = true; // Toggle for GOD particles on fall
 
@@ -3176,10 +3208,10 @@
 		const traderCharacterContainer = document.getElementById('traderCharacterContainer');
 		
 		// --- TRADER LEVELING CONSTANTS ---
-		const XP_PER_TRADE = 20;
+		let XP_PER_TRADE = 20;
 		const XP_PER_LEVEL = 100;
-		const TRADES_PER_PAGE = 5;
-		const MAX_TRADER_LEVEL = 2; // Set max level for now
+		let TRADES_PER_PAGE = 5;
+		let MAX_TRADER_LEVEL = 3; // Set max level for now
 		let currentTraderTradePage = 0;
 		// --- END TRADER LEVELING ---
 		
@@ -3199,30 +3231,6 @@
 		let worldKeys = []; // Used for the background scanner
 		let worldKeyIndex = 0; // Current scan position
         const particleGravity = 0.3;
-		
-		function runBackgroundIndexer(count = 200) {
-			// Refresh the list of keys if the world size changed or we finished a lap
-			if (worldKeys.length === 0 || worldKeyIndex >= worldKeys.length) {
-				worldKeys = Object.keys(worldBlocks);
-				worldKeyIndex = 0;
-			}
-
-			// Scan a limited number of blocks this frame
-			const end = Math.min(worldKeyIndex + count, worldKeys.length);
-			for (let i = worldKeyIndex; i < end; i++) {
-				const key = worldKeys[i];
-				const block = worldBlocks[key];
-
-				if (block) {
-					// Track Containers ONLY
-					if (block.inventory) activeContainers.add(key);
-					else activeContainers.delete(key);
-				} else {
-					activeContainers.delete(key);
-				}
-			}
-			worldKeyIndex = end;
-		}
 		
 		// World border
 		let worldLimitEnabled = false; // Set to true to enable limits
@@ -3285,7 +3293,7 @@
 		let playerXP = 0;
 		let earnedAchievements = []; // This will be an array of achievement IDs
 
-		const achievements = {
+		let achievements = {
 			'DEATH_CATALYST': {
 				id: 'DEATH_CATALYST',
 				name: 'Death Catalyst',
@@ -3547,7 +3555,7 @@
 		
 		// --- 1. CONFIGURATION: Add players here easily! ---
 		// Just add a new line: { name: "Name", file: "FileName.png" }
-		const skinPresets = [
+		let skinPresets = [
 			{ name: "Player", file: "Player.png" },
 			{ name: "Player", file: "Player Dark.png" },
 			{ name: "Player", file: "Player Tan.png" },
@@ -3760,7 +3768,7 @@
 
         // --- ONE BLOCK CONFIGURATION ---
 
-        const oneBlockPhases = [
+        let oneBlockPhases = [
             {
                 // LEVEL 1: The Beginning (0 - 100 blocks)
                 threshold: 100,
@@ -4290,8 +4298,8 @@
         const HIGHLIGHT_SATURATION = 180;    // 100 is normal, 180 is very vibrant
         const HIGHLIGHT_HUE_SHIFT = 0;      // 0 to 360 degrees (changes the actual color)
         const HIGHLIGHT_FLICKER = true;      // Makes the brightness "stutter" like the shake did
-		const UNBREAKABLE_BY_DEFAULT = false; // Set to true to make blocks unbreakable by default if power is low
-        const INSUFFICIENT_POWER_PENALTY = 10; // How much slower mining is when using the wrong/weak tool (10x slower)
+		let UNBREAKABLE_BY_DEFAULT = false; // Set to true to make blocks unbreakable by default if power is low
+        let INSUFFICIENT_POWER_PENALTY = 10; // How much slower mining is when using the wrong/weak tool (10x slower)
         
         function loadSavedParticleCount() {
           const saved = localStorage.getItem('gameParticles');
@@ -4395,6 +4403,7 @@
 		let ancientBunkerProbability = 0.00015; // Rare industrial ruin
 		const forgottenCryptColumns = new Set();
 		let forgottenCryptProbability = 0.00015; // Rare mystical ruin
+        const enlightenedRanchColumns = new Set();
         
         // Foliage Probabilities
 		const cowProbability = 0.02; // 2% chance to spawn on a grass block HAH HAH HAH...
@@ -4413,6 +4422,56 @@
 		const heavenBiomes = {};
         let lastHeavenBiomeEndCol = -1;
         let firstHeavenBiomeStartCol = 0;
+		
+		const superHeavenBiomes = {};
+        let lastSuperHeavenBiomeEndCol = -1;
+        let firstSuperHeavenBiomeStartCol = 0;
+        let superHeavenBiome = 'start';
+        
+        const supertowerColumns = new Set();
+        let supertowerProbability = 0.0005;
+
+        function getSuperHeavenBiome(col) {
+            if (superHeavenBiomes[col]) {
+                return superHeavenBiomes[col].type;
+            }
+
+            function selectNextSuperHeavenBiome() {
+                if (superHeavenBiome !== 'start') {
+                    return superHeavenBiome;
+                }
+                const totalWeight = 120; // 100 + 20
+                let r = random() * totalWeight;
+                
+                if (r < 100) return 'mineral_lands';
+                return 'supersap_forest';
+            }
+
+            // Generate to the right
+            if (col > lastSuperHeavenBiomeEndCol) {
+                const biomeType = selectNextSuperHeavenBiome();
+                const biomeWidth = 50 + Math.floor(random() * 31);
+                const biomeStartCol = lastSuperHeavenBiomeEndCol + 1;
+                const biomeEndCol = biomeStartCol + biomeWidth - 1;
+                for (let i = biomeStartCol; i <= biomeEndCol; i++) {
+                    superHeavenBiomes[i] = { type: biomeType, start: biomeStartCol, end: biomeEndCol };
+                }
+                lastSuperHeavenBiomeEndCol = biomeEndCol;
+            } 
+            // Generate to the left
+            else if (col < firstSuperHeavenBiomeStartCol) {
+                const biomeType = selectNextSuperHeavenBiome();
+                const biomeWidth = 50 + Math.floor(random() * 31);
+                const biomeEndCol = firstSuperHeavenBiomeStartCol - 1;
+                const biomeStartCol = biomeEndCol - biomeWidth + 1;
+                for (let i = biomeStartCol; i <= biomeEndCol; i++) {
+                    superHeavenBiomes[i] = { type: biomeType, start: biomeStartCol, end: biomeEndCol };
+                }
+                firstSuperHeavenBiomeStartCol = biomeStartCol;
+            }
+            
+            return superHeavenBiomes[col] ? superHeavenBiomes[col].type : 'mineral_lands';
+        }
 
         const columnSurfaceHeights = {};
         const heavenColumnSurfaceHeights = {}; // NEW: For super heaven variation
@@ -4801,7 +4860,7 @@
 			'raw_deadwood': { imgSrc: 'Raw Deadwood Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_deadwood', chance: 1, min: 1, max: 1}], color: '#654321' },
 			'planked_deadwood': { imgSrc: 'Planked Deadwood Block.png', solid: true, miningHardness: 100, drops: [{item: 'planked_deadwood', chance: 1, min: 1, max: 1}], color: '#654321', slab: true },
 			'raw_oak': { imgSrc: 'Raw Oak Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_oak', chance: 1, min: 1, max: 1}], color: '#654321' },
-            'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}], color: '#228B22', swordBlock: true },
+            'oak_bush': { imgSrc: 'Oak Bush Block.png', solid: true, miningHardness: 20, drops: [{item: 'oak_bush', chance: 0.05, min: 1, max: 1}, {item: 'acorn', chance: 0.1, min: 1, max: 1}], color: '#228B22', swordBlock: true },
             'planked_oak': { imgSrc: 'Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'], slab: true },
 			'refined_planked_oak': { imgSrc: 'Refined Planked Oak Block.png', solid: true, miningHardness: 150, drops: [{item: 'refined_planked_oak', chance: 1, min: 1, max: 1}], color: '#D2B48C', breakSound: ['plank_break_1', 'plank_break_2'] },
 			'raw_apple': { imgSrc: 'Raw Apple Block.png', solid: true, miningHardness: 300, drops: [{item: 'raw_apple', chance: 1, min: 1, max: 1}], color: '#654321' },
@@ -4862,6 +4921,7 @@
 			'grass_sprouts': { imgSrc: 'Grass Sprouts.png', solid: false, miningHardness: 5, drops: [{item: 'grass_seeds', chance: 0.3, min: 1, max: 2}, {item: 'pumpkin_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
             'grass': { imgSrc: 'Grass.png', solid: false, miningHardness: 10, drops: [{item: 'grass_seeds', chance: 0.4, min: 1, max: 3}, {item: 'wheat_seeds', chance: 0.2, min: 1, max: 2}, {item: 'barley_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
 			'tall_grass': { imgSrc: 'Tall Grass.png', solid: false, miningHardness: 20, drops: [{item: 'grass_seeds', chance: 0.5, min: 1, max: 5}, {item: 'wheat_seeds', chance: 0.3, min: 1, max: 3}, {item: 'cotton_seeds', chance: 0.1, min: 1, max: 2}], color: '#6B8E23' },
+			'alfalfa': { imgSrc: 'Alfalfa.png', solid: false, miningHardness: 15, drops: [{item: 'alfalfa', chance: 1, min: 1, max: 1}], color: '#7CFC00' },
 			'lush_grass': { imgSrc: 'Lush Grass.png', solid: false, miningHardness: 15, drops: [], color: '#6B8E23' },
 			'lush_red_grass': { imgSrc: 'Lush Red Grass.png', solid: false, miningHardness: 15, drops: [], color: '#6B8E23' },
 			'clay_grass': { imgSrc: 'Clay Grass.png', solid: false, miningHardness: 35, drops: [{item: 'grass_seeds', chance: 0.5, min: 1, max: 2}, {item: 'potato_seeds', chance: 0.3, min: 1, max: 3}], color: '#6B8E23' },
@@ -4975,7 +5035,8 @@
 			'big_shroom': { imgSrc: 'Big Shroom.png', solid: true, miningHardness: 50, drops: [{item: 'big_shroom', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'devil_shroom': { imgSrc: 'Devil Shroom.png', solid: true, miningHardness: 2500, drops: [{item: 'devil_shroom', chance: 1, min: 1, max: 1}], color: '#4B0082' },
             // ---FARMING SECTION---
-            'hay_bale': { imgSrc: 'Hay Bale Block.png', solid: true, miningHardness: 100, drops: [{item: 'hat_bale', chance: 1, min: 1, max: 2}], color: '#E6BF83' },
+            'hay_bale': { imgSrc: 'Hay Bale Block.png', solid: true, miningHardness: 100, drops: [{item: 'hay_bale', chance: 1, min: 1, max: 1}], color: '#E6BF83' },
+            'manure_block': { imgSrc: 'Manure Block.png', solid: true, miningHardness: 100, drops: [{item: 'manure', chance: 1, min: 1, max: 3}], color: '#E6BF83' },
 		    'cotton': { imgSrc: 'Cotton.png', solid: false, miningHardness: 10, drops: [{item: 'cotton_item', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 0.5, min: 0, max: 2}], color: '#F0F0F0' },
 			'cotton_dirt': { imgSrc: 'Cotton Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
             'cotton_soil': { imgSrc: 'Cotton Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
@@ -5077,6 +5138,10 @@
 			// Super Heaven
 			'super_mineral': { imgSrc: 'Super Mineral Block.png', solid: true, miningHardness: 1000, drops: [{item: 'super_mineral', chance: 1, min: 1, max: 1}], color: '#D3D3D3', shovelBlock: true },
 			'infinitungsten_super_mineral': { imgSrc: 'Infinitungsten Super Mineral Block.png', solid: true, miningHardness: 1500, drops: [{item: 'impure_infinitungsten_nugget', chance: 0.3, min: 1, max: 3}], color: '#D3D3D3', shovelBlock: true },
+			'rich_mineral': { imgSrc: 'Rich Mineral Block.png', solid: true, miningHardness: 7500, drops: [{item: 'rich_mineral', chance: 1, min: 1, max: 1}], color: '#FFD700', shovelBlock: true },
+            'raw_supersap': { imgSrc: 'Raw Supersap Block.png', solid: true, miningHardness: 1000, drops: [{item: 'raw_supersap', chance: 1, min: 1, max: 1}], color: '#00FA9A' },
+            'planked_supersap': { imgSrc: 'Planked Supersap Block.png', solid: true, miningHardness: 500, drops: [{item: 'planked_supersap', chance: 1, min: 1, max: 1}], color: '#3CB371', slab: true },
+            'supersap_bush': { imgSrc: 'Supersap Bush Block.png', solid: true, miningHardness: 200, drops: [{item: 'supersap_bush', chance: 0.05, min: 1, max: 1}], color: '#00FF7F', swordBlock: true },
 			// IMPLEMENTED
 			'bone_block': { imgSrc: 'Bone Block.png', solid: true, miningHardness: 500, drops: [{item: 'bone_block', chance: 1, min: 1, max: 1}], color: '#F5F5DC', swordBlock: true },
 			'obsidian': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
@@ -5203,9 +5268,10 @@
 			 'fungal_heart': { imgSrc: 'Fungal Heart.png', color: '#FF0000' },
 			 'paper': { imgSrc: 'Paper.png', color: '#FFFFFF' },
 			 'soggy_paper': { imgSrc: 'Paper.png', color: '#D3D3D3' },
-			 'book': { imgSrc: 'Book.png', color: '#8B4513', isBook: true, isTool: true, miningPower: 0.1, maxDurability: 1000 },
+			 'book': { imgSrc: 'Book.png', color: '#8B4513', isBook: true, isTool: true, miningPower: 0.1 },
 			 'linen_cloth': { imgSrc: 'Linen Cloth.png', color: '#FAF0E6' },
 			 'cotton_cloth': { imgSrc: 'Cotton Cloth.png', color: '#FAF0E6' },
+             'leather': { imgSrc: 'Leather.png', color: '#FAF0E6' },
 			 'cinnamon': { imgSrc: 'Cinnamon.png', color: '#D2691E' },
 			 'bronze_coin': { imgSrc: 'Bronze Coin.png', color: '#CD7F32' },
 			 'gold_coin': { imgSrc: 'Gold Coin.png', color: '#FFD700' },
@@ -5324,6 +5390,7 @@
 			 'pine_needle_dying': { imgSrc: 'Pine Needle Dying.png', color: '#DAA520', spoilable: { into: 'pine_needle_dead', time: 50000 } },
 			 'pine_needle_dead': { imgSrc: 'Pine Needle Dead.png', color: '#8B4513' },
              'leaf': { imgSrc: 'Leaf.png', color: '#228B22' },
+             'acorn': { imgSrc: 'Acorn.png', color: '#228B22' },
 			 'wheat_bread': { imgSrc: 'Wheat Bread.png', color: '#E6BF83', isFood: true, healAmount: 7 },
 			 'barley_bread': { imgSrc: 'Barley Bread.png', color: '#E6BF83', isFood: true, healAmount: 7 },
 			 'noodles': { imgSrc: 'Noodles.png', color: '#E6BF83', isFood: true, healAmount: 1 },
@@ -5412,25 +5479,33 @@
 			 'wooden_sword': { imgSrc: 'Wooden Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.2, maxDurability: 7500 },
 			 'rock_sword': { imgSrc: 'Rock Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.3, maxDurability: 12000 },
 			 'copper_sword': { imgSrc: 'Copper Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.6, maxDurability: 20000 },
+			 'tin_sword': { imgSrc: 'Tin Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.5, maxDurability: 8000 },
 			 'iron_sword': { imgSrc: 'Iron Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.8, maxDurability: 38000 },
+			 'tungsten_sword': { imgSrc: 'Tungsten Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 1.5, maxDurability: 32000 },
+			 'bronze_sword': { imgSrc: 'Bronze Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 0.8, maxDurability: 35000 },
 			 'steel_sword': { imgSrc: 'Steel Sword.png', color: '#A0522D', isTool: true, miningPower: 0.1, swordPower: 1.5, maxDurability: 100000 },
 			 // ---GUN SECTION---
-			 'wood_bullet': { imgSrc: 'Wood Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 1 },
-             'brass_bullet': { imgSrc: 'Brass Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 5 },
-             'steel_bullet': { imgSrc: 'Steel Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 12 },
-             'mythicalithium_bullet': { imgSrc: 'Mythicalithium Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 235 },
-			 'pistol': { imgSrc: 'Pistol.png', color: '#43464B', isTool: true, isGun: true, gunPower: 15, fireRate: 0.6, fireLoss: {min: 30, max: 50}, maxDurability: 15000 },
-			 'machine_gun': { imgSrc: 'Machine Gun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 21, fireRate: 0.1, fireLoss: {min: 30, max: 80}, maxDurability: 50000 },
-			 'minigun': { imgSrc: 'Minigun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 66, fireRate: 0.05, fireLoss: {min: 30, max: 100}, maxDurability: 140000 },
+			 'wood_bullet': { imgSrc: 'Wood Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 3 },
+             'brass_bullet': { imgSrc: 'Brass Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 15 },
+             'steel_bullet': { imgSrc: 'Steel Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 22 },
+			 'lead_bullet': { imgSrc: 'Lead Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 55 },
+             'mythicalithium_bullet': { imgSrc: 'Mythicalithium Bullet.png', color: '#43464B', isAmmo: true, ammoPower: 710 },
+			 'pistol': { imgSrc: 'Pistol.png', color: '#43464B', isTool: true, isGun: true, gunPower: 35, fireRate: 0.6, fireLoss: {min: 30, max: 50}, maxDurability: 15000 },
+			 'machine_gun': { imgSrc: 'Machine Gun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 50, fireRate: 0.1, fireLoss: {min: 30, max: 80}, maxDurability: 50000 },
+			 'minigun': { imgSrc: 'Minigun.png', color: '#43464B', isTool: true, isGun: true, gunPower: 65, fireRate: 0.05, fireLoss: {min: 30, max: 100}, maxDurability: 110000 },
+			 // --- SPECIAL TOOLS ---
+             'shears': { imgSrc: 'Shears.png', color: '#c0c0c0', isTool: true, miningPower: 0.1, shearPower: 3.0, maxDurability: 5000 },
+             'manure': { imgSrc: 'Manure.png', color: '#4A3B2F' },
+			 'rod_of_cloaking': { imgSrc: 'Rod Of Cloaking.png', color: '#8A2BE2', isTool: true, miningPower: 0, maxDurability: 50 },
 			 // Currently Useless Item
 			 'bucket': { imgSrc: 'Bucket.png', color: '#A9A9A9' },
 			 'test_axe': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.5, maxDurability: 10000 },
 			 'hammer_of_infinity': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.01, maxDurability: 9999999999999 },
 			 'hammer_of_eternity': { imgSrc: 'Wooden Pickaxe.png', color: '#A0522D', isTool: true, miningPower: 0.003, maxDurability: 9999999999999 },
 			 // Especial
-			 'gravity_curd': { color: '#483D8B', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 5, changes: [ { prop: 'gravity', type: 'set', value: -0.05 } ] } },
-			 'speed_snack': { color: '#ADFF2F', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'speed', type: 'add', value: 3 } ] } },
-			 'jump_juice': { color: '#00BFFF', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
+			 'gravity_curd': { imgSrc: 'Gravity Curd.png', color: '#483D8B', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 5, changes: [ { prop: 'gravity', type: 'set', value: -0.05 } ] } },
+			 'speed_snack': { imgSrc: 'Speed Snack.png', color: '#ADFF2F', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'speed', type: 'add', value: 3 } ] } },
+			 'jump_juice': { imgSrc: 'Jump Juice.png', color: '#00BFFF', isFood: true, healAmount: 0, effectLength: 10, effect: {duration: 15, changes: [ { prop: 'jumpStrength', type: 'add', value: -5 } ] } },
 			 // Armor
 			 'happy_face': { imgSrc: 'Armor/Happy Face Icon.png', equippedImgSrc: 'Armor/Happy Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'face', protectionFactor: 0, maxDurability: 1 },
 			 'santa_face': { imgSrc: 'Armor/Santa Face Icon.png', equippedImgSrc: 'Armor/Santa Face.png', color: '#FFFF00', isTool: true, miningPower: 0, armorType: 'face', protectionFactor: 0, maxDurability: 1 },
@@ -5446,6 +5521,8 @@
 			 'miner_trader_mask': { imgSrc: 'Armor/Miner Trader Mask Icon.png', equippedImgSrc: 'Armor/Miner Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
              'designer_trader_mask': { imgSrc: 'Armor/Designer Trader Mask Icon.png', equippedImgSrc: 'Armor/Designer Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
 			 'trader_mask': { imgSrc: 'Armor/Trader Mask Icon.png', equippedImgSrc: 'Armor/Trader Mask.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.02, maxDurability: 8 },
+			 'armorer_trader_mask': { imgSrc: 'Armor/Armorer Trader Mask Icon.png', equippedImgSrc: 'Armor/Armorer Trader Mask.png', color: '#696969', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.05, maxDurability: 30 },
+             'trader_mask_3': { imgSrc: 'Armor/Trader Mask 3 Icon.png', equippedImgSrc: 'Armor/Trader Mask 3.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.05, maxDurability: 30 },
 			 'trader_cloak': { imgSrc: 'Armor/Trader Cloak Icon.png', equippedImgSrc: 'Armor/Trader Cloak.png', color: '#8B4513', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.03, maxDurability: 14 },
 			 'trader_pants': { imgSrc: 'Armor/Trader Pants Icon.png', equippedImgSrc: 'Armor/Trader Pants.png', color: '#00008B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.02, maxDurability: 11 },
 			 'trader_shoes': { imgSrc: 'Armor/Trader Shoes Icon.png', equippedImgSrc: 'Armor/Trader Shoes.png', color: '#4A3B2F', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 8 },
@@ -5469,10 +5546,12 @@
              'sober_mask': { imgSrc: 'Armor/Sober Mask Icon.png', equippedImgSrc: 'Armor/Sober Mask.png', color: '#D4F0F0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
              'drunk_mask': { imgSrc: 'Armor/Drunk Mask Icon.png', equippedImgSrc: 'Armor/Drunk Mask.png', color: '#E0B0D0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
              'feather_boots': { imgSrc: 'Armor/Feather Boots Icon.png', equippedImgSrc: 'Armor/Feather Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 15, gravityMultiplier: 0.75 },
+             'lucky_boots': { imgSrc: 'Armor/Lucky Boots Icon.png', equippedImgSrc: 'Armor/Lucky Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 15, luckyChance: 0.5 },
 			 // Armor Construction
              'armor_tile': { imgSrc: 'Armor Tile.png', color: '#A9A9A9' },
 			 'dark_armor_tile': { imgSrc: 'Dark Armor Tile.png', color: '#36454F' },
              'light_armor_tile': { imgSrc: 'Light Armor Tile.png', color: '#F0EAD6' },
+			 'atlas_armor_tile': { imgSrc: 'Atlas Armor Tile.png', color: '#36454F' },
              'forge_hammer': { imgSrc: 'Forge Hammer.png', color: '#A9A9A9', isTool: true, miningPower: 0.25, maxDurability: 1000 },
 			 // Misc 
              'lighter': { imgSrc: 'Lighter.png', color: '#c0c0c0', isTool: true, miningPower: 0, maxDurability: 10 },
@@ -5573,7 +5652,9 @@
             'Farmer Trader': { imgSrc: 'Farmer Trader.png' },
             'Miner Trader': { imgSrc: 'Miner Trader.png' },
             'Designer Trader': { imgSrc: 'Designer Trader.png' },
-            'Trader 2': { imgSrc: 'Trader 2.png' }
+            'Trader 2': { imgSrc: 'Trader 2.png' },
+            'Armorer Trader': { imgSrc: 'Armorer Trader.png' },
+            'Trader 3': { imgSrc: 'Trader 3.png' }
         };
 
         // Combine all assets to load
@@ -5669,6 +5750,13 @@
 				if (tipInterval) clearInterval(tipInterval);
 				init();
 			});
+
+            // NEW: Mobile touch support for the skip button
+            skipButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                skipButton.click();
+            }, { passive: false });
 
 			function showRandomTip() {
 				const randomIndex = Math.floor(Math.random() * loadingTips.length);
@@ -6182,8 +6270,6 @@
 		}
 
 		// 2. Structure Generator: Parses 2D arrays from JSON and places them in the world
-		// Initialize this set at the top of your script with your other Sets:
-		// const modStructureColumns = new Set(); 
 		function generateModStructure(startCol, surfaceRow, structure) {
 			console.log(`Generating Mod Structure: ${structure.id} at ${startCol}, ${surfaceRow}`);
 			
@@ -6196,24 +6282,64 @@
 			}
 
 			// Calculate base Y position. 
-			// If surfaceOnly is true (default), we build UP from the surfaceRow.
-			// Layout[0] is the TOP row visually in JSON, layout[last] is the BOTTOM.
 			const startY = surfaceRow - height + 1; 
 
 			for (let r = 0; r < height; r++) {
 				for (let c = 0; c < width; c++) {
-					const blockType = structure.layout[r][c];
+					const blockDef = structure.layout[r][c];
 					
 					// Skip "air" or empty strings to create hollow structures
-					if (blockType === "" || blockType === "air") continue;
+					if (!blockDef || blockDef === "" || blockDef === "air") continue;
 
 					// Determine world coordinates
 					const worldCol = startCol + c;
 					const worldRow = startY + r;
 					const key = `${worldCol},${worldRow}`;
 
-					// Place the block
-					worldBlocks[key] = { type: blockType, mineProg: 0 };
+					let newBlock = { mineProg: 0 };
+
+					// Handle standard string block names
+					if (typeof blockDef === 'string') {
+						newBlock.type = blockDef;
+					} 
+					// Handle complex objects (like chests with loot)
+					else if (typeof blockDef === 'object') {
+						newBlock.type = blockDef.type;
+						
+						// Chest / Inventory setup
+						if (blockDef.type === 'chest' || blockDef.type === 'magical_chest' || blockDef.type === 'refrigerator') {
+							let invSize = chestInventorySize; // Default 27
+							if (blockDef.type === 'magical_chest') invSize = 50;
+							if (blockDef.type === 'refrigerator') invSize = 18;
+							
+							newBlock.inventory = new Array(invSize).fill(null);
+							newBlock.label = blockDef.label || 'Loot Chest';
+							
+							// Parse Loot Array
+							if (blockDef.loot && Array.isArray(blockDef.loot)) {
+								blockDef.loot.forEach((lootItem, idx) => {
+									if (idx < invSize) {
+										newBlock.inventory[idx] = { 
+											type: lootItem.type, 
+											count: lootItem.count || 1 
+										};
+										if (lootItem.durability !== undefined) {
+											newBlock.inventory[idx].durability = lootItem.durability;
+											newBlock.inventory[idx].maxDurability = lootItem.maxDurability || lootItem.durability;
+										}
+									}
+								});
+							}
+						}
+						
+						// Allow custom overlays or cloaking on mod structures
+						if (blockDef.overlay) newBlock.overlay = blockDef.overlay;
+						if (blockDef.cloakedAs) newBlock.cloakedAs = blockDef.cloakedAs;
+					}
+
+					// BYPASS PROXY: Write directly to the underlying store!
+					// This ensures block replacements do NOT affect Mod Structures.
+					_worldBlocksStore[key] = newBlock;
 				}
 			}
 		}
@@ -6354,6 +6480,9 @@
 				minCanopyRadius = 2; maxCanopyRadius = 3; horizontalSpreadFactorMin = 0.7; horizontalSpreadFactorMax = 1.2;
 			} else if (treeType === 'dirt_column') {
 				trunkBlockType = 'dirt'; minTrunkHeight = 45; maxTrunkHeight = 47;
+			} else if (treeType === 'supersap') {
+				trunkBlockType = 'raw_supersap'; bushBlockType = 'supersap_bush'; minTrunkHeight = 9; maxTrunkHeight = 14;
+				minCanopyRadius = 3; maxCanopyRadius = 5; horizontalSpreadFactorMin = 0.8; horizontalSpreadFactorMax = 1.3;
 			}
 			
 			else if (treeType === 'aspen') {
@@ -6567,7 +6696,7 @@
 
 			const topOfTrunkRow = surfaceRow - trunkHeight;
 
-			if (treeType === 'oak' || treeType === 'birch' || treeType === 'darkwood' || treeType === 'mahogany' || treeType === 'cinnamon' || treeType === 'rubber' || treeType === 'hell' || treeType === 'gilded' || treeType === 'blueglow' || treeType === 'meat' || treeType === 'spoiled meat'|| treeType === 'ash' || treeType === 'dead_tree' || treeType === 'acacia' || treeType === 'baobab' || treeType === 'cherry_blossom') {
+			if (treeType === 'oak' || treeType === 'birch' || treeType === 'darkwood' || treeType === 'mahogany' || treeType === 'cinnamon' || treeType === 'rubber' || treeType === 'hell' || treeType === 'gilded' || treeType === 'blueglow' || treeType === 'meat' || treeType === 'spoiled_meat'|| treeType === 'ash' || treeType === 'dead_tree' || treeType === 'acacia' || treeType === 'baobab' || treeType === 'cherry_blossom' || treeType === 'supersap') {
 				const canopyRadius = minCanopyRadius + Math.floor(random() * (maxCanopyRadius - minCanopyRadius + 1));
 				for (let yOffset = 0; yOffset <= canopyRadius + 2; yOffset++) {
 					let currentLayerRadius = Math.max(0, canopyRadius - Math.floor(yOffset / 1.5));
@@ -7499,7 +7628,8 @@
 							key: portalAnchorKey,
 							col: portalAnchorCol, // Storing the center
 							row: portalAnchorRow,
-							dim: (portalAnchorRow > SUPER_HEAVEN_Y_OFFSET) ? 'overworld' : 'superHeaven',
+                            // FIX: Use -50000 as a safe threshold midpoint to prevent sky portal bugs
+							dim: (portalAnchorRow > -50000) ? 'overworld' : 'superHeaven',
 							linkedPortalKey: null
 						});
 
@@ -7512,29 +7642,54 @@
 		}
 		
 		function teleportPlayer(fromPortal) {
-			// Find the destination coordinates
-			const inSuperHeaven = fromPortal.row < SUPER_HEAVEN_Y_OFFSET;
-			const destCol = fromPortal.col; // fromPortal.col is the center of the portal blocks
-			const destRow = inSuperHeaven ? fromPortal.row - SUPER_HEAVEN_Y_OFFSET : fromPortal.row + SUPER_HEAVEN_Y_OFFSET;
-			
+            const DIMENSION_THRESHOLD = -50000;
+			const inSuperHeaven = fromPortal.row < DIMENSION_THRESHOLD;
+			const destCol = fromPortal.col; 
+            let destRow;
+			let destinationPortal = null;
+
+            if (inSuperHeaven) {
+                // Player is in Super Heaven -> Teleport to the Overworld
+                let overworldPortals = portals.filter(p => p.col === destCol && p.row > DIMENSION_THRESHOLD);
+                
+                if (overworldPortals.length > 0) {
+                    destinationPortal = overworldPortals.reduce((prev, curr) => (curr.row > prev.row) ? curr : prev);
+                    destRow = destinationPortal.row;
+                } else {
+                    // No portal exists! Generate one on the SURFACE, NOT underground.
+                    let surfaceHeight = columnSurfaceHeights[destCol];
+                    if (surfaceHeight === undefined) {
+                        getBlockData(destCol, 0); 
+                        surfaceHeight = columnSurfaceHeights[destCol] || baseSurfaceLevel;
+                    }
+                    destRow = surfaceHeight; // FIXED: Places exactly at the Y level of the surface
+                }
+            } else {
+                // Player is in Overworld/Normal Heaven -> Teleport to Super Heaven Surface
+                let shSurfaceHeight = superHeavenColumnSurfaceHeights[destCol];
+                if (shSurfaceHeight === undefined) {
+                    getBlockData(destCol, SUPER_HEAVEN_Y_OFFSET); 
+                    shSurfaceHeight = superHeavenColumnSurfaceHeights[destCol] || 0;
+                }
+                const shBaseY = SUPER_HEAVEN_Y_OFFSET - shSurfaceHeight;
+                destRow = shBaseY - 4;
+            }
+
 			player.portalCooldown = 1500; // Set 1.5 second cooldown
 
-			// The key for a portal is its center coordinate string.
 			const destKey = `${destCol},${destRow}`;
-			let destinationPortal = portals.find(p => p.key === destKey);
+            // Double check if destinationPortal was already grabbed by the reducer
+			if (!destinationPortal) {
+                destinationPortal = portals.find(p => p.key === destKey);
+            }
 
 			if (!destinationPortal) {
-				// No portal exists, so we must generate one.
 				console.log("No destination portal found. Generating one at", destKey);
 
-				// We will generate a standard "C" shape portal.
-				// The portal's center is (destCol, destRow).
-				// For our "C" shape, the center is at (startCol+1, startRow-3).
-				// So, we calculate the bottom-left corner (startCol, startRow) from that center.
 				const startCol = destCol - 1;
-				const startRow = destRow + 3;
+				const startRow = destRow + 3; // Bottom of the portal
 
-				const pattern = { // Standard "C" shape, same as in checkAndCreateHeavenPortal
+				const pattern = {
 					frame: [ [0,0], [1,0], [0,-1], [0,-2], [0,-3], [0,-4], [0,-5], [0,-6], [1,-6] ],
 					inner: [ [1,-1], [1,-2], [1,-3], [1,-4], [1,-5] ]
 				};
@@ -7543,7 +7698,6 @@
 				for(let x = -1; x <= 2; x++) {
 					for(let y = -7; y <= 1; y++) {
 						const clearKey = `${startCol + x},${startRow + y}`;
-						// To be safe, only clear blocks that aren't already part of the frame
 						if(getBlockType(startCol + x, startRow + y) !== 'heaven_gate_brick_block') {
 							worldBlocks[clearKey] = { type: '', mineProg: 0 };
 						}
@@ -7575,10 +7729,10 @@
 				}
 			}
 
-			// Teleport the player to stand in the empty part of the "C" frame
+			// Teleport the player
 			player.x = ((destinationPortal.col - 1) * tileSize); 
-			player.y = (destinationPortal.row * tileSize) - (playerHeight / 2); // Center player vertically in the portal
-			player.dy = 0; // Stop vertical movement
+			player.y = (destinationPortal.row * tileSize) - (playerHeight / 2); 
+			player.dy = 0;
 			console.log(`Teleported to ${destinationPortal.key}`);
 		}
 
@@ -7728,6 +7882,10 @@
                         return (worldBlocks[key] = { type: blockType, mineProg: 0 });
 
                     } else { // Default biome is 'cloudscape' OR deeper parts of gilded forest
+                        if (row === heavenBaseY && random() < 0.005 && !enlightenedRanchColumns.has(col)) {
+                            generateEnlightenedRanch(col, row);
+                        }
+                        if (worldBlocks[key]) return worldBlocks[key]; // Return immediately if the generator placed something here
                         // Check for houses
                         const houseChunk = Math.floor(col / 50);
                         const housePos = houseChunk * 50 + 25;
@@ -7760,12 +7918,10 @@
             }
 
 			// --- SUPER HEAVEN generation (fixed) ---
-			const superHeavenStartHeight = SUPER_HEAVEN_Y_OFFSET; // keep consistent with teleport/portal logic
-
-			// Ensure we have a separate heights map for Super Heaven to avoid colliding with normal Heaven.
+			const superHeavenStartHeight = SUPER_HEAVEN_Y_OFFSET; 
 
 			if (row < superHeavenStartHeight + 25) { // in Super Heaven vertical band
-				let heavenSurfaceHeight; // proper camelCase name
+				let heavenSurfaceHeight; 
 
 				if (superHeavenColumnSurfaceHeights[col] !== undefined) {
 					heavenSurfaceHeight = superHeavenColumnSurfaceHeights[col];
@@ -7780,22 +7936,46 @@
 					let potentialHeight = prevSurface + offset;
 					heavenSurfaceHeight = Math.max(0, Math.min(20, potentialHeight)); // Clamp 0..20
 					superHeavenColumnSurfaceHeights[col] = heavenSurfaceHeight;
+                    
+                    // Hook for Supertower generation (Runs when columns are first mapped)
+                    if (random() < supertowerProbability && !supertowerColumns.has(col)) {
+                        generateSupertower(col, heavenSurfaceHeight);
+                    }
 				}
 
-				// Use superHeavenStartHeight (not heavenStartHeight)
 				const heavenBaseY = superHeavenStartHeight - heavenSurfaceHeight;
 
 				if (row === -99976) {
 					return (worldBlocks[key] = { type: 'heaven_magma_stone_block', mineProg: 0 });
 				}
 				else if (row >= heavenBaseY) {
-					const heavenBiome = getHeavenBiome(col); // re-use biome chooser or create superHeaven-specific if desired
-					let blockType;
-						// cloudscape / default (same as your cloud logic)
+                    
+                    // Determine which Super Heaven Biome we are in
+					const currentSHBiome = getSuperHeavenBiome(col); 
+                    const depth = row - heavenBaseY;
+
+                    if (currentSHBiome === 'supersap_forest') {
+                        // Supersap Forest Logic
+                        if (depth < 5) {
+                            if (depth === 0) {
+                                // Surface Foliage & Trees
+                                if (random() < 0.15 && getBlockType(col, row - 1) === '') {
+                                    generateTree(col, row, 'supersap');
+                                } else if (random() < 0.25 && getBlockType(col, row - 1) === '') {
+                                    worldBlocks[`${col},${row - 1}`] = { type: 'alfalfa', mineProg: 0 };
+                                }
+                            }
+                            return (worldBlocks[key] = { type: 'rich_mineral', mineProg: 0 });
+                        } else {
+                            return (worldBlocks[key] = { type: 'super_mineral', mineProg: 0 });
+                        }
+                    } else {
+                        // Default Mineral Lands Logic
 						const houseChunk = Math.floor(col / 50);
 						const housePos = houseChunk * 50 + 25;
 						const houseWidth = 10;
 						const houseHeight = 6;
+                        
 						if (col >= housePos && col < housePos + houseWidth && row < heavenBaseY + houseHeight && row >= heavenBaseY) {
 							const houseX = col - housePos;
 							const houseY = row - heavenBaseY;
@@ -7805,10 +7985,12 @@
 								return (worldBlocks[key] = { type: '', mineProg: 0 });
 							}
 						}
-						let r = random()
+                        
+						let r = random();
 						if (r < 0.05)    return (worldBlocks[key] = { type: 'heaven_gate_brick_block', mineProg: 0 });
 						else if (r < 0.053)    return (worldBlocks[key] = { type: 'infinitungsten_super_mineral', mineProg: 0 });
 						return (worldBlocks[key] = { type: 'super_mineral', mineProg: 0 });
+                    }
 				}
 			}
 
@@ -9426,7 +9608,7 @@
             // Rare Item: Minigun (10% chance per foundry, handled by random check here or rare generation)
             // Note: Since Foundries are already rare, we can make the minigun roughly 10% chance inside the chest
             if (random() < 0.10) { 
-                chestInv[4] = { type: 'minigun', count: 1, durability: 35000, maxDurability: 35000 }; // Mint condition minigun
+                chestInv[4] = { type: 'minigun', count: 1, durability: 110000, maxDurability: 110000 }; // Mint condition minigun
             } else {
                 // Consolation prize
                 chestInv[4] = { type: 'steel_nugget', count: 2 };
@@ -10972,6 +11154,147 @@
             ballooniteBalloonColumns.add(centerX);
         }
 
+        // --- ENLIGHTENED RANCH GENERATOR ---
+        function generateEnlightenedRanch(startCol, surfaceRow) {
+            const width = 16;
+            const houseHeight = 6;
+            
+            // Reserve columns to prevent overlap
+            for (let i = -2; i < width + 2; i++) {
+                enlightenedRanchColumns.add(startCol + i);
+            }
+
+            // 1. Foundation & Clearing Space
+            for (let x = 0; x < width; x++) {
+                const col = startCol + x;
+                
+                // Build a solid cloud foundation 3 blocks deep
+                for (let y = 1; y <= 3; y++) {
+                    worldBlocks[`${col},${surfaceRow + y}`] = { type: 'cloud_block', mineProg: 0 };
+                }
+                
+                // Clear air above to ensure no stray clouds spawn inside
+                for (let y = 0; y < houseHeight + 5; y++) {
+                    worldBlocks[`${col},${surfaceRow - y}`] = { type: '', mineProg: 0 };
+                }
+            }
+
+            // 2. Build Structure
+            for (let x = 0; x < width; x++) {
+                const col = startCol + x;
+                const baseKey = `${col},${surfaceRow}`;
+
+                // Left side: Fertilizer Den (x = 0 to 3)
+                if (x >= 0 && x <= 3) {
+                    worldBlocks[baseKey] = { type: 'fertilizer', mineProg: 0 };
+                    
+                    // Fence on the far left
+                    if (x === 0) {
+                        worldBlocks[`${col},${surfaceRow - 1}`] = { type: 'planked_oak', mineProg: 0 };
+                    }
+                    
+                    // Manure pile on the right half of the den
+                    if (x >= 2) {
+                        worldBlocks[`${col},${surfaceRow - 1}`] = { type: 'manure_block', mineProg: 0 };
+                        if (random() < 0.5) {
+                            worldBlocks[`${col},${surfaceRow - 2}`] = { type: 'manure_block', mineProg: 0 };
+                        }
+                    }
+                } 
+                // Middle: Cozy House (x = 4 to 11)
+                else if (x >= 4 && x <= 11) {
+                    // House floor
+                    worldBlocks[baseKey] = { type: 'planked_birch', mineProg: 0 };
+                    
+                    // Walls and interior
+                    for (let y = 1; y < houseHeight; y++) {
+                        const hKey = `${col},${surfaceRow - y}`;
+                        const isWall = (x === 4 || x === 11);
+                        const isRoof = (y === houseHeight - 1);
+                        
+                        if (isRoof) {
+                            worldBlocks[hKey] = { type: 'planked_birch', mineProg: 0 };
+                        } else if (isWall) {
+                            // Left wall has a door
+                            if (x === 4 && (y === 1 || y === 2)) {
+                                worldBlocks[hKey] = { type: 'planked_birch_wall', mineProg: 0 }; // Background behind door
+                            } else {
+                                worldBlocks[hKey] = { type: 'planked_oak', mineProg: 0 };
+                            }
+                        } else {
+                            // Interior background wall
+                            worldBlocks[hKey] = { type: 'planked_birch_wall', mineProg: 0 };
+                        }
+                    }
+                    
+                    // Appliances
+                    if (x === 6) {
+                        worldBlocks[`${col},${surfaceRow - 1}`] = { 
+                            type: 'oven', 
+                            mineProg: 0, 
+                            inventory: new Array(12).fill(null) 
+                        };
+                    }
+                    if (x === 9) {
+                        const chestKey = `${col},${surfaceRow - 1}`;
+                        worldBlocks[chestKey] = {
+                            type: 'chest',
+                            mineProg: 0,
+                            inventory: new Array(chestInventorySize).fill(null),
+                            label: 'Ranch Stash'
+                        };
+                        
+                        // Main Loot
+                        const inv = worldBlocks[chestKey].inventory;
+                        inv[0] = { type: 'wildberry', count: 5 + Math.floor(random() * 10) };
+                        inv[1] = { type: 'cotton_cloth', count: 2 + Math.floor(random() * 5) };
+                        inv[2] = { type: 'leather', count: 1 + Math.floor(random() * 3) };
+                        
+                        // 2 Random Thematic Items
+                        const randomLootPool = [
+                            { type: 'wheat_seeds', min: 3, max: 8 },
+                            { type: 'cup_of_milk', min: 1, max: 3 },
+                            { type: 'egg', min: 2, max: 6 },
+                            { type: 'manure', min: 2, max: 6 },
+                            { type: 'shears', min: 1, max: 1, durability: 2000, maxDurability: 5000 },
+                            { type: 'pumpkin_pie', min: 1, max: 2 },
+                            { type: 'wooden_bowl', min: 2, max: 4 }
+                        ];
+                        
+                        // Shuffle the array
+                        for (let i = randomLootPool.length - 1; i > 0; i--) {
+                            const j = Math.floor(random() * (i + 1));
+                            [randomLootPool[i], randomLootPool[j]] = [randomLootPool[j], randomLootPool[i]];
+                        }
+                        
+                        for (let i = 0; i < 2; i++) {
+                            const rLoot = randomLootPool[i];
+                            const count = rLoot.min + Math.floor(random() * (rLoot.max - rLoot.min + 1));
+                            inv[3 + i] = { 
+                                type: rLoot.type, 
+                                count: count,
+                                durability: rLoot.durability || undefined,
+                                maxDurability: rLoot.maxDurability || undefined
+                            };
+                        }
+                    }
+                }
+                // Right side: Hay Bales (x = 12 to 15)
+                else if (x >= 12 && x <= 15) {
+                    worldBlocks[baseKey] = { type: 'cloud_block', mineProg: 0 }; // ground
+                    
+                    // Stack hay bales
+                    worldBlocks[`${col},${surfaceRow - 1}`] = { type: 'hay_bale', mineProg: 0 };
+                    if (x <= 14) {
+                        worldBlocks[`${col},${surfaceRow - 2}`] = { type: 'hay_bale', mineProg: 0 };
+                    }
+                    if (x <= 13) {
+                        worldBlocks[`${col},${surfaceRow - 3}`] = { type: 'hay_bale', mineProg: 0 };
+                    }
+                }
+            }
+        }
+
         // OLD: Watchtower Generation
         function generateWatchtower(startCol, surfaceRow) {
             //console.log("Attempting to generate Watchtower at", startCol);
@@ -11152,6 +11475,101 @@
             if (random() < 0.8) loot.push({ type: 'palladium_nugget', count: 2 });
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
+                    worldBlocks[`${chestCol},${chestRow}`].inventory[index] = item;
+                }
+            });
+        }
+		
+		function generateSupertower(startCol, superHeavenSurfaceOffset) {
+            const towerWidth = 14;
+            const towerHeight = 70 + Math.floor(random() * 41); // 70-110 blocks tall
+
+            // Determine true base row dynamically
+            const baseRow = SUPER_HEAVEN_Y_OFFSET - superHeavenSurfaceOffset;
+
+            // 1. Check for flat ground (respecting the offset structure)
+            let minSurface = superHeavenSurfaceOffset;
+            let maxSurface = superHeavenSurfaceOffset;
+            for (let i = 1; i < towerWidth; i++) {
+                const currentSurface = superHeavenColumnSurfaceHeights[startCol + i] || superHeavenSurfaceOffset;
+                if (currentSurface < minSurface) minSurface = currentSurface;
+                if (currentSurface > maxSurface) maxSurface = currentSurface;
+            }
+            if (maxSurface - minSurface > 3) {
+                return; // Abort if ground is not flat enough
+            }
+
+            // 2. Mark columns as used
+            for (let i = 0; i < towerWidth; i++) {
+                supertowerColumns.add(startCol + i);
+            }
+
+            // 3. Build foundation
+            for (let c = 0; c < towerWidth; c++) {
+                for (let r = 0; r < 5; r++) {
+                    worldBlocks[`${startCol + c},${baseRow + r}`] = { type: 'bedrock_stone', mineProg: 0 };
+                }
+            }
+
+            // 4. Build the tower structure
+            for (let y = 0; y < towerHeight; y++) {
+                const currentRow = baseRow - 1 - y;
+                for (let x = 0; x < towerWidth; x++) {
+                    const currentCol = startCol + x;
+                    const isWall = x === 0 || x === towerWidth - 1 || (y > 0 && (x === 1 || x === towerWidth - 2) && (y % 8 === 0)); // Add some windows
+
+                    if (isWall) {
+                        worldBlocks[`${currentCol},${currentRow}`] = { type: 'raw_cherry_blossom', mineProg: 0 };
+                    } else { // Inside
+                        worldBlocks[`${currentCol},${currentRow}`] = { type: 'planked_oak_wall', mineProg: 0 };
+                    }
+                }
+                
+                // Add floors and stairs
+                if (y > 0 && y % 5 === 0) { // Floor every 5 blocks
+                     for (let x = 1; x < towerWidth - 1; x++) {
+                        worldBlocks[`${startCol + x},${currentRow}`] = { type: 'bedrock_stone', mineProg: 0 };
+                    }
+                }
+                // Switchback stairs using the new supersap wood!
+                const stairY = y % 10;
+                if (stairY < 5 && stairY > 0) { // Going up left side
+                     worldBlocks[`${startCol + 1},${currentRow}`] = { type: 'planked_cherry_blossom', mineProg: 0 };
+                } else if (stairY > 5) { // Going up right side
+                     worldBlocks[`${startCol + towerWidth - 2},${currentRow}`] = { type: 'planked_cherry_blossom', mineProg: 0 };
+                }
+            }
+            
+            // 5. Build the top platform
+            const topRow = baseRow - towerHeight;
+            for (let x = 0; x < towerWidth; x++) {
+                for (let y = 0; y < 2; y++) {
+                     worldBlocks[`${startCol + x},${topRow + y}`] = { type: 'planked_cherry_blossom', mineProg: 0 };
+                }
+                if (x === 0 || x === towerWidth - 1) { // Crenellations
+                     worldBlocks[`${startCol + x},${topRow - 1}`] = { type: 'bedrock_stone', mineProg: 0 };
+                }
+            }
+            
+            // 6. Add loot chest at the top
+            const chestCol = startCol + Math.floor(towerWidth / 2);
+            const chestRow = topRow - 1;
+            worldBlocks[`${chestCol},${chestRow}`] = { 
+                type: 'magical_chest', 
+                mineProg: 0, 
+                inventory: new Array(50).fill(null),
+                label: 'Supertower Cache'
+            };
+            
+            const loot = [];
+            loot.push({ type: 'napalm_bomb', count: 20 + Math.floor(random() * 41) });
+            loot.push({ type: 'gold_nugget', count: 3 + Math.floor(random() * 5) });
+            if (random() < 0.9) loot.push({ type: 'bronze_nugget', count: 8 + Math.floor(random() * 6) });
+            if (random() < 0.4) loot.push({ type: 'golden_apple', count: 1 });
+            if (random() < 0.15) loot.push({ type: 'broken_infinitungsten_pickaxe', count: 1, durability: 200000, maxDurability: 200000 });
+
+            loot.forEach((item, index) => {
+                if (index < 50 && item) {
                     worldBlocks[`${chestCol},${chestRow}`].inventory[index] = item;
                 }
             });
@@ -11874,8 +12292,8 @@
 				const cropRow = baseRow - 1;
 				worldBlocks[`${cropCol},${cropRow}`] = { type: '', mineProg: 0 };
 
-				// Plant the crops (80% corn, 20% cotton) only if spot is sky
-				const cropType = random() < 0.8 ? 'corn' : 'cotton';
+				// Plant the crops (80% corn, 16% cotton, 4% alfalfa) only if spot is sky
+				const cropType = random() < 0.8 ? 'corn' : random() < 0.8 ? 'cotton' : 'alfalfa';
 				if (getBlockType(cropCol, cropRow) === '') {
 					worldBlocks[`${cropCol},${cropRow}`] = { type: cropType, mineProg: 0 };
 				}
@@ -11993,6 +12411,21 @@
 				   blockType === 'pine_needle_pile' ||
 				   blockType === 'leaf_pile';
 		}
+		
+		function isShearable(blockType) {
+            if (!blockType) return false;
+            
+            // List of bushes that shears CANNOT instantly break/collect
+            const exclusions = ['tomato_bush', 'chili_pepper_bush', 'wildberry_bush'];
+            
+            // Check if it ends in _bush and is not in the exclusion list
+            if ((blockType.endsWith('_bush') || blockType.endsWith('_bush_fruit')) && !exclusions.includes(blockType)) {
+                return true;
+            }
+            
+            // Note: You can easily add things like 'tall_grass' or 'cobweb' here later!
+            return false;
+        }
 
         function worldToGrid(x, y) {
             return { col: Math.floor(x / tileSize), row: Math.floor(y / tileSize) };
@@ -12511,12 +12944,20 @@
                 }
             }
 
-            // 3. Apply armor effects SECOND (Feather Boots)
-            const boots = player.armor.boots;
-            if (boots && boots.type === 'feather_boots') {
-                const bootProps = itemTypes[boots.type];
-                if (bootProps.gravityMultiplier) {
-                    effectiveGravity *= bootProps.gravityMultiplier;
+            // 3. Apply global armor effects dynamically
+            for (const armorSlot in player.armor) {
+                const armorItem = player.armor[armorSlot];
+                if (armorItem) {
+                    const armorProps = itemTypes[armorItem.type];
+                    if (armorProps) {
+                        // Apply any multiplier effects the armor might have defined
+                        if (armorProps.gravityMultiplier !== undefined) effectiveGravity *= armorProps.gravityMultiplier;
+                        if (armorProps.speedMultiplier !== undefined) effectiveSpeed *= armorProps.speedMultiplier;
+                        if (armorProps.jumpMultiplier !== undefined) effectiveJump *= armorProps.jumpMultiplier;
+                        
+                        // You can easily add more generic numeric modifiers here in the future
+                        // if (armorProps.miningPowerMultiplier !== undefined) ... 
+                    }
                 }
             }
 
@@ -12620,23 +13061,46 @@
                 const fallDistance = player.y - player.fallStartY;
                 const fallDistanceInBlocks = fallDistance / tileSize;
                 
-				handleLandingImpact(fallDistanceInBlocks);
-				
-				if (fallDistanceInBlocks > (5 / player.gravity)) {
-                    const damage = Math.floor(fallDistanceInBlocks - (5 / player.gravity)) * FALL_INTENSITY * player.gravity;
-                    if (applyDamage(damage)) { return; }
-                    /*if (player.health <= 0) {
-                        respawnPlayer();
-						return;
-						player.x = 0;
-						player.y = 0;
-						let titleCycle = ["Block Game Ultimate [HTML EDITION]", "Block Game Ultimate [STOP DYING]", "Block Game Ultimate [TRY WINNING]"];
-						let i = 0;
-						setInterval(() => {
-							document.title = titleCycle[i % titleCycle.length];
-							i++;
-						}, 600);
-                    }*/
+                handleLandingImpact(fallDistanceInBlocks);
+                
+                if (fallDistanceInBlocks > (5 / player.gravity)) {
+                    let damage = Math.floor(fallDistanceInBlocks - (5 / player.gravity)) * FALL_INTENSITY * player.gravity;
+                    
+                    // --- NEW: Lucky Chance Logic ---
+                    let totalLuckyChance = 0;
+                    
+                    // Add up the lucky chance from all equipped armor
+                    for (const armorSlot in player.armor) {
+                        const armorItem = player.armor[armorSlot];
+                        if (armorItem) {
+                            const armorProps = itemTypes[armorItem.type];
+                            if (armorProps && armorProps.luckyChance !== undefined) {
+                                totalLuckyChance += armorProps.luckyChance;
+                            }
+                        }
+                    }
+                    
+                    // Cap the maximum chance at 100% (1.0)
+                    totalLuckyChance = Math.min(1.0, totalLuckyChance);
+                    
+                    // Roll the dice to see if we negate the damage
+                    if (totalLuckyChance > 0 && Math.random() < totalLuckyChance) {
+                        damage = 0; // Negates both player health damage AND armor durability damage
+                        
+                        // Optional: Create a visual indicator that the player got lucky
+                        const originalParticleCount = particleCount;
+                        particleCount = 10;
+                        const centerCol = Math.floor((player.x + playerWidth / 2) / tileSize);
+                        const footRow = Math.floor((player.y + playerHeight) / tileSize);
+                        createBlockBreakParticles(centerCol, footRow, 'cloud_block'); // Little puff of clouds
+                        particleCount = originalParticleCount;
+                    }
+                    // --- END NEW LOGIC ---
+
+                    // Apply the damage (if it wasn't negated to 0)
+                    if (damage > 0) {
+                        if (applyDamage(damage)) { return; }
+                    }
                 }
                 player.fallStartY = 0; // Reset fall tracker
             } else if (!player.onGround && wasOnGround) {
@@ -12825,6 +13289,9 @@
 			
             // If the block was a chest, drop its contents
             if (blockData && blockData.type === 'chest' && blockData.inventory) {
+				// --- LAZY SPOILAGE CALCULATION (Pre-Drop) ---
+				if (spoilageOn === 1) calculateInventorySpoilage(blockData.inventory, false, false);
+
                 blockData.inventory.forEach(item => {
                     if (item) {
                         addToInventory(item.type, item.count, item.durability);
@@ -12910,10 +13377,24 @@
                     } else if (traderType === 'designer') {
                         // Designer drops their mask
                         addToInventory('designer_trader_mask', 1);
+                    } else if (traderType === 'armorer') {
+                        // Armorer trader drops one random piece of its trader armor
+                        const r = random();
+                        if (r < 0.25) addToInventory('armorer_trader_mask', 1);
+                        else if (r < 0.5) addToInventory('trader_cloak', 1);
+                        else if (r < 0.75) addToInventory('trader_pants', 1);
+                        else addToInventory('trader_shoes', 1);
                     } else if (traderType === 'level2') {
                         // Level 2 trader drops one random piece of default trader armor
                         const r = random();
                         if (r < 0.25) addToInventory('trader_mask', 1);
+                        else if (r < 0.5) addToInventory('trader_cloak', 1);
+                        else if (r < 0.75) addToInventory('trader_pants', 1);
+                        else addToInventory('trader_shoes', 1);
+                    } else if (traderType === 'level3') {
+                        // Level 3 trader drops one random piece of its trader armor
+                        const r = random();
+                        if (r < 0.25) addToInventory('trader_mask_3', 1);
                         else if (r < 0.5) addToInventory('trader_cloak', 1);
                         else if (r < 0.75) addToInventory('trader_pants', 1);
                         else addToInventory('trader_shoes', 1);
@@ -12967,6 +13448,9 @@
 
             // If the block was a chest, world mover, etc., drop its contents into the void
             if (blockData && blockData.inventory) {
+				// --- LAZY SPOILAGE CALCULATION (Pre-Drop) ---
+				if (spoilageOn === 1) calculateInventorySpoilage(blockData.inventory, blockData.type === 'refrigerator', false);
+
                 blockData.inventory.forEach(item => {
                     if (item) {
                         addToVoidStorage(item.type, item.count, item.durability, item.maxDurability);
@@ -13173,6 +13657,7 @@
 				const isAxeBlock = (blockPropsForMining && blockPropsForMining.axeBlock) || effectiveBlockType.startsWith('raw_') || effectiveBlockType.startsWith('planked_') || effectiveBlockType.startsWith('cactus_') || effectiveBlockType.endsWith('_wood');
 				const isShovelBlock = blockPropsForMining && blockPropsForMining.shovelBlock;
 				const isSwordBlock = blockPropsForMining && blockPropsForMining.swordBlock;
+                const isShearableBlock = isShearable(effectiveBlockType); // <-- NEW LINE
                 const isPickaxe = equippedItemType.includes('_pickaxe');
 				const isHatchet = equippedItemType.includes('_hatchet');
 
@@ -13181,6 +13666,8 @@
                     else currentMiningPower = 0.1;
                 } else if (isHatchet && (isShovelBlock || isSwordBlock)) {
                     currentMiningPower = 0.1;
+                } else if (isShearableBlock && equippedItemProps.shearPower) { // <-- NEW LOGIC HERE
+                    currentMiningPower = equippedItemProps.shearPower; 
                 } else if (isAxeBlock && equippedItemProps.axePower) {
 					currentMiningPower = equippedItemProps.axePower;
 					unlockAchievement('TIMBER');
@@ -13416,10 +13903,21 @@
                     }
                     // --- END WORLD MOVER ---
 
-                    // --- DROP LOCKING: PREVENT DROPS IF INEFFICIENT ---
+                    // --- DROP LOCKING & SPECIAL ABILITIES ---
+                    const isShearsEquipped = equippedItemProps && equippedItemProps.shearPower;
+
                     // If isInefficient AND the block doesn't allow drops (undropper: true)
                     if (miningTarget.isInefficient && minedBlockProps.undropper) {
                         // Break without drops
+                        createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType);
+                    } else if (isShearsEquipped && isShearable(effectiveBlockType)) {
+                        // --- NEW: SHEARS SPECIAL ABILITY ---
+                        // Drop the exact block instead of its normal drops
+                        if (animateDrops) {
+                            createAnimatedDrop(miningTarget.col, miningTarget.row, { item: effectiveBlockType, min: 1, max: 1 });
+                        } else {
+                            addToInventory(effectiveBlockType, 1);
+                        }
                         createBlockBreakParticles(miningTarget.col, miningTarget.row, effectiveBlockType);
                     } else {
                         // Normal behavior
@@ -14495,6 +14993,31 @@
                         return; // Stop here
                     }
             }
+            if (selectedItemType === 'rod_of_cloaking') {
+                // Ensure we aren't clicking on empty sky
+                if (blockAtTarget && blockAtTarget.type !== '') {
+                    
+                    // Cloak the block as dirt
+                    worldBlocks[targetKey].cloakedAs = 'dirt';
+                    
+                    // Spawn a magical poof
+                    const originalParticleCount = particleCount;
+                    particleCount = 5;
+                    createBlockBreakParticles(targetCol, targetRow, 'cloud_block');
+                    particleCount = originalParticleCount;
+
+                    // Consume durability
+                    if (selectedItemObject.durability !== undefined) {
+                        selectedItemObject.durability -= 1;
+                        if (selectedItemObject.durability <= 0) {
+                            removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+                            updateHotbar();
+                        }
+                    }
+                }
+                mouse.rightDown = false; // Consume the click
+                return; 
+            }
             if (blockProps && blockProps.anvilPower > 0) {
                 toggleAnvilMenu(targetCol, targetRow, blockAtTarget.type, blockProps.anvilPower);
                 mouse.rightDown = false;
@@ -14629,6 +15152,24 @@
                 }
                 mouse.rightDown = false; // Consume the click
                 return; // Stop here, don't try to place the lighter
+            } else if (selectedItemType === 'manure') {
+                // Check if the block above is a growing crop
+                if (blockAtTarget && blockAtTarget.type.startsWith('planted_')) {
+                    
+                    // Subtract 30,000 ms (30 seconds) from plantTime to fake that it was planted earlier
+                    blockAtTarget.plantTime -= 30000;
+                    
+                    // Spawn some particles for visual feedback
+                    const originalParticleCount = particleCount;
+                    particleCount = 5;
+                    createBlockBreakParticles(targetCol, targetRow, 'fertilizer');
+                    particleCount = originalParticleCount;
+
+                    // Consume the manure
+                    removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+                }
+                mouse.rightDown = false; // Consume the click
+                return; 
             }
 
             if (selectedItemObject && selectedItemObject.count > 0) {
@@ -16016,7 +16557,7 @@
             } else if (targetRow < -265) {
                 targetBg = { type: 'color', value: '#000000' }; // Space
             } else if (targetRow < -145) { 
-                targetBg = { type: 'color', value: '#d8d043' }; // Heaven
+                targetBg = { type: 'color', value: '#e9da88' }; // Heaven
             } else if (targetRow > 505) { 
                 targetBg = { type: 'color', value: '#000000' }; // Void
             } else if (targetRow > 205) { 
@@ -17188,6 +17729,10 @@
                 input: { 0: { type: 'copper_nugget', count: 1 }, 1: { type: 'copper_nugget', count: 1 }, 2: { type: 'copper_nugget', count: 1 }, 6: { type: 'copper_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'copper_axe', outputCount: 1
             },
+			{ name: "Copper Sword",
+                input: { 3: { type: 'copper_nugget', count: 1 }, 6: { type: 'copper_nugget', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'copper_sword', outputCount: 1
+            },
             { name: "Tin Pickaxe",
                 input: { 0: { type: 'tin_nugget', count: 1 }, 1: { type: 'tin_nugget', count: 1 }, 2: { type: 'tin_nugget', count: 1 }, 3: { type: 'tin_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'tin_pickaxe', outputCount: 1
@@ -17199,6 +17744,10 @@
             { name: "Tin Axe",
                 input: { 0: { type: 'tin_nugget', count: 1 }, 1: { type: 'tin_nugget', count: 1 }, 2: { type: 'tin_nugget', count: 1 }, 6: { type: 'tin_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'tin_axe', outputCount: 1
+            },
+			{ name: "Tin Sword",
+                input: { 3: { type: 'tin_nugget', count: 1 }, 6: { type: 'tin_nugget', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'tin_sword', outputCount: 1
             },
             { name: "Bronze Nugget", input: { 0: { type: 'tin_nugget', count: 1 }, 1: { type: 'copper_nugget', count: 1 } }, output: 'bronze_nugget', outputCount: 1 },
             { name: "Bronze Pickaxe",
@@ -17213,6 +17762,10 @@
                 input: { 0: { type: 'bronze_nugget', count: 1 }, 1: { type: 'bronze_nugget', count: 1 }, 2: { type: 'bronze_nugget', count: 1 }, 6: { type: 'bronze_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'bronze_axe', outputCount: 1
             },
+			{ name: "Bronze Sword",
+                input: { 3: { type: 'bronze_nugget', count: 1 }, 6: { type: 'bronze_nugget', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'bronze_sword', outputCount: 1
+            },
 			{ name: "Brass Nugget", input: { 0: { type: 'zinc_nugget', count: 1 }, 1: { type: 'copper_nugget', count: 1 } }, output: 'brass_nugget', outputCount: 1 },
             { name: "Iron Pickaxe",
                 input: { 0: { type: 'iron_nugget', count: 1 }, 1: { type: 'iron_nugget', count: 1 }, 2: { type: 'iron_nugget', count: 1 }, 3: { type: 'iron_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
@@ -17226,6 +17779,10 @@
                 input: { 0: { type: 'iron_nugget', count: 1 }, 1: { type: 'iron_nugget', count: 1 }, 2: { type: 'iron_nugget', count: 1 }, 6: { type: 'iron_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'iron_axe', outputCount: 1
             },
+			{ name: "Iron Sword",
+                input: { 3: { type: 'iron_nugget', count: 1 }, 6: { type: 'iron_nugget', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'iron_sword', outputCount: 1
+            },
 			{ name: "Tungsten Pickaxe",
                 input: { 0: { type: 'tungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 3: { type: 'tungsten_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'tungsten_pickaxe', outputCount: 1
@@ -17237,6 +17794,10 @@
             { name: "Tungsten Axe",
                 input: { 0: { type: 'tungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 6: { type: 'tungsten_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'tungsten_axe', outputCount: 1
+            },
+			{ name: "Tungsten Sword",
+                input: { 3: { type: 'tungsten_nugget', count: 1 }, 6: { type: 'tungsten_nugget', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'tungsten_sword', outputCount: 1
             },
             { name: "Steel Nugget",
                 input: { 1: { type: 'coal', count: 1 }, 4: { type: 'coal', count: 1 }, 5: { type: 'iron_nugget', count: 1 }, 6: { type: 'coal', count: 1 }, 9: { type: 'coal', count: 1 }, 10: { type: 'coal', count: 1 } },
@@ -17253,6 +17814,10 @@
             { name: "Steel Axe",
                 input: { 0: { type: 'steel_nugget', count: 1 }, 1: { type: 'steel_nugget', count: 1 }, 2: { type: 'steel_nugget', count: 1 }, 6: { type: 'steel_nugget', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'steel_axe', outputCount: 1
+            },
+			{ name: "Steel Sword",
+                input: { 3: { type: 'steel_nugget', count: 1 }, 6: { type: 'steel_nugget', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                output: 'steel_sword', outputCount: 1
             },
             { name: "Ruby Plated Steel Pickaxe",
                 input: { 0: { type: 'ruby_nugget', count: 1 }, 1: { type: 'steel_pickaxe', count: 1 }, 2: { type: 'ruby_nugget', count: 1 }, 5: { type: 'ruby_nugget', count: 1 } },
@@ -17363,7 +17928,7 @@
 			{ name: "Deadwood Planks", input: { 0: { type: 'raw_deadwood', count: 1 } }, output: 'planked_deadwood', outputCount: 3 },
             { name: "Cinnamon Sticks", input: { 0: { type: 'raw_cinnamon', count: 1 }, 4: { type: 'raw_cinnamon', count: 1 }, 8: { type: 'raw_cinnamon', count: 1 }, 12: { type: 'raw_cinnamon', count: 1 } }, output: 'cinnamon', outputCount: 20 },
 			{ name: "Hay Bale",
-                input: { 0: { type: 'wheat_item', count: 1 }, 1: { type: 'barley_item', count: 1 }, 4: { type: 'barley_item', count: 1 }, 5: { type: 'wheat_item', count: 1 } },
+                input: { 0: { type: 'alfalfa', count: 1 }, 1: { type: 'alfalfa', count: 1 }, 4: { type: 'alfalfa', count: 1 }, 5: { type: 'alfalfa', count: 1 } },
                 output: 'hay_bale', outputCount: 1
             },
 			{ name: "Flour",
@@ -17770,6 +18335,12 @@
 				anvilPower: 1,
 				output: 'steel_bullet', outputCount: 25
 			},
+			{
+				name: "Lead Bullets (x25)",
+				input: { 0: { type: 'lead_nugget', count: 1 }, 1: { type: 'saltpeter', count: 1 }, 2: { type: 'saltpeter', count: 1 } },
+				anvilPower: 1,
+				output: 'lead_bullet', outputCount: 25
+			},
             {
 				name: "Mythicalithium Bullets (x25)",
 				input: { 0: { type: 'mythicalithium_nugget', count: 1 }, 1: { type: 'saltpeter', count: 1 }, 2: { type: 'saltpeter', count: 1 } },
@@ -18077,6 +18648,7 @@
 			{ input: 'raw_spruce', output: 'planked_spruce', outputCount: 4 },
             { input: 'raw_pine', output: 'planked_pine', outputCount: 4 },
 			{ input: 'cactus_block', output: 'planked_cactus', outputCount: 4 },
+			{ input: 'raw_supersap', output: 'planked_supersap', outputCount: 4 },
 			// Grinding blocks (sometimes reverse of anvil)
             { input: 'sandstone', output: 'sand', outputCount: 4 },
             { input: 'red_sandstone', output: 'red_sandstone', outputCount: 4 },
@@ -18121,6 +18693,7 @@
             { input: { type: 'planked_oak', count: 35 }, output: { type: 'iron_axe', count: 1 } },
 			{ input: { type: 'zinc_nugget', count: 5 }, output: { type: 'iron_shovel', count: 1 } },
 			{ input: { type: 'armor_tile', count: 25 }, output: { type: 'pistol', count: 1 } },
+			{ input: { type: 'copper_sword', count: 1 }, output: { type: 'shears', count: 1 } },
 			// Nuggets For Trade
             { input: { type: 'hellrock', count: 30 }, output: { type: 'heavensteel_nugget', count: 1 } },
 			{ input: { type: 'cloud_rock_block', count: 30 }, output: { type: 'hellsteel_nugget', count: 1 } },
@@ -18152,7 +18725,7 @@
             { input: { type: 'cactus_block', count: 25 }, output: { type: 'asphalt', count: 5 } },
 			{ input: { type: 'pest', count: 20 }, output: { type: 'concrete', count: 5 } },
 			// Butter
-			{ input: { type: 'dirt', count: 120 }, output: { type: 'butter', count: 1 } },
+			{ input: { type: 'dirt', count: 120 }, output: { type: 'butter', count: 3 } },
 		];
 		// This array is for the 'Level 2' (default) trader upgrade
 		const level2TraderTrades = [
@@ -18168,15 +18741,39 @@
 			// Miscalleneous For Trade
 			{ input: { type: 'void_dust', count: 20 }, output: { type: 'void_crystal', count: 1 } },
 		];
+        const level3TraderTrades = [
+			// Money For Trade
+            { input: { type: 'painite_nugget', count: 1 }, output: { type: 'gold_coin', count: 50 } },
+            { input: { type: 'elemental_helmet', count: 1 }, output: { type: 'gold_coin', count: 100 } },
+            // Miscalleneous For Sale
+            { input: { type: 'gold_coin', count: 5 }, output: { type: 'mine', count: 1 } },
+            { input: { type: 'gold_coin', count: 10 }, output: { type: 'rod_of_cloaking', count: 1 } },
+            // Miscalleneous For Trade
+            { input: { type: 'impotent_orb', count: 1 }, output: { type: 'trader', count: 1 } },
+		];
         const farmerTraderTrades = [
 			// Seeds For Sale
 			{ input: { type: 'bronze_coin', count: 2 }, output: { type: 'wheat_seeds', count: 3 } },
+            { input: { type: 'bronze_coin', count: 2 }, output: { type: 'barley_seeds', count: 3 } },
 			{ input: { type: 'bronze_coin', count: 3 }, output: { type: 'cotton_seeds', count: 1 } },
+            { input: { type: 'bronze_coin', count: 3 }, output: { type: 'flax_seeds', count: 1 } },
 			{ input: { type: 'gold_coin', count: 1 }, output: { type: 'pumpkin_seeds', count: 3 } },
+            { input: { type: 'gold_coin', count: 1 }, output: { type: 'potato_seeds', count: 3 } },
 			// Farm Assets For Sale
 			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'refrigerator', count: 1 } },
+            { input: { type: 'bronze_coin', count: 7 }, output: { type: 'manure', count: 10 } },
 			// Farm Assets For Trade
-			{ input: { type: 'orange', count: 15 }, output: { type: 'fertilizer', count: 5 } },
+			{ input: { type: 'wildberry', count: 5 }, output: { type: 'dirt', count: 25 } },
+            { input: { type: 'apple', count: 5 }, output: { type: 'soil', count: 10 } },
+            { input: { type: 'orange', count: 15 }, output: { type: 'fertilizer', count: 5 } },
+            // Soils For Sale
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'anthill_sand_block', count: 10 } },
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'silt', count: 10 } },
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'podzol', count: 10 } },
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'mycelium', count: 10 } },
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'blueglow_dirt_block', count: 10 } },
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'blue_sand_block', count: 10 } },
+            { input: { type: 'gold_coin', count: 2 }, output: { type: 'super_mineral', count: 5 } },
 		];
 		const minerTraderTrades = [
 			// Tools For Sale
@@ -18185,10 +18782,19 @@
 			{ input: { type: 'jade_nugget', count: 1 }, output: { type: 'heavenrock_pickaxe', count: 2 } },
 			// Minerals For Trade
 			{ input: { type: 'diamond_nugget', count: 5 }, output: { type: 'emerald_nugget', count: 2 } },
+            { input: { type: 'ametrine_nugget', count: 1 }, output: { type: 'jade_nugget', count: 1 } },
+            { input: { type: 'rose_quartz_nugget', count: 10 }, output: { type: 'copper_nugget', count: 1 } },
+            { input: { type: 'amethyst_nugget', count: 10 }, output: { type: 'iron_nugget', count: 1 } },
+            { input: { type: 'impure_infinitungsten_nugget', count: 1 }, output: { type: 'tungsten_nugget', count: 1 } },
 			// Minerals For Sale
-			{ input: { type: 'gold_coin', count: 2 }, output: { type: 'coal', count: 5 } },
+			{ input: { type: 'gold_coin', count: 2 }, output: { type: 'coal', count: 7 } },
 			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'rock_block', count: 24 } },
+            { input: { type: 'gold_coin', count: 3 }, output: { type: 'tin_nugget', count: 2 } },
             { input: { type: 'gold_coin', count: 120 }, output: { type: 'infinitungsten_nugget', count: 1 } },
+            // Miscalleneous For Sale
+            { input: { type: 'gold_coin', count: 5 }, output: { type: 'napalm_bomb', count: 1 } },
+            { input: { type: 'gold_coin', count: 10 }, output: { type: 'dynamite_bomb', count: 1 } },
+            { input: { type: 'gold_coin', count: 20 }, output: { type: 'octogen_bomb', count: 1 } },
 		];
         const designerTraderTrades = [
             // Decorations For Sale
@@ -18199,6 +18805,14 @@
             // Decorations For Trade
             { input: { type: 'bedrock_stone', count: 10 }, output: { type: 'dead_teddy_bear', count: 1 } },
         ];
+        const armorerTraderTrades = [
+            // Armor For Sale
+            { input: { type: 'gold_coin', count: 35 }, output: { type: 'feather_boots', count: 1 } },
+            { input: { type: 'gold_coin', count: 40 }, output: { type: 'lucky_boots', count: 1 } },
+            // Armor Items For Sale
+            { input: { type: 'bronze_coin', count: 16 }, output: { type: 'armor_tile', count: 2 } },
+            { input: { type: 'gold_coin', count: 17 }, output: { type: 'atlas_armor_tile', count: 2 } },
+        ];
 		
 		// This defines our trader types, their appearance, and their trades.
 		const traderTypes = [
@@ -18206,7 +18820,9 @@
 			{ name: 'Farmer', key: 'farmer', imgSrc: 'Farmer Trader.png', trades: [farmerTraderTrades] },
 			{ name: 'Miner', key: 'miner', imgSrc: 'Miner Trader.png', trades: [minerTraderTrades] },
             { name: 'Designer', key: 'designer', imgSrc: 'Designer Trader.png', trades: [designerTraderTrades] },
-			{ name: 'Trader Lvl. 2', key: 'level2', imgSrc: 'Trader 2.png', trades: [traderTrades, level2TraderTrades] },
+			{ name: 'Trader Lvl. 2', key: 'level2', imgSrc: 'Trader 2.png', trades: [level2TraderTrades] },
+            { name: 'Armorer', key: 'armorer', imgSrc: 'Armorer Trader.png', trades: [armorerTraderTrades] },
+            { name: 'Trader Lvl. 3', key: 'level3', imgSrc: 'Trader 3.png', trades: [level3TraderTrades] },
 		];
 		
 		// --- NEW: Chooses N random, non-repeating trades from a pool ---
@@ -18237,7 +18853,9 @@
             'farmer': farmerTraderTrades,
             'miner': minerTraderTrades,
             'designer': designerTraderTrades,
-            'level2': level2TraderTrades
+            'armorer': armorerTraderTrades,
+            'level2': level2TraderTrades,
+            'level3': level3TraderTrades
         };
 
 		// Place a vertical 1x3 trader at (col,row) such that `row` is the bottom block row.
@@ -18284,6 +18902,9 @@
             if (gameMenuOverlay.style.display === 'flex' && !isGamePaused) return;
             isGamePaused = !isGamePaused;
             if (isGamePaused) {
+				// --- LAZY SPOILAGE CALCULATION ---
+				if (spoilageOn === 1) calculateInventorySpoilage(inventorySlots, false, true);
+
                 inventoryCraftingOverlay.style.display = 'flex';
                 updateInventoryMenu();
                 renderRecipes();
@@ -19359,6 +19980,130 @@
 			str = str.replace(/\s+/g, ' ').trim();
 			return str.toLowerCase();
 		}
+
+        function autoFillCraftingGrid(recipe, isMax = false) {
+            // 1. Validate if current grid is compatible
+            for (let i = 0; i < 16; i++) {
+                const gridItem = craftingGridSlots[i];
+                const req = recipe.input[i];
+        
+                if (gridItem) {
+                    if (!req) {
+                        showMessageBox("Grid contains items not in this recipe. Clear it first!", "alert");
+                        return;
+                    }
+                    // Check for type mismatch
+                    let match = false;
+                    if (req.type === 'any_plank' && gridItem.type.startsWith('planked_')) match = true;
+                    else if (req.type === 'any_gilded' && (gridItem.type.startsWith('gilded_') || gridItem.type.startsWith('raw_gilded_') || gridItem.type.startsWith('planked_gilded_'))) match = true;
+                    else if (gridItem.type === req.type) match = true;
+        
+                    if (!match) {
+                        //showMessageBox("Grid has different items. Clear it first!", "alert");
+                        return;
+                    }
+                }
+            }
+        
+            // 2. Determine how many times we can add this recipe
+            const getPossibleFits = () => {
+                let counts = {};
+                inventorySlots.forEach(s => { if(s) counts[s.type] = (counts[s.type] || 0) + s.count; });
+                
+                let timesPossibleByInv = Infinity;
+                let timesPossibleByGridSpace = Infinity;
+        
+                for (const key in recipe.input) {
+                    const req = recipe.input[key];
+                    const gridSlot = craftingGridSlots[key];
+                    
+                    // Tool check & Max Stack Size logic
+                    const isTool = (itemTypes[req.type] && itemTypes[req.type].isTool) || (blockTypes[req.type] && blockTypes[req.type].isTool);
+                    const currentMaxStack = isTool ? 1 : maxStackSize; // Tools can only stack to 1!
+        
+                    // Inventory constraint
+                    let available = 0;
+                    if (req.type === 'any_plank') {
+                        for (let t in counts) if (t.startsWith('planked_')) available += counts[t];
+                    } else if (req.type === 'any_gilded') {
+                        for (let t in counts) if (t.startsWith('gilded_') || t.startsWith('raw_gilded_') || t.startsWith('planked_gilded_')) available += counts[t];
+                    } else {
+                        available = counts[req.type] || 0;
+                    }
+                    timesPossibleByInv = Math.min(timesPossibleByInv, Math.floor(available / req.count));
+        
+                    // Grid stack constraint
+                    const currentInGrid = gridSlot ? gridSlot.count : 0;
+                    timesPossibleByGridSpace = Math.min(timesPossibleByGridSpace, Math.floor((currentMaxStack - currentInGrid) / req.count));
+                }
+                return Math.min(timesPossibleByInv, timesPossibleByGridSpace);
+            };
+        
+            // --- FIX IS HERE: We now restrict normal clicks using Math.min ---
+            const possibleFits = getPossibleFits();
+            const iterations = isMax ? possibleFits : Math.min(1, possibleFits);
+        
+            if (iterations <= 0) {
+                //if (!isMax) showMessageBox("Not enough materials, or grid space limit reached!", "alert");
+                return;
+            }
+        
+            // 3. Move items
+            for (let i = 0; i < iterations; i++) {
+                for (const gridKey in recipe.input) {
+                    const req = recipe.input[gridKey];
+                    let remainingToMove = req.count;
+        
+                    // Search inventory (including hotbar)
+                    for (let j = 0; j < inventorySlots.length; j++) {
+                        const slot = inventorySlots[j];
+                        if (!slot) continue;
+        
+                        let match = false;
+                        if (req.type === 'any_plank' && slot.type.startsWith('planked_')) match = true;
+                        else if (req.type === 'any_gilded' && (slot.type.startsWith('gilded_') || slot.type.startsWith('raw_gilded_') || slot.type.startsWith('planked_gilded_'))) match = true;
+                        else if (slot.type === req.type) match = true;
+        
+                        if (match) {
+                            const take = Math.min(remainingToMove, slot.count);
+                            
+                            // Initialize grid slot if empty
+                            if (!craftingGridSlots[gridKey]) {
+                                craftingGridSlots[gridKey] = { 
+                                    type: slot.type, 
+                                    count: 0, 
+                                    durability: slot.durability, 
+                                    maxDurability: slot.maxDurability 
+                                };
+                            }
+        
+                            craftingGridSlots[gridKey].count += take;
+                            slot.count -= take;
+                            remainingToMove -= take;
+        
+                            if (slot.count <= 0) inventorySlots[j] = null;
+                            if (remainingToMove <= 0) break;
+                        }
+                    }
+                }
+            }
+        
+            updateInventoryMenu();
+            syncHotbarIndices();
+        }
+
+        // Add this globally so the icon preview buttons can use it:
+        window.autoFillRecipeByName = function(name, event) {
+            const r = recipes.find(x => x.name === name || x.output.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) === name);
+            if (r) {
+                // If it's a normal click, we keep the preview open to let them click again
+                // If it's shift-click, we close it because the grid is now full
+                const isShift = event ? event.shiftKey : false;
+                if (isShift) document.getElementById('customMessageBoxOverlay').style.display = 'none'; 
+                
+                autoFillCraftingGrid(r, isShift);
+            }
+        };
 		
         function renderRecipes(filterText = '') {
 			const recipeListDiv = document.getElementById('recipeListContainer');
@@ -19381,8 +20126,7 @@
 			const filteredRecipes = recipes.filter(r => {
 				// 1. Check Craftable Filter
 				if (filterCraftableInventory) {
-					// Use player inventory (inventorySlots)
-					if (!hasMaterialsForRecipe(r, inventorySlots)) return false;
+					if (!hasMaterialsForRecipe(r, inventorySlots, craftingGridSlots)) return false;
 				}
 
 				// 2. Check Text Search
@@ -19432,17 +20176,21 @@
 				recipeItemDiv.appendChild(outputDiv);
 				recipeListDiv.appendChild(recipeItemDiv);
 				
-				// Auto-fill grid on click (Cheat Mode)
-				if (cheatItems === true) {
-					recipeItemDiv.addEventListener('click', () => {
-						craftingGridSlots.fill(null);
-						for (const key in recipe.input) {
-							const required = recipe.input[key];
-							craftingGridSlots[key] = { type: required.type, count: required.count };
-						}
-						updateInventoryMenu();
-					});
-				}
+				// Auto-fill grid on click
+				recipeItemDiv.addEventListener('click', (e) => {
+                    if (cheatItems === true) {
+                        // Cheat mode: Fill 1 set regardless of inventory
+                        craftingGridSlots.fill(null);
+                        for (const key in recipe.input) {
+                            const required = recipe.input[key];
+                            craftingGridSlots[key] = { type: required.type, count: required.count };
+                        }
+                        updateInventoryMenu();
+                    } else {
+                        // Normal mode: Pass shiftKey status
+                        autoFillCraftingGrid(recipe, e.shiftKey);
+                    }
+                });
 			}
 			// Render Icon View
 			for (const recipe of filteredRecipes) {
@@ -19628,10 +20376,13 @@
 			}
 		}
 		
-		function updateSpoilage() {
-			if (isGamePaused) return;
+		// --- REFACTORED LAZY SPOILAGE SYSTEM ---
+		function calculateInventorySpoilage(inventory, isRefrigerator = false, isPlayerInventory = false, startIndex = 0, endIndex = null) {
+			if (!inventory) return;
 			const currentTime = gameTime;
+			const limit = endIndex !== null ? endIndex : inventory.length;
 
+			// Helper to add spoiled items back into the same chest/inventory
 			function addSpoiledToInventoryArray(invArray, spoiledType, count) {
 				let remaining = count;
 				for (let i = 0; i < invArray.length && remaining > 0; i++) {
@@ -19652,74 +20403,67 @@
 				return remaining;
 			}
 
-			const checkInventory = (inventory, isRefrigerator = false, isPlayerInventory = false) => {
-				if (!inventory) return;
-				for (let i = 0; i < inventory.length; i++) {
-					const item = inventory[i];
-					if (!item) continue;
+			for (let i = startIndex; i < limit; i++) {
+				const item = inventory[i];
+				if (!item) continue;
 
-					if (itemTypes[item.type]?.spoilable) {
-						const spoilInfo = itemTypes[item.type].spoilable;
+				if (itemTypes[item.type]?.spoilable) {
+					const spoilInfo = itemTypes[item.type].spoilable;
 
-						if (isRefrigerator) {
-							if (Array.isArray(item.acquiredTimes)) delete item.acquiredTimes;
-							if (item.acquiredTime) delete item.acquiredTime;
-							continue;
+					// Refrigerators pause spoilage entirely.
+					// We delete the timestamps so they don't spoil while inside.
+					if (isRefrigerator) {
+						if (Array.isArray(item.acquiredTimes)) delete item.acquiredTimes;
+						if (item.acquiredTime) delete item.acquiredTime;
+						continue;
+					}
+
+					_ensureAcquiredTimes(item, currentTime);
+
+					let expiredCount = 0;
+					for (let t = 0; t < (item.acquiredTimes || []).length; t++) {
+						if (currentTime - item.acquiredTimes[t] > spoilInfo.time) expiredCount++;
+						else break; // Timestamps are chronological; if one hasn't expired, the rest haven't
+					}
+
+					if (expiredCount > 0) {
+						item.acquiredTimes.splice(0, expiredCount);
+						item.count -= expiredCount;
+
+						if (item.count <= 0) {
+							inventory[i] = null;
 						}
 
-						_ensureAcquiredTimes(item, currentTime);
-
-						let expiredCount = 0;
-						for (let t = 0; t < (item.acquiredTimes || []).length; t++) {
-							if (currentTime - item.acquiredTimes[t] > spoilInfo.time) expiredCount++;
-							else break;
-						}
-
-						if (expiredCount > 0) {
-							item.acquiredTimes.splice(0, expiredCount);
-							item.count -= expiredCount;
-
-							if (item.count <= 0) {
-								inventory[i] = null;
-							}
-
-							const spoiledType = spoilInfo.into || 'spoiled';
-							let leftover = 0;
-							if (isPlayerInventory) {
-								addToInventory(spoiledType, expiredCount, null, null, inventorySlots);
-							} else {
-								leftover = addSpoiledToInventoryArray(inventory, spoiledType, expiredCount);
-								if (leftover > 0) {
-									const stillLeft = (leftover > 0) ? (addToInventory(spoiledType, leftover) ? 0 : leftover) : 0;
-								}
+						const spoiledType = spoilInfo.into || 'spoiled';
+						
+						if (isPlayerInventory) {
+							// Push right back to player inventory (addToInventory handles overflow to void)
+							addToInventory(spoiledType, expiredCount, null, null, inventorySlots);
+						} else {
+							// Chest/Container logic: attempt to fit it in the chest
+							let leftover = addSpoiledToInventoryArray(inventory, spoiledType, expiredCount);
+							if (leftover > 0) {
+								// If chest is full of rot, dump the rest into the void
+								addToVoidStorage(spoiledType, leftover);
 							}
 						}
 					}
 				}
-			};
-
-			// Check player inventory
-			checkInventory(inventorySlots, false, true);
-
-            // --- OPTIMIZED LOOP STARTS HERE ---
-            // Only loop through known containers, not the whole world map
-			for (const key of activeContainers) {
-				const block = worldBlocks[key];
-                
-                // Lazy Cleanup: If the block no longer exists or isn't a container (e.g. exploded), remove it from list
-                if (!block || !block.inventory) {
-                    activeContainers.delete(key);
-                    continue;
-                }
-
-				if (block.type === 'refrigerator') {
-					checkInventory(block.inventory, true, false);
-				} else {
-					// Chests, dead bodies, magical chests, furnaces
-					checkInventory(block.inventory, false, false);
-				}
 			}
-            // --- OPTIMIZED LOOP ENDS HERE ---
+		}
+
+		function updateHotbarSpoilage() {
+			if (isGamePaused) return;
+			// Deep copy to check if we actually need to redraw the UI
+			const before = JSON.stringify(inventorySlots.slice(0, hotbarSize));
+			
+			// Only calculate indices 0 through 9 (the hotbar)
+			calculateInventorySpoilage(inventorySlots, false, true, 0, hotbarSize);
+			
+			const after = JSON.stringify(inventorySlots.slice(0, hotbarSize));
+			if (before !== after) {
+				updateHotbar();
+			}
 		}
 
         function toggleGameMenu() {
@@ -20015,6 +20759,14 @@
 				const chestKey = `${col},${row}`;
 				const block = worldBlocks[chestKey];
 
+				// --- LAZY SPOILAGE CALCULATION ---
+				if (spoilageOn === 1) {
+					calculateInventorySpoilage(inventorySlots, false, true);
+					if (block && block.inventory) {
+						calculateInventorySpoilage(block.inventory, block.type === 'refrigerator', false);
+					}
+				}
+
 				chestOverlay.style.display = 'flex';
 				updateChestMenu();
 			} else {
@@ -20188,6 +20940,71 @@
 
 			levelUpButton.textContent = 'Levels';
 			levelUpButton.onclick = () => { openTraderLevelUpMenu(bottomBlock); };
+
+            let restockButton = document.getElementById('traderRestockButton');
+            if (!restockButton) {
+                restockButton = document.createElement('button');
+                restockButton.id = 'traderRestockButton';
+                const buttonsContainer = document.getElementById('traderTradeButtons');
+                buttonsContainer.insertBefore(restockButton, document.getElementById('traderDeclineButton'));
+            }
+
+            const traderLevel = bottomBlock.level || 1;
+            const restockCost = 10 + (15 * traderLevel);
+            restockButton.textContent = `Restock (${restockCost}g)`;
+
+            // Check if player can afford restock
+            let playerGold = 0;
+            inventorySlots.forEach(item => {
+                if (item && item.type === 'gold_coin') playerGold += item.count;
+            });
+            restockButton.disabled = playerGold < restockCost;
+
+            restockButton.onclick = () => {
+                // Re-verify gold on click
+                let currentGold = 0;
+                inventorySlots.forEach(item => { if (item && item.type === 'gold_coin') currentGold += item.count; });
+                
+                if (currentGold >= restockCost) {
+                    // Deduct cost
+                    let remainingCost = restockCost;
+                    for (let i = inventorySlots.length - 1; i >= 0; i--) {
+                        const item = inventorySlots[i];
+                        if (item && item.type === 'gold_coin') {
+                            const toRemove = Math.min(remainingCost, item.count);
+                            item.count -= toRemove;
+                            remainingCost -= toRemove;
+                            if (item.count <= 0) inventorySlots[i] = null;
+                            if (remainingCost <= 0) break;
+                        }
+                    }
+                    
+                    // Reroll trades based on level history
+                    const historyPools = ['default'];
+                    if (traderLevel >= 2) {
+                        if (traderLevel >= 3) {
+                            historyPools.push('level2');
+                            historyPools.push(bottomBlock.traderType); // 'level3'
+                        } else {
+                            historyPools.push(bottomBlock.traderType);
+                        }
+                    }
+                    
+                    const newTrades = [];
+                    if (historyPools.length > 0) newTrades.push(pickRandomTradesFromPool(traderTradePools[historyPools[0]], 5));
+                    if (historyPools.length > 1) newTrades.push(pickRandomTradesFromPool(traderTradePools[historyPools[1]], 3));
+                    if (historyPools.length > 2) newTrades.push(pickRandomTradesFromPool(traderTradePools[historyPools[2]], 3));
+                    
+                    bottomBlock.trades = newTrades;
+                    
+                    updateTraderMenu();
+                    syncHotbarIndices();
+                    // Optional: Play a sound
+                    if (typeof playGameSound === 'function') playGameSound('menu_click_1');
+                } else {
+                    showMessageBox("Not enough Gold Coins to restock.", 'alert');
+                }
+            };
 		}
 
 		// bobbing
@@ -20403,10 +21220,21 @@
 			}
 		});
 		
-		function toggleFurnaceMenu(col, row, type) { // Added 'type' parameter
+		function toggleFurnaceMenu(col, row, type) { 
 			isGamePaused = !isGamePaused;
 			if (isGamePaused) {
-				currentlyOpenFurnace = { col, row, type }; // Store the type
+				currentlyOpenFurnace = { col, row, type }; 
+				
+				// --- LAZY SPOILAGE CALCULATION ---
+				if (spoilageOn === 1) {
+					calculateInventorySpoilage(inventorySlots, false, true);
+					const furnaceKey = `${col},${row}`;
+					const furnaceData = worldBlocks[furnaceKey];
+					if (furnaceData && furnaceData.inventory) {
+						calculateInventorySpoilage(furnaceData.inventory, false, false);
+					}
+				}
+				
 				ovenOverlay.style.display = 'flex';
 				updateFurnaceMenu();
 
@@ -20700,6 +21528,9 @@
             if (gameMenuOverlay.style.display === 'flex' && !isGamePaused) return;
             isGamePaused = !isGamePaused;
             if (isGamePaused) {
+				// --- LAZY SPOILAGE CALCULATION ---
+				if (spoilageOn === 1) calculateInventorySpoilage(inventorySlots, false, true);
+
                 currentlyOpenAnvil = { col, row, type, power };
                 anvilOverlay.style.display = 'flex';
                 updateAnvilMenu();
@@ -20817,7 +21648,7 @@
 				// 1. Check Craftable Filter (Uses Player Inventory + Anvil Grid technically, but let's check Player Inventory for simplicity as "Source")
 				// NOTE: Anvils consume from their grid, but usually you want to know if you *have* the items in your bag to put in.
 				if (filterCraftableAnvil) {
-					if (!hasMaterialsForRecipe(r, inventorySlots)) return false;
+					if (!hasMaterialsForRecipe(r, inventorySlots, anvilGridSlots)) return false;
 				}
 
 				// 2. Filter by search text
@@ -21021,8 +21852,14 @@
 			const filteredRecipes = recipeList.filter(r => {
 				// 1. Check Craftable Filter
 				if (filterCraftableOven) {
-					// Checks if player inventory has inputs + fuel
-					if (!hasMaterialsForRecipe(r, inventorySlots)) return false;
+					let furnaceInventory = [];
+					if (currentlyOpenFurnace) {
+						const furnaceData = worldBlocks[`${currentlyOpenFurnace.col},${currentlyOpenFurnace.row}`];
+						if (furnaceData && furnaceData.inventory) {
+							furnaceInventory = furnaceData.inventory;
+						}
+					}
+					if (!hasMaterialsForRecipe(r, inventorySlots, furnaceInventory)) return false;
 				}
 
 				// 2. Check Search Text
@@ -21142,7 +21979,10 @@
             Object.keys(heavenBiomes).forEach(key => delete heavenBiomes[key]);
             lastHeavenBiomeEndCol = -1;
             firstHeavenBiomeStartCol = 0;
-            // --- END OF FIX ---
+			
+			Object.keys(superHeavenBiomes).forEach(key => delete superHeavenBiomes[key]);
+            lastSuperHeavenBiomeEndCol = -1;
+            firstSuperHeavenBiomeStartCol = 0;
             
             // Clear all feature tracking sets
             caveBlocks.clear();
@@ -21171,6 +22011,8 @@
 			ancientBunkerColumns.clear();
 			forgottenCryptColumns.clear();
             anthillStructureColumns.clear();
+            enlightenedRanchColumns.clear();
+			supertowerColumns.clear();
             modStructureColumns.clear();
 			activeContainers.clear();
 			activePlants.clear();
@@ -21384,7 +22226,7 @@
 
 			plantSpoilageAccumulator += dt;
 			if (plantSpoilageAccumulator >= PLANT_SPOILAGE_INTERVAL) {
-				if (spoilageOn === 1) updateSpoilage();
+				if (spoilageOn === 1) updateHotbarSpoilage(); // ONLY does the hotbar!
 				plantSpoilageAccumulator = 0;
 			}
             waiterGo += 1
@@ -21398,7 +22240,6 @@
             if (waiterGo === 1) {
                 updateHeldItemAnimation(dt);
                 updateParticles(dt);
-				if (spoilageOn === 1) runBackgroundIndexer(500); 
             }
             if (waiterGone >= 60) { // 60 frames = 1 second
                 waiterGone = 0;
@@ -22276,10 +23117,12 @@
 			if (!file) return;
 
 			const reader = new FileReader();
-			reader.onload = function (e) {
+            // ADD 'async' here
+			reader.onload = async function (e) {
 				try {
 					const data = JSON.parse(e.target.result);
-					importWorldData(data);
+                    // ADD 'await' here
+					await importWorldData(data);
 					showMessageBox("World data successfully imported!");
 				} catch (err) {
 					console.error("Error parsing world data:", err);
@@ -22289,178 +23132,176 @@
 			reader.readAsText(file);
 		});
 
-		function importWorldData(data) {
-            // Clear existing world state
-            Object.keys(worldBlocks).forEach(key => delete worldBlocks[key]);
-			Object.keys(fireBlocks).forEach(key => delete fireBlocks[key]);
-            Object.keys(columnSurfaceHeights).forEach(key => delete columnSurfaceHeights[key]);
-            Object.keys(heavenColumnSurfaceHeights).forEach(key => delete heavenColumnSurfaceHeights[key]);
-            Object.keys(worldBiomes).forEach(key => delete worldBiomes[key]);
-            Object.keys(underworldBiomes).forEach(key => delete underworldBiomes[key]);
-            traderColumns.clear();
-            watchtowerColumns.clear();
-			sandstoneTempleColumns.clear();
-            skyIslandColumns.clear();
-			ballooniteBalloonColumns.clear();
-		    mineChamberColumns.clear();
-        	voidRealmColumns.clear();
-    		chasmColumns.clear();
-            bunkerColumns.clear();
-		    plantationColumns.clear();
-		    redRockColumns.clear();
-		    graniteMountainColumns.clear();
-		    icyHillColumns.clear();
-		    jungleTempleColumns.clear();
-            doomShackColumns.clear();
-			doomFortressColumns.clear();
-			ruinedPortalColumns.clear();
-			petrifiedTreeColumns.clear();
-            villageHouseColumns.clear();
-			elderOakColumns.clear();
-			spiderNestColumns.clear();
-			ancientBunkerColumns.clear();
-			forgottenCryptColumns.clear();
-            anthillStructureColumns.clear();
-			modStructureColumns.clear();
-			activeContainers.clear();
-			activePlants.clear();
-			activePlantsIterator = null;
-			hellDungeonGenerated = data.hellDungeonGenerated || false;
-			exploredMap = {};
-			bees.length = 0;
-			// Load Bees
-            if (data.bees) {
-                data.bees.forEach(b => bees.push(b));
+		async function importWorldData(data) {
+            isGamePaused = true; 
+            
+            // Show loading UI
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loadingText = document.getElementById('loadingText');
+            const loadingBarFill = document.getElementById('loadingBarFill');
+            const loadingPercent = document.getElementById('loadingPercent');
+            const skipButton = document.getElementById('skipLoadingButton');
+            
+            if(skipButton) skipButton.style.display = 'none';
+            loadingScreen.style.display = 'flex';
+            
+            // Helper to yield to main thread (prevents freezing)
+            const yieldToMain = () => new Promise(r => setTimeout(r, 0));
+            const CHUNK_SIZE = 15000; // Optimal balance of speed and anti-freeze
+
+            // 1. Clear existing world blocks in chunks
+            loadingText.textContent = "Clearing old world data...";
+            const oldKeys = Object.keys(worldBlocks);
+            for (let i = 0; i < oldKeys.length; i += CHUNK_SIZE) {
+                const chunk = oldKeys.slice(i, i + CHUNK_SIZE);
+                chunk.forEach(key => delete worldBlocks[key]);
+                
+                const pct = Math.floor((i / oldKeys.length) * 100);
+                loadingPercent.textContent = pct + '%';
+                loadingBarFill.style.width = pct + '%';
+                await yieldToMain();
             }
 
-            // Load new data
-            setSeed(data.seed || Date.now());
+            // Quick clears for sets and maps
+            Object.keys(fireBlocks).forEach(key => delete fireBlocks[key]);
+            Object.keys(columnSurfaceHeights).forEach(key => delete columnSurfaceHeights[key]);
+            Object.keys(heavenColumnSurfaceHeights).forEach(key => delete heavenColumnSurfaceHeights[key]);
+            Object.keys(superHeavenColumnSurfaceHeights).forEach(key => delete superHeavenColumnSurfaceHeights[key]);
+			Object.keys(superHeavenBiomes).forEach(key => delete superHeavenBiomes[key]);
+            Object.keys(worldBiomes).forEach(key => delete worldBiomes[key]);
+            Object.keys(underworldBiomes).forEach(key => delete underworldBiomes[key]);
             
+            traderColumns.clear(); watchtowerColumns.clear(); sandstoneTempleColumns.clear();
+            skyIslandColumns.clear(); ballooniteBalloonColumns.clear(); mineChamberColumns.clear();
+            voidRealmColumns.clear(); chasmColumns.clear(); bunkerColumns.clear();
+            plantationColumns.clear(); redRockColumns.clear(); graniteMountainColumns.clear();
+            icyHillColumns.clear(); jungleTempleColumns.clear(); doomShackColumns.clear();
+            doomFortressColumns.clear(); ruinedPortalColumns.clear(); desolatePortalColumns.clear();
+            petrifiedTreeColumns.clear(); villageHouseColumns.clear(); elderOakColumns.clear();
+            spiderNestColumns.clear(); ancientBunkerColumns.clear(); forgottenCryptColumns.clear();
+            anthillStructureColumns.clear(); modStructureColumns.clear(); activeContainers.clear();
+            enlightenedRanchColumns.clear(); supertowerColumns.clear();
+            activePlants.clear(); activePlantsIterator = null; exploredMap = {}; bees.length = 0;
+
+            hellDungeonGenerated = data.hellDungeonGenerated || false;
+            if (data.bees) data.bees.forEach(b => bees.push(b));
+            setSeed(data.seed || Date.now());
+
+            // 2. Load new blocks in chunks
+            loadingText.textContent = "Importing blocks...";
             const loadedBlocks = data.blocks || {};
-            for (const key in loadedBlocks) {
-                const sBlock = loadedBlocks[key];
-                const newBlock = { 
-                    type: sBlock.tp, 
-                    mineProg: sBlock.mP || 0,
-                    inventory: sBlock.inv,
-                    label: sBlock.lbl,
-                    part: sBlock.prt,
-                    plantTime: sBlock.pT,
-                    baseBlockType: sBlock.bBT,
-                    code: sBlock.cd,
-                    oneBlockCount: sBlock.obc,
-					traderType: sBlock.tty || 'default',
-					level: sBlock.lvl || 1,
-					xp: sBlock.xp || 0,
-					
-					// NEW SLAB PROPERTIES
-                    orientation: sBlock.ori,
-                    leftType: sBlock.lT,
-                    rightType: sBlock.rT,
-                    bottomType: sBlock.bT,
-                    topType: sBlock.tT,
-					
-					trades: (() => {
-						// This IIFE (Immediately Invoked Function Expression)
-						// determines the correct trades to load.
-						
-						// 1. If trades are saved, load them.
-						if (sBlock.trd) {
-							return sBlock.trd;
-						}
-						
-						// 2. If no trades are saved (old save), generate them based on type.
-						const traderType = sBlock.tty || 'default';
-						if (traderType === 'default') {
-							// This is a Lvl 1 trader from an old save, give it 5 new random trades.
-							return [pickRandomTradesFromPool(traderTrades, 5)];
-						}
-						if (traderType === 'farmer') {
-							return [farmerTraderTrades];
-						}
-						if (traderType === 'miner') {
-							return [minerTraderTrades];
-						}
-                        if (traderType === 'designer') {
-							return [designerTraderTrades];
-						}
-						if (traderType === 'level2') {
-							return [traderTrades, level2TraderTrades];
-						}
-						
-						// Fallback for any other Lvl 1 trader (just in case)
-						return [pickRandomTradesFromPool(traderTrades, 5)];
-					})(),
-                };
-                if (sBlock.clk) newBlock.cloakedAs = sBlock.clk;
-                if (sBlock.ovr) newBlock.overlay = sBlock.ovr;
-                if (sBlock.itm) newBlock.item = sBlock.itm;
-				// Book-specific data
-                if (sBlock.con) newBlock.content = sBlock.con;
-                if (sBlock.pub) newBlock.published = sBlock.pub;
-                if (sBlock.tit) newBlock.title = sBlock.tit;
-                if (sBlock.cov) newBlock.cover = sBlock.cov;
-                worldBlocks[key] = newBlock;
-				if (newBlock.inventory) {
-                    activeContainers.add(key);
+            const newKeys = Object.keys(loadedBlocks);
+            
+            for (let i = 0; i < newKeys.length; i += CHUNK_SIZE) {
+                const chunk = newKeys.slice(i, i + CHUNK_SIZE);
+                for (const key of chunk) {
+                    const sBlock = loadedBlocks[key];
+                    const newBlock = { 
+                        type: sBlock.tp, 
+                        mineProg: sBlock.mP || 0,
+                        inventory: sBlock.inv,
+                        label: sBlock.lbl,
+                        part: sBlock.prt,
+                        plantTime: sBlock.pT,
+                        baseBlockType: sBlock.bBT,
+                        code: sBlock.cd,
+                        oneBlockCount: sBlock.obc,
+                        traderType: sBlock.tty || 'default',
+                        level: sBlock.lvl || 1,
+                        xp: sBlock.xp || 0,
+                        orientation: sBlock.ori,
+                        leftType: sBlock.lT,
+                        rightType: sBlock.rT,
+                        bottomType: sBlock.bT,
+                        topType: sBlock.tT,
+                        
+                        trades: (() => {
+                            if (sBlock.trd) return sBlock.trd;
+                            const traderType = sBlock.tty || 'default';
+                            if (traderType === 'default') return [pickRandomTradesFromPool(traderTrades, 5)];
+                            if (traderType === 'farmer') return [farmerTraderTrades];
+                            if (traderType === 'miner') return [minerTraderTrades];
+                            if (traderType === 'designer') return [designerTraderTrades];
+                            if (traderType === 'armorer') return [armorerTraderTrades];
+                            if (traderType === 'level2') return [traderTrades, level2TraderTrades];
+                            return [pickRandomTradesFromPool(traderTrades, 5)];
+                        })(),
+                    };
+                    if (sBlock.clk) newBlock.cloakedAs = sBlock.clk;
+                    if (sBlock.ovr) newBlock.overlay = sBlock.ovr;
+                    if (sBlock.itm) newBlock.item = sBlock.itm;
+                    if (sBlock.con) newBlock.content = sBlock.con;
+                    if (sBlock.pub) newBlock.published = sBlock.pub;
+                    if (sBlock.tit) newBlock.title = sBlock.tit;
+                    if (sBlock.cov) newBlock.cover = sBlock.cov;
+                    
+                    worldBlocks[key] = newBlock;
+                    if (newBlock.inventory) activeContainers.add(key);
+                    if (newBlock.type && newBlock.type.startsWith('planted_')) activePlants.add(key);
                 }
-				
-				if (newBlock.type && newBlock.type.startsWith('planted_')) {
-					activePlants.add(key);
-				}
+                
+                const pct = Math.floor((i / newKeys.length) * 100);
+                loadingPercent.textContent = pct + '%';
+                loadingBarFill.style.width = pct + '%';
+                await yieldToMain();
             }
+
+            // 3. Load remaining metadata
+            loadingText.textContent = "Finalizing data...";
+            loadingPercent.textContent = '100%';
+            loadingBarFill.style.width = '100%';
+            await yieldToMain();
 
             Object.assign(columnSurfaceHeights, data.heights || {});
             Object.assign(heavenColumnSurfaceHeights, data.heavenHeights || {});
+            if(data.superHeavenHeights) Object.assign(superHeavenColumnSurfaceHeights, data.superHeavenHeights);
+            
             Object.assign(worldBiomes, data.biomes || {});
             Object.assign(underworldBiomes, data.underworldBiomes || {});
             (data.caves || []).forEach(key => caveBlocks.add(key));
             (data.islands || []).forEach(key => skyIslandColumns.add(key));
             (data.towers || []).forEach(key => watchtowerColumns.add(key));
-			voidStorage = data.void || []; // Load void data, or initialize as empty array if not present
-			currentVoidTrade = data.trade || null;
-			
-			// Load XP & Achievements
-			playerXP = data.xp || 0;
+            if(data.temples) (data.temples || []).forEach(key => sandstoneTempleColumns.add(key));
+            
+            voidStorage = data.void || []; 
+            currentVoidTrade = data.trade || null;
+            
+            playerXP = data.xp || 0;
             insomnia = data.insomnia || 0;
             guanoMined = data.guanoMined || 0;
-			earnedAchievements = data.achievements || [];
+            earnedAchievements = data.achievements || [];
 
-			// Load Console History
-			commandHistory = data.consoleHistory || [];
-			historyIndex = commandHistory.length; // Reset history navigation
+            commandHistory = data.consoleHistory || [];
+            historyIndex = commandHistory.length; 
 
-            // Load Player Data
             if (data.player) {
                 player.x = data.player.x;
                 player.y = data.player.y;
                 player.health = data.player.h;
-				player.maxHealth = data.player.mh;
-				player.bloodAlcohol = data.player.bac || 0;
+                player.maxHealth = data.player.mh;
+                player.bloodAlcohol = data.player.bac || 0;
                 player.activeEffects = data.player.eff || [];
                 player.bedSpawnPoint = data.player.bed;
-                player.armor = data.player.armor;
                 player.armor = data.player.armor || { helmet: null, face: null, chestGear: null, legGear: null, boots: null };
             }
 
-            // Load Inventory
             inventorySlots.fill(null);
             if(data.inventory) {
-                for(let i=0; i < data.inventory.length; i++) {
-                    inventorySlots[i] = data.inventory[i];
-                }
+                for(let i=0; i < data.inventory.length; i++) inventorySlots[i] = data.inventory[i];
             }
             hotbarIndices.fill(null);
              if(data.hotbar) {
-                for(let i=0; i < data.hotbar.length; i++) {
-                    hotbarIndices[i] = data.hotbar[i];
-                }
+                for(let i=0; i < data.hotbar.length; i++) hotbarIndices[i] = data.hotbar[i];
             }
-			
+            
             updateHotbar();
+            
+            loadingScreen.style.display = 'none';
             if(gameMenuOverlay.style.display === 'flex') toggleGameMenu();
-            lastTime = performance.now(); // Reset time to prevent large dt jump
-            console.log("World state updated from import.");
+            
+            lastTime = performance.now(); 
+            isGamePaused = false;
+            console.log("World state fully updated from import without freezing!");
         }
 
 		document.addEventListener("keydown", (e) => {
@@ -22847,6 +23688,7 @@
                 throw new Error('JSON parse failed: ' + err.message);
               }
               importWorldData(data);
+			  await importWorldData(data);
               showMessageBox("BGU2 world imported!");
               return;
             } else {
@@ -22854,6 +23696,7 @@
               const txt = u8ToStr(u8);
               try {
                 const data = JSON.parse(txt);
+				await importWorldData(data);
                 importWorldData(data);
                 showMessageBox("Imported world (plain JSON).");
                 return;
@@ -23059,7 +23902,7 @@
 				const jsonText = u8ToStr(jsonU8);
 				const data = JSON.parse(jsonText);
 				
-				importWorldData(data);
+				await importWorldData(data);
 				console.log("Loaded save from profile:", saveMeta.name);
 				
 			} catch (err) {
@@ -23686,7 +24529,6 @@
 
 		function updateTraderLevelUpMenu(traderData) {
 			if (!traderData) {
-				// Find the trader data if not passed
 				if (!currentTraderRef) return;
 				const { col, row } = currentTraderRef;
 				let bottomRow = row;
@@ -23710,11 +24552,13 @@
 			const traderLevel = traderData.level || 1;
 			const traderXp = traderData.xp || 0;
 			
-			imgEl.src = traderInfo.imgSrc;
-			buttonsEl.innerHTML = ''; // Clear old buttons
-			barEl.classList.remove('ready', 'max');
+			// --- NEW: Dynamic XP Requirement ---
+			const requiredXp = (traderLevel === 2) ? 200 : 100;
+			const canLevelUp = traderXp >= requiredXp;
 
-			const canLevelUp = traderXp >= XP_PER_LEVEL;
+			imgEl.src = traderInfo.imgSrc;
+			buttonsEl.innerHTML = ''; 
+			barEl.classList.remove('ready', 'max');
 
 			if (traderLevel >= MAX_TRADER_LEVEL) {
 				barEl.classList.add('max');
@@ -23727,7 +24571,6 @@
 				textEl.textContent = `Ready to Upgrade! (${traderXp} XP)`;
 				promptEl.textContent = 'Choose an upgrade for this trader:';
 
-				// --- Define Upgrades ---
 				let upgrades = [];
 				if (traderLevel === 1) {
 					upgrades = [
@@ -23736,74 +24579,55 @@
                         { name: 'Designer', type: 'designer', level: 2, icon: 'Designer Trader.png' },
 						{ name: 'Lvl. 2', type: 'level2', level: 2, icon: 'Trader 2.png' }
 					];
-				}
-				// Example for future:
-				// else if (traderLevel === 2) {
-				//     if (traderTypeKey === 'farmer') {
-				//         upgrades = [{ name: 'Farmer Lvl. 3', type: 'farmer3', level: 3, icon: '...' }];
-				//     } else {
-				//         upgrades = [{ name: 'Lvl. 3', type: 'level3', level: 3, icon: '...' }];
-				//     }
-				// }
+				} 
+                else if (traderLevel === 2 && traderTypeKey === 'level2') {
+                    upgrades = [
+                        { name: 'Armorer', type: 'armorer', level: 3, icon: 'Armorer Trader.png' },            
+                        { name: 'Lvl. 3', type: 'level3', level: 3, icon: 'Trader 3.png' }
+                    ];
+                }
 
-				// Create buttons
 				upgrades.forEach(upg => {
 					const btn = document.createElement('button');
 					btn.className = 'upgrade-button';
-					
-					// Try to find icon in assets
 					const iconKey = upg.icon.replace('.png', '');
 					const asset = assets[iconKey];
-					
 					let iconHtml = '';
-					if (asset) {
-						iconHtml = `<img src="${asset.src}" alt="${upg.name}">`;
-					}
-
+					if (asset) iconHtml = `<img src="${asset.src}" alt="${upg.name}">`;
+					
 					btn.innerHTML = `${iconHtml}${upg.name}`;
-					btn.onclick = () => {
-						upgradeTrader(traderData, upg.type, upg.level);
-					};
+					btn.onclick = () => { upgradeTrader(traderData, upg.type, upg.level); };
 					buttonsEl.appendChild(btn);
 				});
 
 			} else {
-				const xpPercent = (traderXp / XP_PER_LEVEL) * 100;
+				const xpPercent = (traderXp / requiredXp) * 100;
 				barFillEl.style.width = `${xpPercent}%`;
-				textEl.textContent = `${traderXp} / ${XP_PER_LEVEL} XP`;
+				textEl.textContent = `${traderXp} / ${requiredXp} XP`;
 				promptEl.textContent = `Trade with this trader to gain XP and level them up.`;
 			}
 		}
 
 		function upgradeTrader(traderData, newType, newLevel) {
-            if (!traderData || traderData.xp < XP_PER_LEVEL) return;
+            const traderLevel = traderData.level || 1;
+            const requiredXp = (traderLevel === 2) ? 200 : 100; // NEW: Check current required XP
 
-            // 1. Consume XP and set new level/type
-            traderData.xp -= XP_PER_LEVEL;
+            if (!traderData || traderData.xp < requiredXp) return;
+
+            traderData.xp -= requiredXp;
             traderData.traderType = newType;
             traderData.level = newLevel;
 
-            // 2. Find the correct trade pool for the new type
             const newTradePool = traderTradePools[newType];
-            if (!newTradePool) {
-                console.error("No trade pool found for type:", newType);
-                return; // Safety exit
-            }
+            if (!newTradePool) return;
 
-            // 3. Pick 3 new random trades from that pool
-            // We use the (now fixed) correct function
             const newPageOfTrades = pickRandomTradesFromPool(newTradePool, 3);
 
-            // 4. Add these 3 trades as a new page
-            if (!traderData.trades) {
-                // This shouldn't happen, but as a fallback, create the array
-                traderData.trades = [];
-            }
-            traderData.trades.push(newPageOfTrades); // This adds the new page
+            if (!traderData.trades) traderData.trades = [];
+            traderData.trades.push(newPageOfTrades); 
 
-            // 5. Close the level menu and refresh the trade menu
             closeTraderLevelUpMenu();
-            updateTraderMenu(); // Refresh main trade menu
+            updateTraderMenu(); 
         }
 
 		// --- END NEW TRADER FUNCTIONS ---
