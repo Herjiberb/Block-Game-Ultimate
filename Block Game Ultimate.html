@@ -2319,6 +2319,70 @@
             background-color: #5a6268;
             cursor: not-allowed;
         }
+
+        /* --- Pickup Toast (Inventory) Styles --- */
+		#pickupToastContainer {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			z-index: 9998; /* Just below achievements */
+			display: flex;
+			flex-direction: column; /* Stacks new items at the bottom */
+			gap: 6px;
+			pointer-events: none; /* Let clicks pass through */
+		}
+
+		@media (max-width: 600px) {
+			#pickupToastContainer {
+				display: none !important; /* Hide completely on mobile */
+			}
+		}
+
+		.pickup-toast {
+			background-color: rgba(25, 25, 25, 0.85);
+			border: 1px solid #555;
+			border-radius: 4px;
+			padding: 6px 10px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			min-width: 140px;
+			box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+			opacity: 0;
+			transform: translateX(30px);
+			animation: pickup-slide-in 0.2s ease-out forwards;
+			transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+		}
+
+		.pickup-toast.fade-out {
+			opacity: 0;
+			transform: translateX(30px);
+		}
+
+		@keyframes pickup-slide-in {
+			to {
+				opacity: 1;
+				transform: translateX(0);
+			}
+		}
+
+		.pickup-toast-icon {
+			width: 20px;
+			height: 20px;
+			image-rendering: pixelated;
+		}
+
+		.pickup-toast-text {
+			color: #ffffff;
+			font-size: 13px;
+			font-family: 'Inter', sans-serif;
+			font-weight: bold;
+			white-space: nowrap;
+		}
+
+		.pickup-toast-text.voided {
+			color: #b066ff; /* Distinctive purple for voided items */
+		}
     </style>
 	<!-- Created By Bryant Reitzel 
 	Ideas And Mechanics All From The Mind Of Bryant Reitzel -->
@@ -2384,6 +2448,7 @@
 	
 	
     <div id="achievementToastContainer"></div>
+    <div id="pickupToastContainer"></div>
 
     <!-- Game Menu Overlay -->
     <div id="gameMenuOverlay" oncontextmenu="return false;">
@@ -2866,6 +2931,7 @@
         const loadingTipText = document.getElementById('loadingTipText');
 		
 		let showBlockOutline = false; // Toggle block outline on/off
+        let yummyToast = false
 		let spoilageOn = 1
 		
 		let hotbarTooltipTimer = null;
@@ -3153,22 +3219,6 @@
 		let snowParticles = [];
 		const SNOW_SPEED_MIN = 2;
 		const SNOW_SPEED_MAX = 5;
-
-		// Helper to check if it is December and Seasons are enabled
-		function isChristmasSeason() {
-			if (!seasonCycle) return false;
-			const date = new Date();
-			return date.getMonth() === 11; // 11 is December in JS (0-indexed)
-		}
-		
-		function isNightTime() {
-			const date = new Date();
-			const hour = date.getHours(); // Gets the current hour (0-23)
-
-			// Returns true if the hour is 10 PM (22) or later, 
-			// OR 4 AM (4) or earlier (covering 22, 23, 0, 1, 2, 3, 4).
-			return (hour >= 22 || hour <= 4);
-		}
 		
 		let showDebugStats = false;
 		const debugStatsDiv = document.getElementById('debugStats');
@@ -3297,22 +3347,29 @@
 			'DEATH_CATALYST': {
 				id: 'DEATH_CATALYST',
 				name: 'Death Catalyst',
-				desc: 'Reach the underworld and face the hellfire.',
+				desc: 'Reach the Underworld and face the hellfire.',
 				icon: 'Hellstone Block.png',
 				xp: 10
 			},
 			'SKY_CHASER': {
 				id: 'SKY_CHASER',
 				name: 'Sky Chaser',
-				desc: 'Reach heaven and the clouds above.',
+				desc: 'Reach Heaven and the clouds above.',
 				icon: 'Cloud Block.png',
 				xp: 10
 			},
             'GO_BEYOND': {
                 id: 'GO_BEYOND',
                 name: 'We Need To Go Beyond!',
-                desc: 'Create a portal to super heaven.',
+                desc: 'Create a portal to Super Heaven.',
                 icon: 'Heaven Gate Brick Block.png',
+                xp: 20
+            },
+            'DIMENSIONAL_DIVER': {
+                id: 'DIMENSIONAL_DIVER',
+                name: 'Dimensional Diver',
+                desc: 'Mine the mythical Flame Ore in the depths of Sub Hell.',
+                icon: 'Flame Ore Block.png',
                 xp: 20
             },
 			'TIMBER': {
@@ -3392,6 +3449,13 @@
 				icon: 'Gold Coin.png',
 				xp: 5
 			},
+            'GROWING_ECONOMY': {
+                id: 'GROWING_ECONOMY',
+                name: 'Growing Economy',
+                desc: 'Level a trader up to level 3.',
+                icon: 'Trader Mask 3.png',
+                xp: 10
+            },
 			'IT_BURNS': {
 				id: 'IT_BURNS',
 				name: 'It Burns!',
@@ -3419,6 +3483,20 @@
                 desc: 'Craft a tool from Mythicalithium.',
                 icon: 'Mythicalithium Pickaxe.png',
                 xp: 15
+            },
+            'REGRET_D': {
+                id: 'REGRET_D',
+                name: 'Divine Regret',
+                desc: 'Realize Diviniron is flimsy.',
+                icon: 'Diviniron Pickaxe.png',
+                xp: 5
+            },
+            'REGRET_M': {
+                id: 'REGRET_M',
+                name: 'Mighty Regret',
+                desc: 'Realize Mighterrum is flimsy.',
+                icon: 'Mighterrum Pickaxe.png',
+                xp: 5
             },
             'SPELUNKER': {
                 id: 'SPELUNKER',
@@ -3497,6 +3575,20 @@
                 icon: 'Spider Egg Sack.png',
                 xp: 5
             },
+            'UNEXPECTED': {
+                id: 'UNEXPECTED',
+                name: 'Well That Was Unexpected!',
+                desc: 'Mine mine, go boom.',
+                icon: 'Mine.png',
+                xp: 5
+            },
+            'CHASING_ME': {
+                id: 'CHASING_ME',
+                name: 'They\'re Chasing Me!',
+                desc: 'Destroy a hive of bees.',
+                icon: 'Bee.png',
+                xp: 5
+            },
             'GLOBETROTTER': {
                 id: 'GLOBETROTTER',
                 name: 'Globetrotter',
@@ -3509,6 +3601,20 @@
                 name: 'Bookworm',
                 desc: 'Write and publish a book.',
                 icon: 'Book.png',
+                xp: 5
+            },
+            'ONE_HIT_WONDER': {
+                id: 'ONE_HIT_WONDER',
+                name: 'One Hit Wonder',
+                desc: 'Wear a full set of Diviniron armor. High protection, but hope you do not get hit...',
+                icon: 'Armor/Diviniron Chestplate Icon.png',
+                xp: 5
+            },
+            'DODGE_THIS': {
+                id: 'DODGE_THIS',
+                name: 'Dodge This!',
+                desc: 'Find and fire the fabled Minigun.',
+                icon: 'Minigun.png',
                 xp: 5
             },
             'CHEERS': {
@@ -4355,6 +4461,7 @@
 		const hellsteelVeinProbability = 0.005;
 		const mighterrumVeinProbability = 0.0007;
         const obsidianVeinProbability = 0.008;
+        const flameOreVeinProbability = 0.0008; // Extremely rare, adjust as needed
 
         // Stone & Gravel Vein Probabilities
         const gravelVeinProbability = 0.03;
@@ -4372,7 +4479,7 @@
         const boneSpineProbability = 0.001;
 
         // Structure Probabilities
-        let caveProbability = 0.0004; //Non constant to enable console cheats
+        let caveProbability = 0.0005; //Non constant to enable console cheats
         let mineshaftProbability = 0.00005; //Non constant to enable console cheats
         let dungeonProbability = 0.00003; //Non constant to enable console cheats
         let skyIslandProbability = 0.0075; //Non constant to enable console cheats
@@ -4409,7 +4516,6 @@
 		const cowProbability = 0.02; // 2% chance to spawn on a grass block HAH HAH HAH...
         const grassProbability = 0.4;
         const tallGrassProbability = 0.1;
-        const cactusProbability = 0.2;
         const anthillMoundProbability = 0.5;
 
         // Biome generation variables
@@ -4440,11 +4546,10 @@
                 if (superHeavenBiome !== 'start') {
                     return superHeavenBiome;
                 }
-                const totalWeight = 120; // 100 + 20
-                let r = random() * totalWeight;
+                let r = random();
                 
-                if (r < 100) return 'mineral_lands';
-                return 'supersap_forest';
+                if (r < 0.8) return 'mineral_lands';
+                else return 'supersap_forest';
             }
 
             // Generate to the right
@@ -4638,6 +4743,7 @@
             'web_chain': { imgSrc: 'Web Chain.png', solid: false, miningHardness: 30, drops: [{item: 'web_chain', chance: 1, min: 1, max: 1}], color: '#2b0000', nonsolidPlace: true, wallPlace: true },
 			'bed': { imgSrc: 'Bed.png', solid: true, miningHardness: 100, drops: [{item: 'bed', chance: 1, min: 1, max: 1}], color: '#FF0000' },
 			'trader': { imgSrc: 'Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
+			'armor_stand': { imgSrc: 'Armor Stand.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', axeBlock: true },
 			'player_laying_left': { imgSrc: 'Player Laying Left.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
 			'player_laying_middle': { imgSrc: 'Player Laying Middle.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
 			'player_laying_right': { imgSrc: 'Player Laying Right.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
@@ -4658,6 +4764,8 @@
 			'iron_anvil': { imgSrc: 'Iron Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'iron_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
 			'tungsten_anvil': { imgSrc: 'Tungsten Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'tungsten_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
 			'brass_anvil': { imgSrc: 'Brass Anvil.png', solid: true, miningHardness: 2000, drops: [{item: 'brass_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 2 },
+            'steel_anvil': { imgSrc: 'Steel Anvil.png', solid: true, miningHardness: 3000, drops: [{item: 'steel_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 3 },
+            'bedrock_anvil': { imgSrc: 'Bedrock Anvil.png', solid: true, miningHardness: 4000, drops: [{item: 'bedrock_anvil', chance: 1, min: 1, max: 1}], color: '#696969', anvilPower: 4 },
 			'oven': { imgSrc: 'Oven.png', solid: true, miningHardness: 750, drops: [{item: 'oven', chance: 1, min: 1, max: 1}], color: '#696969' },
 			'magma_furnace': { imgSrc: 'Magma Furnace.png', solid: true, miningHardness: 750, drops: [{item: 'magma_furnace', chance: 1, min: 1, max: 1}], color: '#FF4500' },
             'power_forge': { imgSrc: 'Power Forge.png', solid: true, miningHardness: 750, drops: [{item: 'power_forge', chance: 1, min: 1, max: 1}], color: '#FFD700' },
@@ -4795,6 +4903,11 @@
 			'meteorite': { imgSrc: 'Meteorite.png', solid: true, miningHardness: 500, drops: [{item: 'gold_nugget', chance: 0.3, min: 1, max: 3}, {item: 'palladium_nugget', chance: 0.2, min: 1, max: 3}, {item: 'iron_nugget', chance: 0.6, min: 1, max: 3}, {item: 'nickel_nugget', chance: 0.6, min: 1, max: 3}, {item: 'tungsten_nugget', chance: 0.6, min: 1, max: 3}], color: '#696969' },
 			'hellsteel_hellstone': { imgSrc: 'Hellsteel Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'hellsteel_nugget', chance: 1, min: 1, max: 3}], color: '#E62020' },
 			'mighterrum_hellstone': { imgSrc: 'Mighterrum Hellstone Block.png', solid: true, miningHardness: 750, drops: [{item: 'mighterrum_nugget', chance: 1, min: 1, max: 1}], color: '#B22222' },
+            'sub_mineral': { imgSrc: 'Sub Mineral Block.png', solid: true, miningHardness: 1000, drops: [{item: 'sub_mineral', chance: 1, min: 1, max: 1}], color: '#E62020' },
+            'flame_ore': { imgSrc: 'Flame Ore Block.png', solid: true, miningHardness: 5000, drops: [{item: 'flame_ore', chance: 1, min: 1, max: 1}], color: '#E62020', requiredMiningPower: 2.5 },
+			'spawn_block': { imgSrc: 'Spawn Block.png', solid: true, miningHardness: 5000, drops: [], color: '#E62020', requiredMiningPower: 2.5 },
+			'inferno_diver': { imgSrc: 'Inferno Diver.png', solid: true, miningHardness: 5000, drops: [], color: '#E62020', requiredMiningPower: 2.5 },
+			'heaven_crystal': { imgSrc: 'Heaven Crystal Block.png', solid: true, miningHardness: 5000, drops: [{item: 'heaven_crystal', chance: 1, min: 1, max: 1}], color: '#E62020', requiredMiningPower: 2.5 },
 			'coal_block': { imgSrc: 'Coal Block.png', solid: true, miningHardness: 500, drops: [{item: 'coal', chance: 1, min: 1, max: 9}], color: '#343434' },
 			'cobbled_stone': { imgSrc: 'Cobbled Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'cobbled_stone', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'mossy_cobbled_stone': { imgSrc: 'Mossy Cobbled Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'mossy_cobbled_stone', chance: 1, min: 1, max: 1}], color: '#808080' },
@@ -4962,7 +5075,7 @@
             'anthill_sand_wall': { imgSrc: 'Anthill Sand Wall.png', solid: false, miningHardness: 22.5, drops: [{item: 'anthill_sand_wall', chance: 1, min: 1, max: 1}], color: '#C19A6B' },
             'colony_heart_sand_block': { imgSrc: 'Colony Heart Sand Block.png', solid: true, miningHardness: 500, drops: [{item: 'colony_heart', chance: 1, min: 1, max: 1}], color: '#FF4444' },
             'anthill_sand_mound': { imgSrc: 'Anthill Sand Mound.png', solid: false, miningHardness: 10, drops: [], color: '#D2B48C' },
-			'guano': { imgSrc: 'Guano.png', solid: false, miningHardness: 10, drops: [{item: 'guano', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'guano': { imgSrc: 'Guano.png', solid: false, miningHardness: 10, drops: [{item: 'guano', chance: 1, min: 1, max: 1}], color: '#D2B48C', wallPlace: true },
             // Special Rock Start
 			'shale': { imgSrc: 'Shale Block.png', solid: true, miningHardness: 350, drops: [{item: 'shale', chance: 1, min: 1, max: 1}], color: '#708090' },
             'slate': { imgSrc: 'Slate Block.png', solid: true, miningHardness: 450, drops: [{item: 'slate', chance: 1, min: 1, max: 1}], color: '#708090' },
@@ -5036,7 +5149,7 @@
 			'devil_shroom': { imgSrc: 'Devil Shroom.png', solid: true, miningHardness: 2500, drops: [{item: 'devil_shroom', chance: 1, min: 1, max: 1}], color: '#4B0082' },
             // ---FARMING SECTION---
             'hay_bale': { imgSrc: 'Hay Bale Block.png', solid: true, miningHardness: 100, drops: [{item: 'hay_bale', chance: 1, min: 1, max: 1}], color: '#E6BF83' },
-            'manure_block': { imgSrc: 'Manure Block.png', solid: true, miningHardness: 100, drops: [{item: 'manure', chance: 1, min: 1, max: 3}], color: '#E6BF83' },
+            'manure_block': { imgSrc: 'Manure Block.png', solid: true, miningHardness: 100, drops: [{item: 'manure', chance: 1, min: 4, max: 4}], color: '#E6BF83' },
 		    'cotton': { imgSrc: 'Cotton.png', solid: false, miningHardness: 10, drops: [{item: 'cotton_item', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 0.5, min: 0, max: 2}], color: '#F0F0F0' },
 			'cotton_dirt': { imgSrc: 'Cotton Seed Dirt Block.png', solid: true, miningHardness: 100, drops: [{item: 'dirt', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
             'cotton_soil': { imgSrc: 'Cotton Seed Soil Block.png', solid: true, miningHardness: 140, drops: [{item: 'soil', chance: 1, min: 1, max: 1}, {item: 'cotton_seeds', chance: 1, min: 1, max: 1}], color: '#F0F0F0', shovelBlock: true },
@@ -5137,11 +5250,11 @@
 			'flesh_block': { imgSrc: 'Flesh Block.png', solid: true, miningHardness: 300, drops: [{item: 'flesh_block', chance: 1, min: 1, max: 1}], color: '#FFC0CB', shovelBlock: true, breakSound: ['flesh_break_1'] },
 			// Super Heaven
 			'super_mineral': { imgSrc: 'Super Mineral Block.png', solid: true, miningHardness: 1000, drops: [{item: 'super_mineral', chance: 1, min: 1, max: 1}], color: '#D3D3D3', shovelBlock: true },
-			'infinitungsten_super_mineral': { imgSrc: 'Infinitungsten Super Mineral Block.png', solid: true, miningHardness: 1500, drops: [{item: 'impure_infinitungsten_nugget', chance: 0.3, min: 1, max: 3}], color: '#D3D3D3', shovelBlock: true },
+			'infinitungsten_super_mineral': { imgSrc: 'Infinitungsten Super Mineral Block.png', solid: true, miningHardness: 1500, drops: [{item: 'impure_infinitungsten_nugget', chance: 0.3, min: 1, max: 3}], color: '#D3D3D3', shovelBlock: true, requiredMiningPower: 2.5 },
 			'rich_mineral': { imgSrc: 'Rich Mineral Block.png', solid: true, miningHardness: 7500, drops: [{item: 'rich_mineral', chance: 1, min: 1, max: 1}], color: '#FFD700', shovelBlock: true },
-            'raw_supersap': { imgSrc: 'Raw Supersap Block.png', solid: true, miningHardness: 1000, drops: [{item: 'raw_supersap', chance: 1, min: 1, max: 1}], color: '#00FA9A' },
-            'planked_supersap': { imgSrc: 'Planked Supersap Block.png', solid: true, miningHardness: 500, drops: [{item: 'planked_supersap', chance: 1, min: 1, max: 1}], color: '#3CB371', slab: true },
-            'supersap_bush': { imgSrc: 'Supersap Bush Block.png', solid: true, miningHardness: 200, drops: [{item: 'supersap_bush', chance: 0.05, min: 1, max: 1}], color: '#00FF7F', swordBlock: true },
+            'raw_supersap': { imgSrc: 'Raw Supersap Block.png', solid: true, miningHardness: 3000, drops: [{item: 'raw_supersap', chance: 1, min: 1, max: 1}], color: '#00FA9A' },
+            'planked_supersap': { imgSrc: 'Planked Supersap Block.png', solid: true, miningHardness: 1500, drops: [{item: 'planked_supersap', chance: 1, min: 1, max: 1}], color: '#3CB371', slab: true },
+            'supersap_bush': { imgSrc: 'Supersap Bush Block.png', solid: true, miningHardness: 500, drops: [{item: 'supersap_bush', chance: 0.05, min: 1, max: 1}], color: '#00FF7F', swordBlock: true },
 			// IMPLEMENTED
 			'bone_block': { imgSrc: 'Bone Block.png', solid: true, miningHardness: 500, drops: [{item: 'bone_block', chance: 1, min: 1, max: 1}], color: '#F5F5DC', swordBlock: true },
 			'obsidian': { imgSrc: 'Obsidian Block.png', solid: true, miningHardness: 300, drops: [{item: 'obsidian', chance: 1, min: 1, max: 1}], color: '#3C2A4D' },
@@ -5196,16 +5309,20 @@
 			'planked_birch_wall': { imgSrc: 'Planked Birch Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_birch_wall', chance: 1, min: 1, max: 1}], color: '#F5DEB3' },
 			'planked_spruce_wall': { imgSrc: 'Planked Spruce Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_spruce_wall', chance: 1, min: 1, max: 1}], color: '#8B4513' },
 			'planked_darkwood_wall': { imgSrc: 'Planked Darkwood Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_darkwood_wall', chance: 1, min: 1, max: 1}], color: '#8B4513' },
+			'planked_redwood_wall': { imgSrc: 'Planked Redwood Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_redwood_wall', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			'planked_cherry_blossom_wall': { imgSrc: 'Planked Cherry Blossom Wall.png', solid: false, miningHardness: 75, drops: [{item: 'planked_cherry_blossom_wall', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'hellstone_wall': { imgSrc: 'Hellstone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'hellstone_wall', chance: 1, min: 1, max: 1}], color: '#B22222' },
 			'amethyst_wall': { imgSrc: 'Amethyst Wall.png', solid: false, miningHardness: 150, drops: [{item: 'amethyst_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'rose_quartz_wall': { imgSrc: 'Rose Quartz Wall.png', solid: false, miningHardness: 150, drops: [{item: 'rose_quartz_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'diamond_wall': { imgSrc: 'Diamond Wall.png', solid: false, miningHardness: 150, drops: [{item: 'diamond_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'emerald_wall': { imgSrc: 'Emerald Wall.png', solid: false, miningHardness: 150, drops: [{item: 'emerald_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
 			'polished_marble_wall': { imgSrc: 'Polished Marble Wall.png', solid: false, miningHardness: 300, drops: [{item: 'polished_marble_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
+			'magma_stone_wall': { imgSrc: 'Magma Stone Wall.png', solid: false, miningHardness: 250, drops: [{item: 'magma_stone_wall', chance: 1, min: 1, max: 1}], color: '#808080' },
 			// Decorative Blocks
 			'white_cake_block': { imgSrc: 'White Cake Block.png', solid: true, miningHardness: 50, drops: [{item: 'white_cake_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'pink_cake_block': { imgSrc: 'Pink Cake Block.png', solid: true, miningHardness: 50, drops: [{item: 'pink_cake_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'cake_block': { imgSrc: 'Cake Block.png', solid: true, miningHardness: 50, drops: [{item: 'cake_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			/*__+__*/'wood_shelf': { imgSrc: 'Wood Shelf.png', solid: 'semi', miningHardness: 50, drops: [{item: 'wood_shelf', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'wood_cabinet': { imgSrc: 'Wood Cabinet.png', solid: false, miningHardness: 50, drops: [{item: 'top_hat', chance: 0.1, min: 1, max: 1}, {item: 'tuxedo', chance: 0.1, min: 1, max: 1}, {item: 'dress_pants', chance: 0.1, min: 1, max: 1}, {item: 'veil', chance: 0.1, min: 1, max: 1}, {item: 'bodice', chance: 0.1, min: 1, max: 1}, {item: 'skirt', chance: 0.1, min: 1, max: 1}, {item: 'dress_shoes', chance: 0.1, min: 1, max: 1} ], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'wood_table': { imgSrc: 'Wood Table.png', solid: false, miningHardness: 50, drops: [{item: 'wood_table', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
 			'wood_table_legs': { imgSrc: 'Wood Table Legs.png', solid: false, miningHardness: 50, drops: [{item: 'wood_table_legs', chance: 1, min: 1, max: 1}], color: '#D2B48C', nonsolidPlace: true, wallPlace: true },
@@ -5245,10 +5362,14 @@
 			'saw_brick_block': { imgSrc: 'Saw Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'saw_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'drone_brick_block': { imgSrc: 'Drone Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'drone_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'rover_brick_block': { imgSrc: 'Rover Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'rover_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+			//experiment
+			'oak_door': { imgSrc: 'Oak Door.png', solid: true, miningHardness: 100, drops: [{item: 'oak_door', chance: 1, min: 1, max: 1}], color: '#8B4513', isDoor: true, axeBlock: true },
 		};
 
         // Item types and their properties (imgSrc, isTool, miningPower, maxDurability, color - for fallback)
         let itemTypes = {
+			 'oak_door': { imgSrc: 'Oak Door Icon.png', color: '#8B4513', isDoor: true },
+			 // nonexperiment
 			 'cooked_beef': { imgSrc: 'Cooked Beef.png', color: '#802600', isFood: true, healAmount: 12 },
 			 'cooked_pork': { imgSrc: 'Cooked Pork.png', color: '#D2B48C', isFood: true, healAmount: 10 },
 			 'wooden_bowl': { imgSrc: 'Wooden Bowl.png', color: '#8B4513' },
@@ -5312,6 +5433,7 @@
 			 'palladium_nugget': { imgSrc: 'Palladium Nugget.png', color: '#E6E8FA' },
 			 'uranium_nugget': { imgSrc: 'Uranium Nugget.png', color: '#778899' },
 			 'titanium_nugget': { imgSrc: 'Titanium Nugget.png', color: '#C0C0C0' }, // High Durability and Iron-Level Strength
+			 'flame_ingot': { imgSrc: 'Flame Ingot.png', color: '#FF4500' },
 			 // Coming Soon!
 			 // Gemstones
              'diamond_nugget': { imgSrc: 'Diamond Nugget.png', color: '#B9F2FF' },
@@ -5543,7 +5665,11 @@
              'diviniron_chestplate': { imgSrc: 'Armor/Diviniron Chestplate Icon.png', equippedImgSrc: 'Armor/Diviniron Chestplate.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.25, maxDurability: 45 },
 			 'diviniron_pants': { imgSrc: 'Armor/Diviniron Pants Icon.png', equippedImgSrc: 'Armor/Diviniron Pants.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.25, maxDurability: 35 },
              'diviniron_boots': { imgSrc: 'Armor/Diviniron Boots Icon.png', equippedImgSrc: 'Armor/Diviniron Boots.png', color: '#E6E8FA', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.25, maxDurability: 25 },
-             'sober_mask': { imgSrc: 'Armor/Sober Mask Icon.png', equippedImgSrc: 'Armor/Sober Mask.png', color: '#D4F0F0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
+             'flame_helmet': { imgSrc: 'Armor/Flame Helmet Icon.png', equippedImgSrc: 'Armor/Flame Helmet.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.13, maxDurability: 180 },
+			 'flame_chestplate': { imgSrc: 'Armor/Flame Chestplate Icon.png', equippedImgSrc: 'Armor/Flame Chestplate.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'chestGear', protectionFactor: 0.23, maxDurability: 372 },
+			 'flame_pants': { imgSrc: 'Armor/Flame Pants Icon.png', equippedImgSrc: 'Armor/Flame Pants.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'legGear', protectionFactor: 0.19, maxDurability: 252 },
+			 'flame_boots': { imgSrc: 'Armor/Flame Boots Icon.png', equippedImgSrc: 'Armor/Flame Boots.png', color: '#43464B', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.13, maxDurability: 180 },
+			 'sober_mask': { imgSrc: 'Armor/Sober Mask Icon.png', equippedImgSrc: 'Armor/Sober Mask.png', color: '#D4F0F0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
              'drunk_mask': { imgSrc: 'Armor/Drunk Mask Icon.png', equippedImgSrc: 'Armor/Drunk Mask.png', color: '#E0B0D0', isTool: true, miningPower: 0, armorType: 'helmet', protectionFactor: 0.01, maxDurability: 7 },
              'feather_boots': { imgSrc: 'Armor/Feather Boots Icon.png', equippedImgSrc: 'Armor/Feather Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 15, gravityMultiplier: 0.75 },
              'lucky_boots': { imgSrc: 'Armor/Lucky Boots Icon.png', equippedImgSrc: 'Armor/Lucky Boots.png', color: '#FFFFFF', isTool: true, miningPower: 0, armorType: 'boots', protectionFactor: 0.02, maxDurability: 15, luckyChance: 0.5 },
@@ -5794,10 +5920,10 @@
 				soundSrcToKeys[filename].push(key);
 			}
 
-			// Combine lists
+			// Combine lists - ONLY LOAD IMAGES INITIALLY
 			const imageSrcs = Object.keys(srcToKeys);
-			const soundSrcs = Object.keys(soundSrcToKeys);
-			const allSrcs = [...imageSrcs.map(s => ({type: 'image', src: s})), ...soundSrcs.map(s => ({type: 'sound', src: s}))];
+			const allSrcs = [...imageSrcs.map(s => ({type: 'image', src: s}))];
+            // Sounds will be loaded later when soundEnabled is set to 1
 
 			assetsToLoad = allSrcs.length;
 			assetsLoaded = 0;
@@ -5934,6 +6060,51 @@
 						// console.warn("Sound play failed", err); 
 					});
 				}
+			}
+		}
+		
+		// --- DEFERRED SOUND LOADING ---
+		let soundsLoaded = false;
+
+		function initSounds() {
+			if (soundsLoaded) return; // Prevent loading multiple times
+
+			const soundSrcToKeys = {};
+			for (const [key, filename] of Object.entries(soundDefinitions)) {
+				if (!soundSrcToKeys[filename]) soundSrcToKeys[filename] = [];
+				soundSrcToKeys[filename].push(key);
+			}
+
+			let loadedCount = 0;
+			const totalSounds = Object.keys(soundSrcToKeys).length;
+
+			for (const src of Object.keys(soundSrcToKeys)) {
+				const audio = new Audio();
+				const keys = soundSrcToKeys[src];
+				
+				audio.addEventListener('canplaythrough', () => {
+					keys.forEach(k => audioAssets[k] = audio);
+					loadedCount++;
+					if (loadedCount === totalSounds) soundsLoaded = true;
+				}, { once: true });
+				
+				audio.addEventListener('error', () => {
+					console.warn('Failed to load sound:', src);
+				}, { once: true });
+
+				audio.src = src;
+				audio.load();
+			}
+		}
+
+		// Use this function to turn sound on/off
+		function toggleSound() {
+			soundEnabled = soundEnabled === 1 ? 0 : 1;
+			if (soundEnabled === 1) {
+				initSounds(); // Loads them dynamically!
+				showMessageBox("Sound Enabled!", "info");
+			} else {
+				showMessageBox("Sound Disabled!", "info");
 			}
 		}
 		
@@ -6400,7 +6571,7 @@
 
         // REVISED: Dedicated function for generating cacti
         function generateCactus(col, surfaceRow) {
-            const height = 2 + Math.floor(random() * 4); // Generates a height of 2, 3, 4, or 5
+            const height = 2 + Math.floor(random() * 5); // Generates a height of 2, 3, 4, 5, or 6
             for (let i = 0; i < height; i++) {
                 const key = `${col},${surfaceRow - 1 - i}`;
                 // Check if the space is available before placing
@@ -7953,15 +8124,17 @@
                     // Determine which Super Heaven Biome we are in
 					const currentSHBiome = getSuperHeavenBiome(col); 
                     const depth = row - heavenBaseY;
+					let blockType
 
                     if (currentSHBiome === 'supersap_forest') {
                         // Supersap Forest Logic
                         if (depth < 5) {
                             if (depth === 0) {
                                 // Surface Foliage & Trees
-                                if (random() < 0.15 && getBlockType(col, row - 1) === '') {
+                                r = random();
+								if (r < 0.15 && getBlockType(col, row - 1) === '') {
                                     generateTree(col, row, 'supersap');
-                                } else if (random() < 0.25 && getBlockType(col, row - 1) === '') {
+                                } else if (r < 0.35 && getBlockType(col, row - 1) === '') {
                                     worldBlocks[`${col},${row - 1}`] = { type: 'alfalfa', mineProg: 0 };
                                 }
                             }
@@ -7987,9 +8160,19 @@
 						}
                         
 						let r = random();
-						if (r < 0.05)    return (worldBlocks[key] = { type: 'heaven_gate_brick_block', mineProg: 0 });
-						else if (r < 0.053)    return (worldBlocks[key] = { type: 'infinitungsten_super_mineral', mineProg: 0 });
-						return (worldBlocks[key] = { type: 'super_mineral', mineProg: 0 });
+						if (r < 0.0005) blockType = 'inferno_diver';
+						else if (r < 0.05) blockType = 'heaven_gate_brick_block';
+						else if (r < 0.053) blockType = 'infinitungsten_super_mineral';
+						else blockType = 'super_mineral'
+						
+						if (blockType === 'super_mineral') {
+							if (random() < 0.0005) {
+								generateVein(col, row, 'heaven_crystal', 4, 7, 'super_mineral');
+								blockType = 'heaven_crystal';
+							}
+						}
+						
+						return (worldBlocks[key] = { type: blockType, mineProg: 0 });
                     }
 				}
 			}
@@ -8428,8 +8611,15 @@
 						if (b < 0.01) blockType = 'vine_stone';
 						else blockType = '';
 					}
-					else if (depth >= 1500) {
+					else if (depth >= 1500 && depth < 99900) {
 						blockType = 'vine_stone';
+					}
+                    else if (depth >= 99900 && depth < 100000) {
+						blockType = '';
+					}
+                    else if (depth >= 100000) {
+						const b = random();
+                        if (b < 1) blockType = 'sub_mineral';
 					}
 				}
                 if (seedControl === 'April Fools') {
@@ -8572,34 +8762,34 @@
             if (blockType === 'compacted_stone') {
                 const veinRoll = random();
                 if (veinRoll < graniteVeinProbability) {
-                    generateVein(col, row, 'granite', 8, 12, 'compacted_stone');
+                    generateVein(col, row, 'granite', 5, 9, 'compacted_stone');
                     blockType = 'granite';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability) {
-                    generateVein(col, row, 'schist', 8, 12, 'compacted_stone');
+                    generateVein(col, row, 'schist', 5, 9, 'compacted_stone');
                     blockType = 'schist';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability) {
-                    generateVein(col, row, 'slate', 8, 12, 'compacted_stone');
+                    generateVein(col, row, 'slate', 5, 9, 'compacted_stone');
                     blockType = 'slate';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability) {
-                    generateVein(col, row, 'tuff', 8, 12, 'compacted_stone');
+                    generateVein(col, row, 'tuff', 5, 9, 'compacted_stone');
                     blockType = 'tuff';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability) {
-                    generateVein(col, row, 'marble', 8, 12, 'compacted_stone');
+                    generateVein(col, row, 'marble', 5, 9, 'compacted_stone');
                     blockType = 'marble';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability) {
-                    generateVein(col, row, 'rock_block', 4, 12, 'compacted_stone');
+                    generateVein(col, row, 'rock_block', 1, 9, 'compacted_stone');
                     blockType = 'rock_block';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability) {
-                    generateVein(col, row, 'salt_rock_block', 4, 12, 'compacted_stone');
+                    generateVein(col, row, 'salt_rock_block', 1, 9, 'compacted_stone');
                     blockType = 'salt_rock_block';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability + nitroVeinProbability) {
-                    generateVein(col, row, 'nitro_compacted_stone', 4, 12, 'compacted_stone');
+                    generateVein(col, row, 'nitro_compacted_stone', 1, 9, 'compacted_stone');
                     blockType = 'nitro_compacted_stone';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability + nitroVeinProbability + crudeOilVeinProbability) {
-                    generateVein(col, row, 'crude_oil_compacted_stone', 4, 12, 'compacted_stone');
+                    generateVein(col, row, 'crude_oil_compacted_stone', 1, 9, 'compacted_stone');
                     blockType = 'crude_oil_compacted_stone';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability + nitroVeinProbability + shaleVeinProbability) {
-                    generateVein(col, row, 'shale', 8, 12, 'compacted_stone');
+                    generateVein(col, row, 'shale', 5, 9, 'compacted_stone');
                     blockType = 'shale';
                 }
             }
@@ -8677,6 +8867,17 @@
 				}
             }
 
+            // Flame Ore Veins in Sub Mineral
+            if (blockType === 'sub_mineral') {
+                if (random() < flameOreVeinProbability * oreSpawnMultiplier) {
+                    generateVein(col, row, 'flame_ore', 1, 7, 'sub_mineral');
+                    blockType = 'flame_ore';
+                }
+				if (random() < 0.001) {
+                    blockType = 'spawn_block';
+                }
+            }
+
             // Surface cover / foliage generation
             if (depth === 0) { // Only check for surface blocks
                 if (biome === 'deciduous_forest') {
@@ -8713,7 +8914,7 @@
 						else if (rand < 0.65) worldBlocks[`${col},${row - 1}`] = { type: 'grass_sprouts', mineProg: 0 };
                         else worldBlocks[`${col},${row - 1}`] = { type: 'grass', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8728,7 +8929,7 @@
 						else if (random() < 0.6) worldBlocks[`${col},${row - 1}`] = { type: 'grass_sprouts', mineProg: 0 };
 						else worldBlocks[`${col},${row - 1}`] = { type: 'grass', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8745,7 +8946,7 @@
 						else if (random() < 0.8) worldBlocks[`${col},${row - 1}`] = { type: 'rabbitbrush', mineProg: 0 };
 						else worldBlocks[`${col},${row - 1}`] = { type: 'sagebrush', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'desert_brush' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8762,7 +8963,7 @@
 						else if (b < 0.35) worldBlocks[`${col},${row - 1}`] = { type: 'pinecone_pile', mineProg: 0 };
                         else if (random() < 0.8) worldBlocks[`${col},${row - 1}`] = { type: 'pine_needle_pile', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'pine_needle_pile' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8795,7 +8996,7 @@
 						else if (b < 0.7) generateTree(col, row, 'apple');
 						else if (b < 0.77) generateTree(col, row, 'orange');
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8812,7 +9013,7 @@
 						else if (b < 0.6) worldBlocks[`${col},${row - 1}`] = { type: 'fern', mineProg: 0 };
 						else if (b < 0.75) generateTree(col, row, 'cherry_blossom');
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8874,7 +9075,7 @@
                         if (random() < 0.2) worldBlocks[`${col},${row - 1}`] = { type: 'large_snow_pile', mineProg: 0 };
                         else worldBlocks[`${col},${row - 1}`] = { type: 'snow', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'snow' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8905,7 +9106,7 @@
 						let rand = random(); // This is ideal rather than reusing random()
 						if (rand < 0.8) worldBlocks[`${col},${row - 1}`] = { type: 'clay_grass', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'clay_grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -8936,9 +9137,9 @@
                 } else if (biome === 'desert') {
                     if (blockType === 'sand' && getBlockType(col, row - 1) === '') {
                         const foliageRoll = random();
-                        if (foliageRoll < cactusProbability) generateCactus(col, row);
-                        else if (foliageRoll < 0.20) worldBlocks[`${col},${row - 1}`] = { type: 'prickly_pear_cactus', mineProg: 0 };
-                        else if (foliageRoll < 0.40) worldBlocks[`${col},${row - 1}`] = { type: 'desert_brush', mineProg: 0 };
+                        if (foliageRoll < 0.25) generateCactus(col, row);
+                        else if (foliageRoll < 0.35) worldBlocks[`${col},${row - 1}`] = { type: 'prickly_pear_cactus', mineProg: 0 };
+                        else if (foliageRoll < 0.6) worldBlocks[`${col},${row - 1}`] = { type: 'desert_brush', mineProg: 0 };
                     }
                     if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
@@ -8998,7 +9199,7 @@
 						else if (random() < 0.6) worldBlocks[`${col},${row - 1}`] = { type: 'grass_sprouts', mineProg: 0 };
 						else worldBlocks[`${col},${row - 1}`] = { type: 'grass', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'tall_grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -9035,7 +9236,7 @@
 						else if (b < 0.4) worldBlocks[`${col},${row - 1}`] = { type: 'big_shroom', mineProg: 0 };
 						else if (b < 0.9) worldBlocks[`${col},${row - 1}`] = { type: 'shroom', mineProg: 0 };
                     }
-                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === '' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'shroom' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -9173,15 +9374,40 @@
         
         // Generic Vein generator
         function generateVein(startX, startY, veinBlockType, minSize, maxSize, replaceBlock) {
-            const veinSize = minSize + Math.floor(random() * (maxSize - minSize + 1));
-            for (let i = 0; i < veinSize; i++) {
-                const vCol = startX + Math.floor(random() * 3) - 1;
-                const vRow = startY + Math.floor(random() * 3) - 1;
-                const vKey = `${vCol},${vRow}`;
-                const existingBlock = getBlockType(vCol, vRow);
+            const targetVeinSize = minSize + Math.floor(random() * (maxSize - minSize + 1));
+            let blocksPlaced = 0;
+            
+            let currentX = startX;
+            let currentY = startY;
+            
+            // Failsafe to prevent infinite loops if the vein gets trapped in a tiny space
+            let attempts = 0;
+            const maxAttempts = targetVeinSize * 5;
+
+            while (blocksPlaced < targetVeinSize && attempts < maxAttempts) {
+                const vKey = `${currentX},${currentY}`;
+                const existingBlock = getBlockType(currentX, currentY);
+                
+                // If it's a valid block to replace, place the ore and count it
                 if (existingBlock === replaceBlock) {
-                     worldBlocks[vKey] = { type: veinBlockType, mineProg: 0 };
+                    worldBlocks[vKey] = { type: veinBlockType, mineProg: 0 };
+                    blocksPlaced++;
+                } 
+                // If we hit a block we CANNOT replace (like air/caves, or another ore), 
+                // snap back to the start point so we don't wander off and fizzle out.
+                else if (existingBlock !== veinBlockType) {
+                    currentX = startX;
+                    currentY = startY;
                 }
+
+                // Random walk: move 1 block in a random direction to continue the vein clump
+                if (random() < 0.5) {
+                    currentX += random() < 0.5 ? 1 : -1;
+                } else {
+                    currentY += random() < 0.5 ? 1 : -1;
+                }
+                
+                attempts++;
             }
         }
 
@@ -9244,13 +9470,13 @@
 
                         // Replace the original block with a vine stone block
                         const originalBlock = getBlockType(carveX, carveY);
-                        if(originalBlock !== '') {
+                        if(originalBlock !== 'stone_wall') {
                             worldBlocks[key] = { type: 'vine_stone', mineProg: 0 };
                         }
 
                         // Carve out the center block into air
                         if (dx === 0 && dy === 0) {
-                             worldBlocks[key] = { type: '', mineProg: 0 };
+                             worldBlocks[key] = { type: 'stone_wall', mineProg: 0 };
                              caveBlocks.add(key); // Add to the set for ore checking
                              carved.add(key); // --- Store the AIR block's key ---
                              blocksCarved++;
@@ -9289,7 +9515,7 @@
                     // Roll for guano
                     if (random() < guanoProbability) {
                         // Place guano in the AIR block (airKey)
-                        worldBlocks[airKey] = { type: 'guano', mineProg: 0 };
+                        worldBlocks[airKey] = { type: 'stone_wall', overlay: 'guano', mineProg: 0 };
                     }
                 }
             });
@@ -10038,7 +10264,7 @@
         
                         // Aggressively replace surrounding blocks with magma stone
                         // This creates the distinct magma cave boundary
-                        if (getBlockType(carveX, carveY) !== '') {
+                        if (getBlockType(carveX, carveY) !== 'magma_stone_wall') {
                             // Magma stone replacement occurs on the periphery of the carving
                             if (Math.abs(dx) === carveRadius || Math.abs(dy) === carveRadius) {
                                  worldBlocks[key] = { type: 'magma_stone_block', mineProg: 0 };
@@ -10047,7 +10273,7 @@
                         
                         // Carve the central area into air
                         if (Math.abs(dx) <= carveRadius - 1 && Math.abs(dy) <= carveRadius - 1) { 
-                            worldBlocks[key] = { type: '', mineProg: 0 };
+                            worldBlocks[key] = { type: 'magma_stone_wall', mineProg: 0 };
                             carved.add(key);
                             blocksCarved++;
         
@@ -10097,7 +10323,7 @@
         
                 // 2. Generate magma pillars (stalagmites/stalactites)
                 // Sturdy Pillars from Floor (Stalagmites) - 30% chance
-                if (getBlockType(x, ceilingY) === '') { // Check ceiling is air
+                if (getBlockType(x, ceilingY) === 'magma_stone_wall') { // Check ceiling is air
                     if (random() < 0.3) { 
                         // generateTree needs the *surface* block, which is the air block y
                         // It will replace air below it (y+1) with the 'trunk' block
@@ -10115,7 +10341,7 @@
                         // Place a few 'magma_stone_block's hanging down
                         for(let dy = 0; dy < 3; dy++) {
                             const dropY = ceilingY + dy;
-                            if (getBlockType(x, dropY) === '') {
+                            if (getBlockType(x, dropY) === 'magma_stone_wall') {
                                  worldBlocks[`${x},${dropY}`] = { type: 'magma_stone_block', mineProg: 0 };
                             } else {
                                 break; // Stop if we hit something
@@ -12729,6 +12955,33 @@
 				}
 			}
 		}
+		
+		function getCollisionState(col, row) {
+			const blockData = getBlockData(col, row);
+			if (!blockData) return { solid: false, semi: false };
+
+			let isSolid = false;
+			let isSemi = false;
+
+			// Check the main block
+			if (blockData.type !== '' && blockTypes[blockData.type]) {
+				const s = blockTypes[blockData.type].solid;
+				if (s === true) isSolid = true;
+				if (s === 'semi') isSemi = true;
+			}
+
+			// Check the overlay (Allows shelves/platforms to work on walls!)
+			if (blockData.overlay && blockTypes[blockData.overlay]) {
+				const s = blockTypes[blockData.overlay].solid;
+				if (s === true) isSolid = true;
+				if (s === 'semi') isSemi = true;
+			}
+
+			// If it's fully solid from either the base or overlay, ignore the semi state
+			if (isSolid) isSemi = false;
+
+			return { solid: isSolid, semi: isSemi };
+		}
 
         function updatePlayer(dt) {
             const factor = isGameActive ? dt / 1000 * 60 : 0;
@@ -13009,37 +13262,78 @@
 
             let wasOnGround = player.onGround;
             player.onGround = false;
+
+            // Check if the player is trying to drop down
+            const isPressingDown = keys['ArrowDown'] || keys['arrowdown'] || keys['KeyS'] || keys['s'];
+
             for (let col = startColY; col <= endColY; col++) {
                 for (let row = startRowY; row <= endRowY; row++) {
-                    if (isSolid(col, row)) {
+                    
+                    const collisionState = getCollisionState(col, row);
+                    
+                    // Proceed if the block is either fully solid OR semi-solid
+                    if (collisionState.solid || collisionState.semi) {
                         let bx = col * tileSize;
                         let by = row * tileSize;
                         let bWidth = tileSize;
                         let bHeight = tileSize;
                         
                         const bData = worldBlocks[`${col},${row}`];
-						if (bData && blockTypes[bData.type]?.isSlab && !bData.type.startsWith('mixed_')) {
-							if (bData.orientation === 'vertical') {
-								bWidth = tileSize / 2;
-								if (bData.part === 'right') bx += tileSize / 2;
-							} else {
-								bHeight = tileSize / 2;
-								if (bData.part === 'bottom') by += tileSize / 2;
-							}
-						}
-                        // rectIntersects logic inlined:
+                        
+                        // Door Collision Logic
+                        if (bData && bData.isDoor) {
+                            if (bData.isOpen) continue; // No collisions when open
+                            
+                            // It's closed. Create a thin collision box on the edge.
+                            bWidth = 5; // 5 pixels wide
+                            if (bData.facing === 1) {
+                                // Facing right: collision is on the right edge
+                                bx += (tileSize - 5);
+                            } else {
+                                // Facing left: collision is on the left edge
+                                bx += 0; 
+                            }
+                            
+                            // Doors don't have vertical top collisions unless you are perfectly aligned on the 5px sliver, 
+                            // which is effectively impossible in this engine without custom platform logic.
+                            // To prevent getting stuck on their heads, we bypass Y collision if we are moving horizontally.
+                        } 
+                        else if (bData && blockTypes[bData.type]?.isSlab && !bData.type.startsWith('mixed_')) {
+                            if (bData.orientation === 'vertical') {
+                                bWidth = tileSize / 2;
+                                if (bData.part === 'right') bx += tileSize / 2;
+                            } else {
+                                bHeight = tileSize / 2;
+                                if (bData.part === 'bottom') by += tileSize / 2;
+                            }
+                        }
+                        
                         if (playerRectY.x < bx + bWidth && playerRectY.x + playerWidth > bx &&
                             playerRectY.y < by + bHeight && playerRectY.y + playerHeight > by) {
                             
-                            if (player.dy > 0) {
-                                player.y = by - playerHeight;
-                                player.dy = 0;
-                                player.onGround = true;
-                            } else if (player.dy < 0) {
-                                player.y = by + bHeight; // Uses dynamic height
-                                player.dy = 0;
+                            if (collisionState.semi) {
+                                // SEMI-SOLID LOGIC:
+                                // 1. Only collide if falling (dy > 0)
+                                // 2. Only collide if the player was previously AT or ABOVE the platform
+                                // 3. Don't collide if pressing 'S' or 'Down'
+                                if (player.dy > 0 && (player.y + playerHeight) <= by + 0.1 && !isPressingDown) {
+                                    player.y = by - playerHeight;
+                                    player.dy = 0;
+                                    player.onGround = true;
+                                    nextPlayerY = player.y;
+                                }
+                            } else {
+                                // FULLY SOLID LOGIC:
+                                if (player.dy > 0) {
+                                    player.y = by - playerHeight;
+                                    player.dy = 0;
+                                    player.onGround = true;
+                                } else if (player.dy < 0) {
+                                    player.y = by + bHeight; // Uses dynamic height
+                                    player.dy = 0;
+                                }
+                                nextPlayerY = player.y;
                             }
-                            nextPlayerY = player.y;
                         }
                     }
                 }
@@ -13117,22 +13411,38 @@
 
                 for (let col = startColX; col <= endColX; col++) {
                     for (let row = startRowX; row <= endRowX; row++) {
-                        if (isSolid(col, row)) {
+                        
+                        const collisionState = getCollisionState(col, row);
+                        
+                        // Notice we ONLY check for fully solid blocks here, ignoring semi-solids!
+                        if (collisionState.solid) {
                             let bx = col * tileSize;
                             let by = row * tileSize;
                             let bWidth = tileSize;
                             let bHeight = tileSize;
                             
                             const bData = worldBlocks[`${col},${row}`];
-							if (bData && blockTypes[bData.type]?.isSlab && !bData.type.startsWith('mixed_')) {
-								if (bData.orientation === 'vertical') {
-									bWidth = tileSize / 2;
-									if (bData.part === 'right') bx += tileSize / 2;
-								} else {
-									bHeight = tileSize / 2;
-									if (bData.part === 'bottom') by += tileSize / 2;
-								}
-							}
+                            
+                            // Door Collision Logic
+                            if (bData && bData.isDoor) {
+                                if (bData.isOpen) continue; // No collisions when open
+                                
+                                bWidth = 5; // 5 pixels wide
+                                if (bData.facing === 1) {
+                                    bx += (tileSize - 5);
+                                } else {
+                                    bx += 0; 
+                                }
+                            }
+                            else if (bData && blockTypes[bData.type]?.isSlab && !bData.type.startsWith('mixed_')) {
+                                if (bData.orientation === 'vertical') {
+                                    bWidth = tileSize / 2;
+                                    if (bData.part === 'right') bx += tileSize / 2;
+                                } else {
+                                    bHeight = tileSize / 2;
+                                    if (bData.part === 'bottom') by += tileSize / 2;
+                                }
+                            }
                             if (playerRectX.x < bx + bWidth && playerRectX.x + playerWidth > bx &&
                                 playerRectX.y < by + bHeight && playerRectX.y + playerHeight > by) {
                                 if (player.dx > 0) nextPlayerX = bx - playerWidth;
@@ -13143,8 +13453,6 @@
                     }
                 }
             }
-            // ----------------------------------------------------------
-
             player.x = nextPlayerX;
 
             if ((keys['ArrowUp'] || keys['KeyW']) && player.onGround) { // Check for 'W'
@@ -13220,6 +13528,35 @@
 			}
             if (blockData && blockData.type === 'spider_egg_sack') {
                 unlockAchievement('ARACHNOPHOBIA')
+			}
+            if (blockData && blockData.type === 'mine') {
+                unlockAchievement('UNEXPECTED')
+			}
+            if (blockData && blockData.type === 'beehive') {
+                unlockAchievement('CHASING_ME')
+			}
+            if (blockData && blockData.type === 'flame_ore') {
+                unlockAchievement('DIMENSIONAL_DIVER')
+			}
+			if (blockData && blockData.type === 'spawn_block') {
+                player.x = 0;
+				player.fallStartY = 0;
+				player.y = 0;
+				if (random() < 0.5) {
+					if (random() < 0.5) {
+						player.x = 8 * tileSize
+					} else {
+						player.x = -8 * tileSize
+					}
+				}
+				if (player.bedSpawnPoint) {
+					player.x = player.bedSpawnPoint.x;
+					player.y = player.bedSpawnPoint.y;
+					player.fallStartY = player.bedSpawnPoint.y;
+				}
+			}
+			if (blockData && blockData.type === 'inferno_diver') {
+				tp(0,-100000);
 			}
             
 			// If the block was a World Mover, drop its fuel first
@@ -13408,6 +13745,59 @@
                 
                 // After handling drops, we must return to stop the function
                 // from processing the block's *normal* drops (which are null)
+                return;
+            } else if (blockData && blockData.isDoor) {
+                const [col, row] = targetKey.split(',').map(Number);
+                let bottomRow = row;
+                
+                if (blockData.part === 'middle') bottomRow = row + 1;
+                else if (blockData.part === 'top') bottomRow = row + 2;
+
+                const bottomKey = `${col},${bottomRow}`;
+                const doorData = worldBlocks[bottomKey];
+
+                let doorIntact = (
+                    doorData && doorData.part === 'bottom' &&
+                    worldBlocks[`${col},${bottomRow - 1}`]?.isDoor &&
+                    worldBlocks[`${col},${bottomRow - 2}`]?.isDoor
+                );
+
+                if (doorIntact) {
+					const doorType = doorData.type;
+					for (let dy = 0; dy <= 2; dy++) {
+						const k = `${col},${bottomRow - dy}`;
+						// Retrieve the saved background wall, defaulting to air if none exists
+						const savedWall = worldBlocks[k].bgWall || ''; 
+						
+						worldBlocks[k] = { type: savedWall, mineProg: 0 };
+					}
+					addToInventory(doorType, 1);
+				}
+				return;
+			} if (blockData && blockData.type === 'armor_stand') {
+                const [col, row] = targetKey.split(',').map(Number);
+                const part = blockData.part; 
+                let bottomRow = row;
+                
+                if (part === 'middle') bottomRow = row + 1;
+                else if (part === 'top') bottomRow = row + 2;
+                
+                const bottomKey = `${col},${bottomRow}`;
+                const standData = worldBlocks[bottomKey];
+
+                let standIntact = (
+                    standData && standData.part === 'bottom' &&
+                    worldBlocks[`${col},${bottomRow - 1}`]?.type === 'armor_stand' &&
+                    worldBlocks[`${col},${bottomRow - 2}`]?.type === 'armor_stand'
+                );
+
+                if (standIntact) {
+                    for (let dy = 0; dy <= 2; dy++) {
+                        worldBlocks[`${col},${bottomRow - dy}`] = { type: '', mineProg: 0 };
+                    }
+                    // Drop the item
+                    addToInventory('armor_stand', 1);
+                }
                 return;
             }
 
@@ -13821,10 +14211,12 @@
 							player.health = player.maxHealth; // Cool Mechanic!
 						} else if (equippedItemObject.type === 'infinitungsten_pickaxe' || equippedItemObject.type === 'void_infinitungsten_pickaxe' || equippedItemObject.type === 'anthill_infinitungsten_pickaxe') {
 							addToInventory('broken_infinitungsten_pickaxe', 1);
-							player.health = player.maxHealth;
 						} else if (equippedItemObject.type === 'mythicalithium_pickaxe') {
 							addToInventory('broken_mythicalithium_pickaxe', 1);
-							player.health = player.maxHealth;
+						} else if (equippedItemObject.type === 'diviniron_pickaxe') {
+							unlockAchievement('REGRET_D');
+						} else if (equippedItemObject.type === 'mighterrum_pickaxe') {
+							unlockAchievement('REGRET_M');
 						}
 						updateHotbar();
 						return;
@@ -15024,7 +15416,29 @@
                 return;
             }
 			
-            // --- FIX 1: Cleaned up the interaction logic into a proper if/else if chain ---
+            // --- NEW: INTERACTION RADIUS LIMIT ---
+			let enforceInteractionRange = true; // Set to false to disable this feature
+			const INTERACTION_RADIUS = 5; // 5 blocks
+
+			const playerCenterCol = Math.floor((player.x + playerWidth / 2) / tileSize);
+			const playerCenterRow = Math.floor((player.y + playerHeight / 2) / tileSize);
+			const distToTarget = Math.hypot(playerCenterCol - targetCol, playerCenterRow - targetRow);
+
+			const isInteractableContainer = (
+				blockAtTarget.type === 'chest' || blockAtTarget.type === 'dead_body_chest' || 
+				blockAtTarget.type === 'refrigerator' || blockAtTarget.type === 'magical_chest' ||
+				blockAtTarget.type === 'void_chest' || craftingStations[blockAtTarget.type] ||
+				blockAtTarget.type === 'bed' || blockAtTarget.type === 'trader' || 
+				blockAtTarget.type === 'world_mover' || (blockProps && blockProps.anvilPower > 0)
+			);
+
+			if (isInteractableContainer && enforceInteractionRange && distToTarget > INTERACTION_RADIUS) {
+				//showMessageBox("You are too far away to interact with this!", "alert");
+				mouse.rightDown = false;
+				return;
+			}
+			
+			// --- FIX 1: Cleaned up the interaction logic into a proper if/else if chain ---
             // Check for chest/bed interaction first
             if (blockAtTarget.type === 'chest' || blockAtTarget.type === 'dead_body_chest' || blockAtTarget.type === 'refrigerator' || blockAtTarget.type === 'magical_chest') {
                 toggleChestMenu(targetCol, targetRow);
@@ -15088,7 +15502,75 @@
                 mouse.rightDown = false;
                 showMessageBox("Bed point set! Press the ; key to teleport to bed as long as your health is above 50! It will cost you 10 health points though!", 'alert');
                 return;
-            } else if (blockAtTarget.type === 'lever_off' || blockAtTarget.type === 'lever_on') {
+            } else if (blockAtTarget.isDoor) {
+                // Find the bottom part of the door to sync the state across all 3 blocks
+                let bottomRow = targetRow;
+                if (blockAtTarget.part === 'middle') bottomRow = targetRow + 1;
+                if (blockAtTarget.part === 'top') bottomRow = targetRow + 2;
+                
+                const currentState = worldBlocks[`${targetCol},${bottomRow}`].isOpen;
+                const newState = !currentState;
+
+                // Toggle all three parts
+                for (let dy = 0; dy <= 2; dy++) {
+                    const key = `${targetCol},${bottomRow - dy}`;
+                    if (worldBlocks[key] && worldBlocks[key].isDoor) {
+                        worldBlocks[key].isOpen = newState;
+                    }
+                }
+                
+                if (typeof playGameSound === 'function') playGameSound('menu_click_1'); // Placeholder sound
+                mouse.rightDown = false;
+                return;
+			} else if (blockAtTarget.type === 'armor_stand') {
+                // Find the base of the armor stand
+                let bottomRow = targetRow;
+                if (blockAtTarget.part === 'middle') bottomRow = targetRow + 1;
+                if (blockAtTarget.part === 'top') bottomRow = targetRow + 2;
+
+                const bottomKey = `${targetCol},${bottomRow}`;
+                const standData = worldBlocks[bottomKey];
+
+                if (standData) {
+                    if (!standData.armor) standData.armor = {};
+                    
+                    // Set facing direction based on whether the player is left or right of the stand on initialization
+                    const playerCenterX = player.x + playerWidth / 2;
+                    const standCenterX = targetCol * tileSize + tileSize / 2;
+                    standData.facingDirection = (playerCenterX < standCenterX) ? 1 : -1;
+
+                    if (selectedItemObject) {
+                        const itemProps = itemTypes[selectedItemObject.type] || blockTypes[selectedItemObject.type];
+                        if (itemProps && itemProps.armorType && (standData.armor[itemProps.armorType] !== selectedItemObject.type)) {
+                            // Visually add armor to the stand (does NOT consume the item)
+                            standData.armor[itemProps.armorType] = selectedItemObject.type;
+                        } else {
+                            // Visually hold any other item (does NOT consume the item)
+                            standData.heldItem = selectedItemObject.type;
+                        }
+                        if (typeof playGameSound === 'function') playGameSound('menu_click_1', 0.6);
+                    } else {
+                        // --- NEW: Empty Hand Logic (Clear or Toggle Mirroring) ---
+                        let hasItems = false;
+                        if (standData.heldItem) hasItems = true;
+                        if (standData.armor && Object.keys(standData.armor).length > 0 && Object.values(standData.armor).some(v => v !== null)) hasItems = true;
+
+                        if (hasItems) {
+                            // If it has items, right clicking with empty hand clears it
+                            standData.armor = {};
+                            standData.heldItem = null;
+                            standData.mirrored = false; // Reset mirrored state when clearing
+                            if (typeof playGameSound === 'function') playGameSound('menu_click_2', 0.6);
+                        } else {
+                            // If it's completely empty, right clicking toggles mirroring!
+                            standData.mirrored = !standData.mirrored;
+                            if (typeof playGameSound === 'function') playGameSound('menu_click_1', 0.6);
+                        }
+                    }
+                }
+                mouse.rightDown = false;
+                return;
+			} else if (blockAtTarget.type === 'lever_off' || blockAtTarget.type === 'lever_on') {
                 // Toggle the lever's state
                 const newState = blockAtTarget.type === 'lever_off' ? 'lever_on' : 'lever_off';
                 worldBlocks[targetKey].type = newState;
@@ -15177,6 +15659,7 @@
                 const itemProps = itemTypes[selectedItemType] || blockTypes[selectedItemType];
 				const selectedItemIsBed = selectedItemType === 'bed';
 				const selectedItemIsTrader = selectedItemType === 'trader';
+                const selectedItemIsArmorStand = selectedItemType === 'armor_stand';
 				const selectedItemIsGrassSeeds = selectedItemType === 'grass_seeds';
 				const selectedItemIsMossSeeds = selectedItemType === 'moss_seeds';
                 const selectedItemIsPest = selectedItemType === 'pest';
@@ -15222,7 +15705,8 @@
                         worldBlocks[`${targetCol - 1},${targetRow}`] = { type: 'bed', part: 'left' };
                         worldBlocks[`${targetCol},${targetRow}`] = { type: 'bed', part: 'middle' };
                         worldBlocks[`${targetCol + 1},${targetRow}`] = { type: 'bed', part: 'right' };
-                        unlockAchievement('HOME_SWEET_HOME');
+                        mouse.rightDown = false;
+						unlockAchievement('HOME_SWEET_HOME');
                         removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
                     } else if (playerIntersectsBed) {
                         // Optional: Give feedback if the player is the reason it failed
@@ -15361,6 +15845,42 @@
 						const placed = placeTraderAt(targetCol, targetRow);
 						if (placed) removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
 					}
+				} else if (itemProps && itemProps.isDoor) {
+                    // Check if we have 3 vertical blocks of space (air OR walls)
+                    const canPlaceDoor = 
+                        (!isSolid(targetCol, targetRow) && !worldBlocks[`${targetCol},${targetRow}`]?.isDoor) &&
+                        (!isSolid(targetCol, targetRow - 1) && !worldBlocks[`${targetCol},${targetRow - 1}`]?.isDoor) &&
+                        (!isSolid(targetCol, targetRow - 2) && !worldBlocks[`${targetCol},${targetRow - 2}`]?.isDoor);
+
+                    if (canPlaceDoor) {
+						const facing = player.facingDirection; // 1 for right, -1 for left
+						
+						// Save whatever is currently behind the door (wall, sky, etc.)
+						const bgBottom = getBlockType(targetCol, targetRow);
+						const bgMiddle = getBlockType(targetCol, targetRow - 1);
+						const bgTop = getBlockType(targetCol, targetRow - 2);
+						
+						worldBlocks[`${targetCol},${targetRow}`]     = { type: selectedItemType, part: 'bottom', mineProg: 0, facing: facing, isOpen: false, isDoor: true, bgWall: bgBottom };
+						worldBlocks[`${targetCol},${targetRow-1}`]   = { type: selectedItemType, part: 'middle', mineProg: 0, facing: facing, isOpen: false, isDoor: true, bgWall: bgMiddle };
+						worldBlocks[`${targetCol},${targetRow-2}`]   = { type: selectedItemType, part: 'top', mineProg: 0, facing: facing, isOpen: false, isDoor: true, bgWall: bgTop };
+						
+						removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+						if (typeof playGameSound === 'function') playGameSound('plank_break_1'); // Placeholder sound
+					}
+                    mouse.rightDown = false;
+				} else if (selectedItemIsArmorStand) {
+                    const canPlaceStand = getBlockType(targetCol, targetRow) === '' &&
+                                           getBlockType(targetCol, targetRow - 1) === '' &&
+                                           getBlockType(targetCol, targetRow - 2) === '' &&
+                                           isSolid(targetCol, targetRow + 1);
+
+                    if (canPlaceStand) {
+                        worldBlocks[`${targetCol},${targetRow}`]     = { type: 'armor_stand', part: 'bottom', mineProg: 0, armor: {}, heldItem: null, facingDirection: 1 };
+                        worldBlocks[`${targetCol},${targetRow-1}`]   = { type: 'armor_stand', part: 'middle', mineProg: 0 };
+                        worldBlocks[`${targetCol},${targetRow-2}`]   = { type: 'armor_stand', part: 'top', mineProg: 0 };
+                        removeItemFromInventory(hotbarIndices[selectedHotbarSlot], 1);
+                    }
+                    mouse.rightDown = false;
 				} else if (selectedItemType.endsWith('_flower') || selectedItemType === 'milkweed') {
 					let seedUsed = false;
 					const blockAtTarget = getBlockData(targetCol, targetRow);
@@ -16024,6 +16544,14 @@
 				}
 			}
 
+            // Only show the toast if we are adding to the main player inventory
+			if (inventory === inventorySlots && yummyToast === true) {
+				const amountAdded = count - remaining;
+				if (amountAdded > 0) {
+					showPickupToast(itemType, amountAdded, 'collected');
+				}
+			}
+
 			updateHotbar();
 			if (inventoryCraftingOverlay.style.display === 'flex') updateInventoryMenu();
 			if (chestOverlay.style.display === 'flex') updateChestMenu();
@@ -16159,6 +16687,8 @@
 					generateVoidTradeOffer()
 				}
 			}
+
+            if (yummyToast === true) showPickupToast(itemType, count, 'voided');
 
 			// If a new item was added and a trade isn't active, 20% chance to generate one
 			if (isNewItemType && random() < 0.2) {
@@ -16529,47 +17059,85 @@
 			}
 		}
 		
-		// --- Dynamic Background Variables ---
+		// --- OPTIMIZED SEASON & TIME CACHE ---
+        // Prevents generating a `new Date()` 60 times a second
+        let timeCheckCache = { lastCheck: 0, isChristmas: false, isNight: false };
+
+        function updateTimeCache() {
+            // Only check real-world time every 10 seconds to prevent lag
+            if (performance.now() - timeCheckCache.lastCheck > 10000) {
+                const date = new Date();
+                timeCheckCache.isChristmas = date.getMonth() === 11; // 11 is December
+                const hour = date.getHours();
+                timeCheckCache.isNight = (hour >= 22 || hour <= 4);
+                timeCheckCache.lastCheck = performance.now();
+            }
+        }
+
+        function isChristmasSeason() {
+            if (!seasonCycle) return false;
+            updateTimeCache();
+            return timeCheckCache.isChristmas;
+        }
+
+        function isNightTime() {
+            updateTimeCache();
+            return timeCheckCache.isNight;
+        }
+
+        // --- Dynamic Background Variables & Optimized Function ---
         let currentBgState = { type: 'color', value: '#70b6d5' }; // Track current background
         let activeBgLayerIndex = 1; // 1 or 2
+        
+        // Track the last time and position we checked the background to prevent 60fps lag spikes
+        let lastBgUpdateTime = 0;
+        let lastBgCol = null;
+        let lastBgRow = null;
         
         // Configuration for Biome Backgrounds
         const biomeBackgroundMap = {
             'deciduous_forest': { type: 'image', src: 'Deciduous Forest.png', color: '#d8fffe' },
             'coniferous_forest': { type: 'image', src: 'Coniferous Forest.png', color: '#d8fffe' },
-			'desert': { type: 'image', src: 'Desert.png', color: '#d8fffe' },
-			'rainforest': { type: 'image', src: 'Rainforest.png', color: '#d8fffe' },
-            // Add more biomes here easily:
-            // 'desert': { type: 'image', src: 'Desert Background.png', color: '#63441e' },
+            'desert': { type: 'image', src: 'Desert.png', color: '#d8fffe' },
+            'rainforest': { type: 'image', src: 'Rainforest.png', color: '#d8fffe' },
         };
-		
-		// Optimization: Cache DOM elements
+        
+        // Optimization: Cache DOM elements
         const cachedBgLayer1 = document.getElementById('bgLayer1');
         const cachedBgLayer2 = document.getElementById('bgLayer2');
-		
+        
         // Function to handle background transitions
         function updateBackground(targetCol, targetRow) {
+            // OPTIMIZATION: Throttle background checks to 4 times a second (250ms) 
+            // OR when the player explicitly enters a new tile. This stops the 60FPS lag!
+            if (performance.now() - lastBgUpdateTime < 250 && targetCol === lastBgCol && targetRow === lastBgRow) {
+                return;
+            }
+            lastBgUpdateTime = performance.now();
+            lastBgCol = targetCol;
+            lastBgRow = targetRow;
+
             let targetBg = { type: 'color', value: '#d8fffe' }; // Default Sky
 
             // 1. Determine Target Background based on depth and biome
             if (targetRow < -100000) { 
-                targetBg = { type: 'color', value: '#ff8700' }; // Super Heaven
+                targetBg = { type: 'color', value: '#ff8700', fallback: '#ff8700' }; // Super Heaven
             } else if (targetRow < -265) {
-                targetBg = { type: 'color', value: '#000000' }; // Space
+                targetBg = { type: 'color', value: '#000000', fallback: '#000000' }; // Space
             } else if (targetRow < -145) { 
-                targetBg = { type: 'color', value: '#e9da88' }; // Heaven
+                targetBg = { type: 'color', value: '#e9da88', fallback: '#e9da88' }; // Heaven
             } else if (targetRow > 505) { 
-                targetBg = { type: 'color', value: '#000000' }; // Void
+                targetBg = { type: 'color', value: '#000000', fallback: '#000000' }; // Void
             } else if (targetRow > 205) { 
-                targetBg = { type: 'color', value: '#4d0f0f' }; // Hell
+                targetBg = { type: 'color', value: '#4d0f0f', fallback: '#4d0f0f' }; // Hell
             } else if (targetRow > 25) { 
-                targetBg = { type: 'color', value: '#2e2e2e' }; // Compacted Stone
+                targetBg = { type: 'color', value: '#2e2e2e', fallback: '#2e2e2e' }; // Compacted Stone
             } else if (targetRow > 10) { 
-                targetBg = { type: 'color', value: '#4e626d' }; // Stone
+                targetBg = { type: 'color', value: '#4e626d', fallback: '#4e626d' }; // Stone
             } else { 
                 // Surface Layer
                 if (isChristmasSeason() && isNightTime()) {
-                    targetBg = { type: 'color', value: '#0a0a14' };
+                    targetBg = { type: 'color', value: '#0a0a14', fallback: '#0a0a14' };
                 } else {
                     // Check Biome for specific images
                     const currentBiome = getBiome(targetCol);
@@ -16591,10 +17159,7 @@
             }
 
             // 3. Perform the Swap
-            // Identify layers
-            const frontLayerId = `bgLayer${activeBgLayerIndex}`;
             const backLayerIndex = activeBgLayerIndex === 1 ? 2 : 1;
-            const backLayerId = `bgLayer${backLayerIndex}`;
             
             const frontEl = activeBgLayerIndex === 1 ? cachedBgLayer1 : cachedBgLayer2;
             const backEl = activeBgLayerIndex === 1 ? cachedBgLayer2 : cachedBgLayer1;
@@ -16604,7 +17169,6 @@
                 // Set fallback color first
                 backEl.style.backgroundColor = targetBg.fallback;
                 // Set image
-                // Note: We use textureOverrides if available (for texture packs)
                 const finalSrc = textureOverrides[targetBg.value] || targetBg.value;
                 backEl.style.backgroundImage = `url('${finalSrc}')`;
             } else {
@@ -16613,10 +17177,7 @@
                 backEl.style.backgroundColor = targetBg.value;
             }
 
-            // Swap Opacities
-            // The back layer (new bg) fades in (opacity 1)
-            // The front layer (old bg) fades out (opacity 0)
-            // CSS transition handles the smooth fade
+            // Swap Opacities (CSS transition handles the smooth fade)
             backEl.style.opacity = '1';
             backEl.style.zIndex = '-9'; // Move slightly forward
             
@@ -16736,13 +17297,99 @@
 								// draw trader as 1 column wide, 3 rows tall - draw from bottom up so y shifts up 2 tiles
 								ctx.drawImage(traderImg, screenX, screenY - tileSize*2, tileSize, tileSize*3);
 								
-							} else if (blockType === 'bed' && blockData.part === 'left') {
+							} else if (blockData.isDoor && blockData.part === 'bottom') {
+                                // Construct the asset key based on the open state
+                                let assetKey = blockType;
+                                if (blockData.isOpen) {
+                                    assetKey = `open_${blockType}`; // e.g., 'open_oak_door'
+                                    // Fallback: if you don't define 'open_oak_door' in blockTypes, you might need to fetch the image directly if you loaded it manually.
+                                }
+                                
+                                // Fetch the image (Assuming you added 'open_oak_door' to your blockTypes/assets)
+                                // If you didn't add it to blockTypes, you might need custom loading logic here.
+                                let doorImg = assets[assetKey] || blockImg;
+
+                                ctx.save();
+                                let pivotX = screenX + tileSize / 2;
+                                let pivotY = screenY - tileSize * 0.5; // Center of the 3-block tall area
+                                
+                                ctx.translate(pivotX, pivotY);
+                                // Flip orientation based on placement
+                                ctx.scale(blockData.facing || 1, 1);
+                                
+                                // Draw 3 blocks high
+                                ctx.drawImage(doorImg, -tileSize / 2, -tileSize * 1.5, tileSize, tileSize * 3);
+                                ctx.restore();
+							} else if (blockType === 'armor_stand' && blockData.part === 'bottom') {
+                                // 1. Draw base stand
+                                if (blockData.mirrored) {
+                                    // Draw the player's skin
+                                    ctx.save();
+                                    let pivotX = screenX + tileSize / 2;
+                                    let pivotY = screenY - tileSize * 0.5; // Center of the 3-block tall area
+                                    
+                                    ctx.translate(pivotX, pivotY);
+                                    // Flip orientation based on where you stood
+                                    ctx.scale(blockData.facingDirection || 1, 1);
+                                    
+                                    // Draw playerImg perfectly centered inside the 3x1 grid space
+                                    ctx.drawImage(playerImg, -playerWidth / 2, -playerHeight / 2, playerWidth, playerHeight);
+                                    ctx.restore();
+                                } else {
+                                    // Draw default wood stand
+                                    ctx.drawImage(blockImg, screenX, screenY - tileSize * 2, tileSize, tileSize * 3);
+                                }
+                                
+                                // 2. Draw equipped armor layers
+                                if (blockData.armor) {
+                                    const overBootsTypes = ['skirt'];
+                                    let renderOrder = ['legGear', 'boots', 'chestGear', 'face', 'helmet'];
+                                    const leg = blockData.armor.legGear;
+                                    if (leg && overBootsTypes.includes(leg)) {
+                                        renderOrder = ['boots', 'legGear', 'chestGear', 'face', 'helmet'];
+                                    }
+
+                                    for (const armorSlot of renderOrder) {
+                                        const armorType = blockData.armor[armorSlot];
+                                        if (!armorType) continue;
+                                        const equippedAssetKey = `${armorType}_equipped`;
+                                        const armorImgAsset = assets[equippedAssetKey];
+                                        if (armorImgAsset && !failedAssets[equippedAssetKey]) {
+                                            ctx.drawImage(armorImgAsset, screenX, screenY - tileSize * 2, tileSize, tileSize * 3);
+                                        }
+                                    }
+                                }
+
+                                // 3. Draw held item based on player interaction side
+                                if (blockData.heldItem) {
+                                    const itemImg = assets[blockData.heldItem];
+                                    if (itemImg && !failedAssets[blockData.heldItem]) {
+                                        ctx.save();
+                                        
+                                        // Set pivot point to the hand area
+                                        let pivotX = screenX + tileSize / 2;
+                                        let pivotY = screenY - tileSize * 1.1; 
+                                        
+                                        ctx.translate(pivotX, pivotY);
+                                        
+                                        // Flip orientation based on where you stood
+                                        ctx.scale(blockData.facingDirection || 1, 1);
+                                        ctx.rotate(0.5); // Add a nice idle tilt
+
+                                        let drawSize = tileSize * 0.8;
+                                        if (blockData.heldItem === 'minigun') drawSize = tileSize * 1.2;
+
+                                        ctx.drawImage(itemImg, 10, -5, drawSize, drawSize);
+                                        ctx.restore();
+                                    }
+                                }
+                            } else if (blockType === 'bed' && blockData.part === 'left') {
                                 ctx.drawImage(blockImg, screenX, screenY, tileSize * 3, tileSize);
-                            } else if (blockType !== 'bed' && blockType !== 'trader') { // --- MODIFIED: Don't draw other trader parts
-                                ctx.drawImage(blockImg, screenX, screenY, tileSize, tileSize);
-                            }
-                        } else if (displayProps && displayProps.color) { // <-- This line was modified
-                             ctx.fillStyle = displayProps.color; // <-- This line was modified
+                            } else if (blockType !== 'bed' && blockType !== 'trader' && blockType !== 'armor_stand' && !blockData.isDoor) {
+								ctx.drawImage(blockImg, screenX, screenY, tileSize, tileSize);
+							}
+                        } else if (displayProps && displayProps.color) {
+                             ctx.fillStyle = displayProps.color;
                              ctx.fillRect(screenX, screenY, tileSize, tileSize);
                         }
                         // --- NEW: Draw Overlay ---
@@ -17322,16 +17969,20 @@
                     saveAndCloseBook(); // Save on escape from editor
 				} else if (isGamePaused && inventoryCraftingOverlay.style.display === 'flex') {
 					toggleInventoryMenu();
+					mouse.down = false;
 				} else if (isGamePaused && chestOverlay.style.display === 'flex') {
 					toggleChestMenu();
+					mouse.down = false;
 				} else if (isGamePaused && ovenOverlay.style.display === 'flex') {
                     toggleFurnaceMenu();
+					mouse.down = false;
                 } else if (isGamePaused && worldMoverConfigOverlay.style.display === 'flex') {
                     toggleWorldMoverMenu();
                 } else if (isGamePaused && worldMoverTeleportOverlay.style.display === 'flex') {
                     toggleTeleportMenu();
                 } else if (isGamePaused && anvilOverlay.style.display === 'flex') {
                     toggleAnvilMenu();
+					mouse.down = false;
                 } else if (isGamePaused && voidChestOverlay.style.display === 'flex') {
 					toggleVoidChestMenu();
 				} else if (isGamePaused && isTraderMenuOpen === true) {
@@ -17350,7 +18001,8 @@
 				}
 			}
             if (e.code === 'KeyE') {
-                if (isGamePaused && chestOverlay.style.display === 'flex') return; // Don't open crafting if chest is open
+                mouse.down = false;
+				if (isGamePaused && chestOverlay.style.display === 'flex') return; // Don't open crafting if chest is open
                 if (!isGamePaused || (isGamePaused && inventoryCraftingOverlay.style.display === 'flex')) toggleInventoryMenu();
             }
             if (!isGamePaused) {
@@ -17516,7 +18168,11 @@
                 input: { 0: { type: 'cotton_cloth', count: 1 }, 1: { type: 'cotton_cloth', count: 1 }, 2: { type: 'cotton_cloth', count: 1 }, 3: { type: 'cotton_cloth', count: 1 }, 4: { type: 'any_plank', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 7: { type: 'any_plank', count: 1 } },
                 output: 'bed', outputCount: 1,
             },
-            { name: "Chest", 
+            { name: "Wood Shelf", 
+                input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'any_plank', count: 1 }, 2: { type: 'any_plank', count: 1 }, 3: { type: 'any_plank', count: 1 } },
+                output: 'wood_shelf', outputCount: 16,
+            },
+			{ name: "Chest", 
                 input: { 0: { type: 'any_plank', count: 1 }, 1: { type: 'any_plank', count: 1 }, 2: { type: 'any_plank', count: 1 }, 3: { type: 'any_plank', count: 1 }, 4: { type: 'any_plank', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 7: { type: 'any_plank', count: 1 } },
                 output: 'chest', outputCount: 1,
             },
@@ -17552,13 +18208,17 @@
 				input: { 0: { type: 'brass_nugget', count: 1 }, 1: { type: 'brass_nugget', count: 1 }, 2: { type: 'brass_nugget', count: 1 }, 3: { type: 'brass_nugget', count: 1 }, 6: { type: 'brass_nugget', count: 1 }, 10: { type: 'brass_nugget', count: 1 }, 14: { type: 'brass_nugget', count: 1 }, 15: { type: 'brass_nugget', count: 1 } },
 				output: 'brass_anvil', outputCount: 1
 			},
+            { name: "Tungsten Anvil",
+				input: { 0: { type: 'tungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 3: { type: 'tungsten_nugget', count: 1 }, 6: { type: 'tungsten_nugget', count: 1 }, 10: { type: 'tungsten_nugget', count: 1 }, 14: { type: 'tungsten_nugget', count: 1 }, 15: { type: 'tungsten_nugget', count: 1 } },
+				output: 'tungsten_anvil', outputCount: 1
+			},
 			{ name: "Iron Anvil",
 				input: { 0: { type: 'iron_nugget', count: 1 }, 1: { type: 'iron_nugget', count: 1 }, 2: { type: 'iron_nugget', count: 1 }, 3: { type: 'iron_nugget', count: 1 }, 6: { type: 'iron_nugget', count: 1 }, 10: { type: 'iron_nugget', count: 1 }, 14: { type: 'iron_nugget', count: 1 }, 15: { type: 'iron_nugget', count: 1 } },
 				output: 'iron_anvil', outputCount: 1
 			},
-			{ name: "Tungsten Anvil",
-				input: { 0: { type: 'tungsten_nugget', count: 1 }, 1: { type: 'tungsten_nugget', count: 1 }, 2: { type: 'tungsten_nugget', count: 1 }, 3: { type: 'tungsten_nugget', count: 1 }, 6: { type: 'tungsten_nugget', count: 1 }, 10: { type: 'tungsten_nugget', count: 1 }, 14: { type: 'tungsten_nugget', count: 1 }, 15: { type: 'tungsten_nugget', count: 1 } },
-				output: 'tungsten_anvil', outputCount: 1
+            { name: "Steel Anvil",
+				input: { 0: { type: 'iron_anvil', count: 1 }, 1: { type: 'steel_nugget', count: 1 }, 2: { type: 'steel_nugget', count: 1 }, 3: { type: 'steel_nugget', count: 1 } },
+				output: 'steel_anvil', outputCount: 1
 			},
 			{ name: "Saw Table",
 				input: { 1: { type: 'cobalt_steel_nugget', count: 1 }, 2: { type: 'cobalt_steel_nugget', count: 1 }, 5: { type: 'any_plank', count: 1 }, 6: { type: 'any_plank', count: 1 }, 8: { type: 'stone', count: 1 }, 9: { type: 'stone', count: 1 }, 10: { type: 'stone', count: 1 }, 11: { type: 'stone', count: 1 } },
@@ -17908,9 +18568,13 @@
                 output: 'snow_block', outputCount: 1
             },
             { name: "Oak Planks", input: { 0: { type: 'raw_oak', count: 1 } }, output: 'planked_oak', outputCount: 3 },
+			{ name: "Planked Oak Wall", input: { 1: { type: 'planked_oak', count: 1 } }, output: 'planked_oak_wall', outputCount: 4 },
             { name: "Birch Planks", input: { 0: { type: 'raw_birch', count: 1 } }, output: 'planked_birch', outputCount: 3 },
-            { name: "Spruce Planks", input: { 0: { type: 'raw_spruce', count: 1 } }, output: 'planked_spruce', outputCount: 3 },
+            { name: "Planked Birch Wall", input: { 1: { type: 'planked_birch', count: 1 } }, output: 'planked_birch_wall', outputCount: 4 },
+			{ name: "Spruce Planks", input: { 0: { type: 'raw_spruce', count: 1 } }, output: 'planked_spruce', outputCount: 3 },
+			{ name: "Planked Spruce Wall", input: { 1: { type: 'planked_spruce', count: 1 } }, output: 'planked_spruce_wall', outputCount: 4 },
 			{ name: "Pine Planks", input: { 0: { type: 'raw_pine', count: 1 } }, output: 'planked_pine', outputCount: 3 },
+			{ name: "Planked Pine Wall", input: { 1: { type: 'planked_pine', count: 1 } }, output: 'planked_pine_wall', outputCount: 4 },
 			{ name: "Apple Planks", input: { 0: { type: 'raw_apple', count: 1 } }, output: 'planked_apple', outputCount: 3 },
 			{ name: "Orange Planks", input: { 0: { type: 'raw_orange', count: 1 } }, output: 'planked_orange', outputCount: 3 },
 			{ name: "Aspen Planks", input: { 0: { type: 'raw_aspen', count: 1 } }, output: 'planked_aspen', outputCount: 3 },
@@ -17920,7 +18584,9 @@
 			{ name: "Acacia Planks", input: { 0: { type: 'raw_acacia', count: 1 } }, output: 'planked_acacia', outputCount: 3 },
 			{ name: "Baobab Planks", input: { 0: { type: 'raw_baobab', count: 1 } }, output: 'planked_baobab', outputCount: 3 },
 			{ name: "Cherry Blossom Planks", input: { 0: { type: 'raw_cherry_blossom', count: 1 } }, output: 'planked_cherry_blossom', outputCount: 3 },
+			{ name: "Planked Cherry Blossom Wall", input: { 1: { type: 'planked_cherry_blossom', count: 1 } }, output: 'planked_cherry_blossom_wall', outputCount: 4 },
 			{ name: "Redwood Planks", input: { 0: { type: 'raw_redwood', count: 1 } }, output: 'planked_redwood', outputCount: 3 },
+			{ name: "Planked Redwood Wall", input: { 1: { type: 'planked_redwood', count: 1 } }, output: 'planked_redwood_wall', outputCount: 4 },
 			{ name: "Hell Wood Planks", input: { 0: { type: 'raw_hell_wood', count: 1 } }, output: 'planked_hell_wood', outputCount: 3 },
             { name: "Darkwood Planks", input: { 0: { type: 'raw_darkwood', count: 1 } }, output: 'planked_darkwood', outputCount: 3 },
             { name: "Gilded Wood Planks", input: { 0: { type: 'raw_gilded_wood', count: 1 } }, output: 'planked_gilded_wood', outputCount: 3 },
@@ -18315,7 +18981,7 @@
 			{ name: "Compacted Stone Block",
                 input: { 0: { type: 'compressed_stone', count: 1 } },
 				anvilPower: 1,
-                output: 'compacted_stone', outputCount: 4,
+                output: 'compacted_stone', outputCount: 6,
             },
 			{
 				name: "Wood Bullets (x25)",
@@ -18375,12 +19041,27 @@
 			{ name: "Compressed Stone Block",
                 input: { 0: { type: 'bedrock_stone', count: 1 } },
 				anvilPower: 2,
-                output: 'compressed_stone', outputCount: 4,
+                output: 'compressed_stone', outputCount: 6,
             },
-			{ name: "Compressed Stone Block",
-                input: { 0: { type: 'compressed_stone', count: 1 }, 1: { type: 'compressed_stone', count: 1 }, 2: { type: 'compressed_stone', count: 1 }, 3: { type: 'compressed_stone', count: 1 }, 5: { type: 'compressed_stone', count: 1 }, 6: { type: 'compressed_stone', count: 1 } },
+            { name: "Bedrock Anvil",
+                input: { 0: { type: 'rock_anvil', count: 1 }, 1: { type: 'bedrock_stone', count: 1 }, 2: { type: 'bedrock_stone', count: 1 }, 3: { type: 'bedrock_stone', count: 1 } },
+				anvilPower: 3,
+                output: 'bedrock_anvil', outputCount: 1,
+            },
+            { name: "Bedrock Stone Block",
+                input: { 0: { type: 'compressed_stone', count: 1 }, 1: { type: 'compressed_stone', count: 1 }, 2: { type: 'compressed_stone', count: 1 }, 3: { type: 'compressed_stone', count: 1 }, 4: { type: 'compressed_stone', count: 1 }, 5: { type: 'compressed_stone', count: 1 }, 6: { type: 'compressed_stone', count: 1 }, 7: { type: 'compressed_stone', count: 1 }, 9: { type: 'compressed_stone', count: 1 }, 10: { type: 'compressed_stone', count: 1 } },
 				anvilPower: 3,
                 output: 'bedrock_stone', outputCount: 1,
+            },
+            { name: "Infinitungsten Pickaxe",
+                input: { 0: { type: 'broken_infinitungsten_pickaxe', count: 1 }, 1: { type: 'broken_infinitungsten_pickaxe', count: 1 }, 2: { type: 'infinitungsten_nugget', count: 1 } },
+				anvilPower: 4,
+                output: 'infinitungsten_pickaxe', outputCount: 1,
+            },
+            { name: "Mythicalithium Pickaxe",
+                input: { 0: { type: 'broken_mythicalithium_pickaxe', count: 1 }, 1: { type: 'broken_mythicalithium_pickaxe', count: 1 }, 2: { type: 'mythicalithium_nugget', count: 1 } },
+				anvilPower: 4,
+                output: 'mythicalithium_pickaxe', outputCount: 1,
             },
 		];
 		let ovenRecipes = [
@@ -18516,12 +19197,12 @@
 			{ name: "Heavensteel Nugget",
                 input: { 0: { type: 'blue_sand_block', count: 1 }, 1: { type: 'blue_sand_block', count: 1 }, 2: { type: 'blue_sand_block', count: 1 }, 3: { type: 'blue_sand_block', count: 1 }, 4: { type: 'diviniron_nugget', count: 1 }, 5: { type: 'blue_sand_block', count: 1 }, 6: { type: 'blue_sand_block', count: 1 }, 7: { type: 'blue_sand_block', count: 1 }, 8: { type: 'blue_sand_block', count: 1 } },
 				fuel: 2,
-                output: 'heavensteel_nugget', outputCount: 1,
+                output: 'heavensteel_nugget', outputCount: 5,
             },
             { name: "Hellsteel Nugget",
                 input: { 0: { type: 'hell_ice', count: 1 }, 1: { type: 'hell_ice', count: 1 }, 2: { type: 'hell_ice', count: 1 }, 3: { type: 'hell_ice', count: 1 }, 4: { type: 'mighterrum_nugget', count: 1 }, 5: { type: 'hell_ice', count: 1 }, 6: { type: 'hell_ice', count: 1 }, 7: { type: 'hell_ice', count: 1 }, 8: { type: 'hell_ice', count: 1 } },
 				fuel: 2,
-                output: 'hellsteel_nugget', outputCount: 1,
+                output: 'hellsteel_nugget', outputCount: 5,
             },
 			{ name: "Balloonium Nugget",
                 input: { 0: { type: 'balloon', count: 1 } },
@@ -18547,6 +19228,11 @@
                 input: { 0: { type: 'infinitungsten_nugget', count: 1 }, 1: { type: 'mighterrum_nugget', count: 1 }, 2: { type: 'infinitungsten_nugget', count: 1 } },
 				fuel: 3,
                 output: 'mythicalithium_nugget', outputCount: 1,
+            },
+			{ name: "Mythicalithium Nugget",
+                input: { 0: { type: 'flame_ore', count: 1 }, 1: { type: 'flame_ore', count: 1 }, 2: { type: 'flame_ore', count: 1 }, 3: { type: 'flame_ore', count: 1 }, 4: { type: 'flame_ore', count: 1 }, 5: { type: 'flame_ore', count: 1 }, 6: { type: 'flame_ore', count: 1 }, 7: { type: 'flame_ore', count: 1 }, 8: { type: 'flame_ore', count: 1 } },
+				fuel: 10,
+                output: 'flame_ingot', outputCount: 1,
             },
 		];
         let forgeRecipes = [
@@ -19253,7 +19939,12 @@
 
         function handleSlotClick(event) {
 			event.preventDefault();
-			
+
+            if (isPlayerOnHellfire && (currentlyOpenChest || currentlyOpenFurnace || currentlyOpenAnvil || isVoidChestOpen)) {
+				showMessageBox("Your hands are too severely burned to interact with containers!", 'alert');
+				return;
+			}
+            
 			// --- FIX: Play sound directly here because stopPropagation kills the window listener ---
 			const soundKey = Math.random() < 0.5 ? 'menu_click_1' : 'menu_click_2';
 			if (typeof playGameSound === 'function') playGameSound(soundKey, 0.6);
@@ -19325,7 +20016,7 @@
                                 a.chestGear.type.startsWith('diviniron_') &&
                                 a.legGear.type.startsWith('diviniron_') &&
                                 a.boots.type.startsWith('diviniron_')) {
-                                unlockAchievement('DIVINE_PROTECTION');
+                                unlockAchievement('ONE_HIT_WONDER');
                             }
                         }
 					}
@@ -21097,7 +21788,11 @@
 		}
 		
 		function transferAllFromChest() {
-			if (!currentlyOpenChest) return;
+			if (isPlayerOnHellfire) {
+				showMessageBox("Your hands are too severely burned to interact with containers!", 'alert');
+				return;
+			}
+            if (!currentlyOpenChest) return;
 			const chestKey = `${currentlyOpenChest.col},${currentlyOpenChest.row}`;
 			const chestData = worldBlocks[chestKey];
 			if (!chestData || !chestData.inventory) return;
@@ -22191,7 +22886,7 @@
                     // Calculate armor slowdown
                     let armorPieces = 0;
                     if (player.armor.helmet) armorPieces++;
-					if (player.armor.face) armorPieces++;
+					//if (player.armor.face) armorPieces++;
                     if (player.armor.chestGear) armorPieces++;
                     if (player.armor.legGear) armorPieces++;
                     if (player.armor.boots) armorPieces++;
@@ -22533,6 +23228,10 @@
                 return;
             }
 
+            if (equippedItemObject.type === 'minigun') {
+                unlockAchievement('DODGE_THIS');
+            }
+
             // Find and consume ammo
             const bulletPower = findAndConsumeAmmo();
             if (bulletPower === null) {
@@ -22768,6 +23467,89 @@
 			setTimeout(() => {
 				toast.remove();
 			}, 5000); // Stays on screen for 5 seconds
+		}
+
+        // --- Pickup Toast System ---
+		const pickupToasts = {}; // Tracks active toasts to update counts
+
+		function showPickupToast(itemType, count, action) {
+			if (count <= 0) return;
+
+			const container = document.getElementById('pickupToastContainer');
+			if (!container) return;
+
+			const toastKey = `${itemType}_${action}`;
+			let itemName = itemType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+			if (pickupToasts[toastKey]) {
+				// 1. UPDATE EXISTING TOAST
+				const toastData = pickupToasts[toastKey];
+				toastData.count += count;
+				clearTimeout(toastData.timeoutId); // Stop it from fading out
+				
+				// Update text
+				const textEl = toastData.element.querySelector('.pickup-toast-text');
+				textEl.textContent = action === 'collected' 
+					? `${itemName} x${toastData.count} Collected` 
+					: `${itemName} x${toastData.count} Voided`;
+
+				// Reset animation state if it started fading
+				toastData.element.classList.remove('fade-out');
+
+				// Reset timer to 3 seconds
+				toastData.timeoutId = setTimeout(() => removePickupToast(toastKey), 3000);
+
+				// Re-append to move it to the bottom of the stack
+				container.appendChild(toastData.element);
+
+			} else {
+				// 2. CREATE NEW TOAST
+				const toastEl = document.createElement('div');
+				toastEl.className = 'pickup-toast';
+
+				// Get Icon or Color Fallback
+				const itemProps = itemTypes[itemType] || blockTypes[itemType];
+				let iconHtml = '';
+				if (assets[itemType] && !failedAssets[itemType]) {
+					iconHtml = `<img src="${assets[itemType].src}" class="pickup-toast-icon">`;
+				} else if (itemProps && itemProps.color) {
+					iconHtml = `<div class="pickup-toast-icon" style="background-color: ${itemProps.color}; border: 1px solid #111;"></div>`;
+				}
+
+				const textClass = action === 'voided' ? 'pickup-toast-text voided' : 'pickup-toast-text';
+				const textContent = action === 'collected' ? `${itemName} x${count} Collected` : `${itemName} x${count} Voided`;
+
+				toastEl.innerHTML = `
+					${iconHtml}
+					<span class="${textClass}">${textContent}</span>
+				`;
+
+				container.appendChild(toastEl);
+
+				// Set timer to remove after 3 seconds
+				const timeoutId = setTimeout(() => removePickupToast(toastKey), 3000);
+
+				pickupToasts[toastKey] = {
+					count: count,
+					element: toastEl,
+					timeoutId: timeoutId
+				};
+			}
+		}
+
+		function removePickupToast(toastKey) {
+			const toastData = pickupToasts[toastKey];
+			if (toastData) {
+				toastData.element.classList.add('fade-out'); // Trigger CSS transition
+				
+				// Wait for the transition to finish before removing from DOM
+				setTimeout(() => {
+					if (toastData.element.parentElement) {
+						toastData.element.parentElement.removeChild(toastData.element);
+					}
+					delete pickupToasts[toastKey];
+				}, 500); 
+			}
 		}
 		
 		function toggleXPMenu() {
@@ -23039,6 +23821,10 @@
 				if (block.level) sanitizedBlock.lvl = block.level;
 				if (block.xp) sanitizedBlock.xp = block.xp;
 				if (block.trades) sanitizedBlock.trd = block.trades; // Save the trades
+				if (block.armor) sanitizedBlock.arm = block.armor;
+                if (block.heldItem) sanitizedBlock.hld = block.heldItem;
+                if (block.facingDirection !== undefined) sanitizedBlock.fac = block.facingDirection;
+                if (block.mirrored) sanitizedBlock.mir = block.mirrored;
 				
 				// NEW SLAB PROPERTIES
                 if (block.orientation) sanitizedBlock.ori = block.orientation;
@@ -23234,6 +24020,10 @@
                     if (sBlock.pub) newBlock.published = sBlock.pub;
                     if (sBlock.tit) newBlock.title = sBlock.tit;
                     if (sBlock.cov) newBlock.cover = sBlock.cov;
+					if (sBlock.arm) newBlock.armor = sBlock.arm;
+                    if (sBlock.hld) newBlock.heldItem = sBlock.hld;
+                    if (sBlock.fac !== undefined) newBlock.facingDirection = sBlock.fac;
+                    if (sBlock.mir) newBlock.mirrored = sBlock.mir;
                     
                     worldBlocks[key] = newBlock;
                     if (newBlock.inventory) activeContainers.add(key);
@@ -23553,6 +24343,10 @@
 			  if (block.level) sanitizedBlock.lvl = block.level;
 			  if (block.xp) sanitizedBlock.xp = block.xp;
 			  if (block.trades) sanitizedBlock.trd = block.trades; // Save the trades
+			  if (block.armor) sanitizedBlock.arm = block.armor;
+              if (block.heldItem) sanitizedBlock.hld = block.heldItem;
+              if (block.facingDirection !== undefined) sanitizedBlock.fac = block.facingDirection;
+              if (block.mirrored) sanitizedBlock.mir = block.mirrored;
 			  
 			  // NEW SLAB PROPERTIES
               if (block.orientation) sanitizedBlock.ori = block.orientation;
@@ -23793,6 +24587,10 @@
 					if (block.level) sanitizedBlock.lvl = block.level;
 					if (block.xp) sanitizedBlock.xp = block.xp;
 					if (block.trades) sanitizedBlock.trd = block.trades;
+					if (block.armor) sanitizedBlock.arm = block.armor;
+                    if (block.heldItem) sanitizedBlock.hld = block.heldItem;
+                    if (block.facingDirection !== undefined) sanitizedBlock.fac = block.facingDirection;
+                    if (block.mirrored) sanitizedBlock.mir = block.mirrored;
 					
 					// NEW SLAB PROPERTIES
 					if (block.orientation) sanitizedBlock.ori = block.orientation;
@@ -24617,6 +25415,11 @@
             traderData.xp -= requiredXp;
             traderData.traderType = newType;
             traderData.level = newLevel;
+
+            // Trigger achievement if they hit level 3
+            if (newLevel === 3) {
+                unlockAchievement('GROWING_ECONOMY');
+            }
 
             const newTradePool = traderTradePools[newType];
             if (!newTradePool) return;
