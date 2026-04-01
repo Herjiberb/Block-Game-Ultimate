@@ -2549,7 +2549,7 @@
 					<div class="inventory-section" id="armorSection">
 						<h3 style="margin-bottom: 5px;">Armor</h3>
 						<div style="display: flex; justify-content: space-around; align-items: center; gap: 20px;">
-							<div id="paperDoll" style="width: 50px; height: 150px; background-image: url('Player.png'); background-size: contain; background-repeat: no-repeat; background-position: center;  opacity: 0.5; position: relative;"></div>
+							<div id="paperDoll" style="width: 50px; height: 150px; background-image: url('Textures/Player.png'); background-size: contain; background-repeat: no-repeat; background-position: center;  opacity: 0.5; position: relative;"></div>
 							<div id="armorGrid" style="display: grid; grid-template-columns: 50px; grid-template-rows: repeat(4, 50px); gap: 8px; justify-content: center;"></div>
 							<div id="armorStats" style="text-align: center; min-width: 100px;">
 								<h4>Total Protection</h4>
@@ -2623,7 +2623,7 @@
     </div>
 	
 	<div id="traderCharacterContainer" oncontextmenu="return false;" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1001; align-items:flex-end; gap:15px;">
-	  <img id="traderCharacter" src="Trader.png" alt="Trader" style="width:80px; image-rendering:pixelated;">
+	  <img id="traderCharacter" src="Textures/Girl Scout.png" alt="Trader" style="width:80px; image-rendering:pixelated;">
 	  <div id="traderTradeOffer" class="inventory-section" style="background-color:rgba(10,10,30,0.9); border-radius:10px; padding:10px; width:260px;">
 		<p id="traderDialogue" style="font-style:italic; text-align:center; margin:0 0 8px 0;">Got goods if you've got coin.</p>
 		<div id="traderOfferList"></div>
@@ -2646,7 +2646,7 @@
 			<button class="mobile-close-button" id="traderLevelUpCloseButton">X</button>
 			<h2>Trader Progression</h2>
 			
-			<img id="traderLevelUpImage" src="Trader.png" alt="Trader">
+			<img id="traderLevelUpImage" src="Textures/Girl Scout.png" alt="Trader">
 			
 			<div id="traderXpBar">
 				<div id="traderXpBarFill"></div>
@@ -3022,8 +3022,8 @@
         let tipIntervalId = null; // This will hold the ID of our timer
 		console.log('This is the monitor and cheat console! Try using this command: addToInventory("sky", 120)');
 		const playerImg = new Image();
-		playerImg.src = 'Player.png'; //Non constant to enable console cheats
-		const originalPlayerImgSrc = 'Player.png';
+		playerImg.src = 'Textures/Player.png'; //Non constant to enable console cheats
+		const originalPlayerImgSrc = 'Textures/Player.png';
 		const targetSkinSequence = "SKIN!";
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -3662,7 +3662,7 @@
 		// --- 1. CONFIGURATION: Add players here easily! ---
 		// Just add a new line: { name: "Name", file: "FileName.png" }
 		let skinPresets = [
-			{ name: "Player", file: "Player.png" },
+			{ name: "Player", file: "Textures/Player.png" },
 			{ name: "Player", file: "Player Dark.png" },
 			{ name: "Player", file: "Player Tan.png" },
 			{ name: "Todd", file: "Player Male.png" },
@@ -3708,7 +3708,7 @@
 				img.src = preset.file;
 				img.alt = preset.name;
 				// Fallback if image doesn't exist
-				img.onerror = function() { this.src = 'Player.png'; }; 
+				img.onerror = function() { this.src = 'Textures/Player.png'; }; 
 				
 				// Label
 				const label = document.createElement('span');
@@ -3929,7 +3929,7 @@
                     { type: 'tuff', weight: 1 },
                     { type: 'marble', weight: 1 },
                     { type: 'gravel', weight: 1 },
-                    { type: 'rock_block', weight: 1 },
+                    { type: 'cheese_block', weight: 1 },
                     { type: 'compacted_stone', weight: 3 },
                     { type: 'coal_compacted_stone', weight: 0.5 },
                     { type: 'copper_compacted_stone', weight: 0.5 },
@@ -4742,7 +4742,7 @@
             'cobweb': { imgSrc: 'Cobweb.png', solid: false, miningHardness: 50, drops: [], color: '#EEEEEE', wallPlace: true, swordBlock: true },
             'web_chain': { imgSrc: 'Web Chain.png', solid: false, miningHardness: 30, drops: [{item: 'web_chain', chance: 1, min: 1, max: 1}], color: '#2b0000', nonsolidPlace: true, wallPlace: true },
 			'bed': { imgSrc: 'Bed.png', solid: true, miningHardness: 100, drops: [{item: 'bed', chance: 1, min: 1, max: 1}], color: '#FF0000' },
-			'trader': { imgSrc: 'Trader.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
+			'trader': { imgSrc: 'Textures/Girl Scout.png', solid: true, miningHardness: 100, drops: null, color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
 			'armor_stand': { imgSrc: 'Armor Stand.png', solid: true, miningHardness: 100, drops: [], color: '#8B4513', axeBlock: true },
 			'player_laying_left': { imgSrc: 'Player Laying Left.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
 			'player_laying_middle': { imgSrc: 'Player Laying Middle.png', solid: true, miningHardness: 100, drops: [{item: 'human_flesh', chance: 1, min: 1, max: 1}], color: '#8B4513', swordBlock: true, breakSound: ['flesh_break_1'] },
@@ -4875,7 +4875,7 @@
 			'stump_stone': { imgSrc: 'Stump Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'stump_stone', chance: 1, min: 1, max: 1}], color: '#778899' },
 			'watchtower_stone_block': { imgSrc: 'Watchtower Stone Block.png', solid: true, miningHardness: 800, drops: [{item: 'watchtower_stone_block', chance: 1, min: 1, max: 1}], color: '#686868' },
 			'powertower_stone_block': { imgSrc: 'Powertower Stone Block.png', solid: true, miningHardness: 800, drops: [{item: 'powertower_stone_block', chance: 1, min: 1, max: 1}], color: '#686868' },
-            'rock_block': { imgSrc: 'Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'rock_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
+            'cheese_block': { imgSrc: 'Textures/Cheese Block.png', solid: true, miningHardness: 500, drops: [{item: 'cheese_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
 			'lichen_rock_block': { imgSrc: 'Lichen Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'lichen_rock_block', chance: 1, min: 1, max: 1}], color: '#A9A9A9', placeSound: ['stone_place_1'], breakSound: ['stone_break_1', 'stone_break_2', 'stone_break_3'] },
 			'salt_rock_block': { imgSrc: 'Salt Rock Block.png', solid: true, miningHardness: 500, drops: [{item: 'salt_rock_block', chance: 0.8, min: 1, max: 1}, {item: 'rock_salt', chance: 0.08, min: 1, max: 2}], color: '#FDF5E6' },
 			'limestone': { imgSrc: 'Limestone Block.png', solid: true, miningHardness: 300, drops: [{item: 'limestone', chance: 1, min: 1, max: 1}], color: '#F5F5DC' },
@@ -4893,7 +4893,7 @@
 			'void_crystal': { imgSrc: 'Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'void_crystal', chance: 1, min: 1, max: 1}], color: '#de65b7', requiredMiningPower: 0.2 },
 			'red_void_crystal': { imgSrc: 'Red Void Crystal Block.png', solid: true, miningHardness: 1000, drops: [{item: 'red_void_crystal', chance: 1, min: 1, max: 1}], color: '#DC143C', requiredMiningPower: 0.2 },
 			'bedrock_stone': { imgSrc: 'Bedrock Stone Block.png', solid: true, miningHardness: 50000, drops: [{item: 'bedrock_stone', chance: 1, min: 1, max: 1}], color: '#191919', requiredMiningPower: 2.5, slab: true },
-			'mine': { imgSrc: 'Mine.png', solid: true, miningHardness: 50, drops: [], color: '#451b1b', mineBoom: "octogen_bomb" },
+			'mine': { imgSrc: 'Mine.png', solid: true, miningHardness: 50, drops: [], color: '#451b1b', mineBoom: "subnuclear_bomb" },
             'hellstone': { imgSrc: 'Hellstone Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellstone', chance: 1, min: 1, max: 1}], color: '#451b1b', slab: true },
 			'hellrock': { imgSrc: 'Hellrock Block.png', solid: true, miningHardness: 500, drops: [{item: 'hellrock', chance: 1, min: 1, max: 1}], color: '#8B0000' },
 			'magma_stone_block': { imgSrc: 'Magma Stone Block.png', solid: true, miningHardness: 500, drops: [{item: 'magma_stone_block', chance: 1, min: 1, max: 1}], color: '#ff8700' },
@@ -5059,6 +5059,8 @@
 			'milkweed': { imgSrc: 'Milkweed.png', solid: false, miningHardness: 10, drops: [{item: 'milkweed', chance: 1, min: 1, max: 1}], color: '#FFFF00' },
 			'mossy_root': { imgSrc: 'Mossy Root.png', solid: false, miningHardness: 10, drops: [{item: 'mossy_root', chance: 1, min: 1, max: 1}], color: '#6B8E23' },
 			'leaf_pile': { imgSrc: 'Leaf Pile.png', solid: false, miningHardness: 10, drops: [{item: 'leaf', chance: 1, min: 1, max: 5}], color: '#228B22', breakSound: ['leaf_break_1'] },
+            'goose_poop_pile': { imgSrc: 'Textures/Goose Poop Pile.png', solid: false, miningHardness: 25, drops: null, color: '#228B22' },
+            'huge_goose_poop_pile': { imgSrc: 'Textures/Huge Goose Poop Pile.png', solid: false, miningHardness: 35, drops: null, color: '#228B22' },
 			'forest_leaves': { imgSrc: 'Forest Leaves.png', solid: false, miningHardness: 10, drops: [], color: '#7CFC00' },
 			'fern': { imgSrc: 'Fern.png', solid: false, miningHardness: 10, drops: [{item: 'chili_pepper_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
 			'fern_stalk': { imgSrc: 'Fern Stalk.png', solid: false, miningHardness: 10, drops: [{item: 'chili_pepper_seeds', chance: 0.2, min: 1, max: 2}], color: '#7CFC00' },
@@ -5362,10 +5364,19 @@
 			'saw_brick_block': { imgSrc: 'Saw Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'saw_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'drone_brick_block': { imgSrc: 'Drone Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'drone_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
 			'rover_brick_block': { imgSrc: 'Rover Brick Block.png', solid: true, miningHardness: 400, drops: [{item: 'rover_brick_block', chance: 1, min: 1, max: 1}], color: '#D2B48C' },
+
+            'coconut_e_box': { imgSrc: 'Textures/Coconut E Box.png', solid: true, miningHardness: 50, drops: [{item: 'coconut_e', chance: 1, min: 6, max: 15}], color: '#D2B48C' },
+            'minty_fresh_box': { imgSrc: 'Textures/Minty Fresh Box.png', solid: true, miningHardness: 50, drops: [{item: 'minty_fresh', chance: 1, min: 6, max: 15}], color: '#D2B48C' },
+            'peanut_boy_box': { imgSrc: 'Textures/Peanut Boy Box.png', solid: true, miningHardness: 50, drops: [{item: 'peanut_boy', chance: 1, min: 6, max: 15}], color: '#D2B48C' },
 		};
 
         // Item types and their properties (imgSrc, isTool, miningPower, maxDurability, color - for fallback)
         let itemTypes = {
+             'coconut_e': { imgSrc: 'Textures/Coconut E.png', color: '#802600', isFood: true, healAmount: 3 },
+             'minty_fresh': { imgSrc: 'Textures/Minty Fresh.png', color: '#802600', isFood: true, healAmount: 3 },
+             'peanut_boy': { imgSrc: 'Textures/Peanut Boy.png', color: '#802600', isFood: true, healAmount: 3 },
+             'cheese_doughnut': { imgSrc: 'Textures/Cheese Doughnut.png', color: '#00BFFF', isFood: true, healAmount: 100, addsMaxHealth: -10, fullHeal: true },
+            
 			 'cooked_beef': { imgSrc: 'Cooked Beef.png', color: '#802600', isFood: true, healAmount: 12 },
 			 'cooked_pork': { imgSrc: 'Cooked Pork.png', color: '#D2B48C', isFood: true, healAmount: 10 },
 			 'wooden_bowl': { imgSrc: 'Wooden Bowl.png', color: '#8B4513' },
@@ -5770,7 +5781,7 @@
 		const audioAssets = {}; // Stores the loaded Audio objects
 		
 		const traderImageAssets = {
-            'Trader': { imgSrc: 'Trader.png' },
+            'Trader': { imgSrc: 'Textures/Girl Scout.png' },
             'Farmer Trader': { imgSrc: 'Farmer Trader.png' },
             'Miner Trader': { imgSrc: 'Miner Trader.png' },
             'Designer Trader': { imgSrc: 'Designer Trader.png' },
@@ -7522,6 +7533,7 @@
 				{ type: 'summer_tundra',     weight: 8 }, // Super Rare
 				{ type: 'lava_flats',        weight: 7 }, // Super Rare
                 { type: 'dirt_plateau',      weight: 0.7 }, // 10x Rarer Than Rarest
+                { type: 'goose_poop_field',  weight: 50 },
             ];
 
             // Function to determine the next biome type based on weights
@@ -8068,9 +8080,9 @@
                              }
                         }
                         if (random() < 0.00005) {
-                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'heavensteel_nugget', count: 6 }, { type: 'hellsteel_nugget', count: 6 }, { type: 'void_dust', count: 7 }, { type: 'heaven_gate_brick_block', count: 1 } ], label: 'Rare Treasure Chest' };
+                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'heavensteel_nugget', count: 6 }, { type: 'hellsteel_nugget', count: 6 }, { type: 'void_dust', count: 7 }, { type: 'heaven_gate_brick_block', count: 1 }, { type: 'cheese_doughnut', count: 1 } ], label: 'Rare Treasure Chest' };
 						} else if (random() < 0.0003) {
-                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'heaven_gate_brick_block', count: 1 } ], label: 'Compact Treasure Chest' };
+                            return worldBlocks[key] = { type: 'chest', mineProg: 0, inventory: [ { type: 'light_armor_tile', count: 1 }, { type: 'heaven_gate_brick_block', count: 1 }, { type: 'cheese_doughnut', count: 1 } ], label: 'Compact Treasure Chest' };
 						} else if (random() < 0.006) { // Adjusted again, since cloud is more scarce
                             return (worldBlocks[key] = { type: 'heavensteel_cloud_block', mineProg: 0 });
                         } else if (random() < 0.0015) {
@@ -8238,7 +8250,7 @@
 				if (random() < ruinedPortalProbability && !ruinedPortalColumns.has(col)) {
                     generateRuinedHeavenPortal(col, surfaceHeight);
                 }
-				const suitableBiomesForMineChamber = ['deciduous_forest', 'grass_field', 'coniferous_forest', 'rocky', 'icy_hills'];
+				const suitableBiomesForMineChamber = ['deciduous_forest', 'grass_field', 'goose_poop_field', 'coniferous_forest', 'rocky', 'icy_hills'];
                 if (suitableBiomesForMineChamber.includes(biome) && random() < mineChamberProbability && !mineChamberColumns.has(col)) {
                     generateMineChamber(col, surfaceHeight);
                 }
@@ -8251,7 +8263,7 @@
 				if ((biome === 'fungal_growth' && random() < elderShroomProbability) || (biome === 'rainforest' && random() < (elderShroomProbability / 3.5))) {
 					generateElderShroom(col, surfaceHeight);
 				}
-				if ((biome === 'grass_field' || biome === 'aspen_grove' || biome === 'deciduous_forest' || biome === 'coniferous_forest') && random() < villageHouseProbability && !villageHouseColumns.has(col)) {
+				if ((biome === 'grass_field' || biome === 'goose_poop_field' || biome === 'aspen_grove' || biome === 'deciduous_forest' || biome === 'coniferous_forest') && random() < villageHouseProbability && !villageHouseColumns.has(col)) {
                     generateVillageHouse(col, row);
                 }
 				if (biome === 'red_rocks') {
@@ -8307,9 +8319,12 @@
                 if (biome === 'deciduous_forest') {
 					if (depth === 0) blockType = blockType = (random() < 0.05) ? 'grass_soil' : 'grass_dirt';
                     else if (depth >= 1 && depth <= 9) blockType = (random() < 0.01) ? 'seed_dirt' : blockType = (random() < 0.06) ? 'soil' : 'dirt';
-                } if (biome === 'grass_field') {
+                } else if (biome === 'grass_field') {
                     if (depth === 0) blockType = blockType = (random() < 0.1) ? 'grass_soil' : 'grass_dirt';
                     else if (depth >= 1 && depth <= 9) blockType = (random() < 0.02) ? 'seed_dirt' : blockType = (random() < 0.12) ? 'soil' : 'dirt';
+                } else if (biome === 'goose_poop_field') {
+                    if (depth === 0) blockType = 'dry_grass_dry_dirt';
+                    else if (depth >= 1 && depth <= 9) blockType = (random() < 0.02) ? 'sand' : blockType = (random() < 0.12) ? 'dirt' : 'dry_dirt';
                 } else if (biome === 'lush_grasslands') {
                     if (depth === 0) blockType = blockType = (random() < 0.4) ? (random() < 0.4) ? 'overgrown_grass_soil' : 'overgrown_grass_soil' : (random() < 0.4) ? blockType = (random() < 0.4) ? 'overgrown_grass_mud' : 'grass_mud' : blockType = (random() < 0.4) ? 'grass_soil' : 'grass_dirt';
                     else if (depth >= 1 && depth <= 9) blockType = (random() < 0.4) ? 'soil' : blockType = (random() < 0.2) ? blockType = (random() < 0.1) ? 'fertilizer' : 'mud' : 'dirt';
@@ -8320,7 +8335,7 @@
                     if (depth === 0) blockType = random() < 0.25 ? 'taiga_grass_dirt_block_2' : 'taiga_grass_dirt_block_1';
                     else if (depth >= 1 && depth <= 9) blockType = 'taiga_dirt';
                 } else if (biome === 'rocky') {
-                    if (depth >= 0 && depth <= 9) blockType = (random() < 0.03) ? 'packed_ice' : 'rock_block';
+                    if (depth >= 0 && depth <= 9) blockType = (random() < 0.03) ? 'packed_ice' : 'cheese_block';
                 } else if (biome === 'brushlands') {
                     if (depth === 0) blockType = 'dry_grass_dry_dirt';
                     else if (depth >= 1 && depth <= 9) blockType = random() < 0.03 ? 'gravel' : random() < 0.15 ? 'sand' : 'dry_dirt';
@@ -8773,8 +8788,8 @@
                     generateVein(col, row, 'marble', 5, 9, 'compacted_stone');
                     blockType = 'marble';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability) {
-                    generateVein(col, row, 'rock_block', 1, 9, 'compacted_stone');
-                    blockType = 'rock_block';
+                    generateVein(col, row, 'cheese_block', 1, 9, 'compacted_stone');
+                    blockType = 'cheese_block';
                 } else if (veinRoll < graniteVeinProbability + schistVeinProbability + slateVeinProbability + tuffVeinProbability + marbleVeinProbability + rockVeinProbability + saltVeinProbability) {
                     generateVein(col, row, 'salt_rock_block', 1, 9, 'compacted_stone');
                     blockType = 'salt_rock_block';
@@ -8911,6 +8926,21 @@
                         else worldBlocks[`${col},${row - 1}`] = { type: 'grass', mineProg: 0 };
                     }
                     if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'grass' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
+                        if (placeTraderAt(col, row - 1)) {
+                            //console.log("Naturally spawned a Trader at", col);
+                            // Mark a buffer zone around the trader to prevent clumping
+                            for(let i = -15; i <= 15; i++) {
+                                traderColumns.add(col + i);
+                            }
+                        }
+                    }
+                } else if (biome === 'goose_poop_field') {
+                    if (getBlockType(col, row - 1) === '') {
+						let rand = random(); // This is ideal rather than reusing random()
+						if (rand < 0.8) worldBlocks[`${col},${row - 1}`] = { type: 'goose_poop_pile', mineProg: 0 };
+                        else worldBlocks[`${col},${row - 1}`] = { type: 'huge_goose_poop_pile', mineProg: 0 };
+                    }
+                    if (random() < traderProbability && !traderColumns.has(col) && getBlockType(col, row - 1) === 'goose_poop_pile' && getBlockType(col, row - 2) === '' && getBlockType(col, row - 3) === '') {
                         if (placeTraderAt(col, row - 1)) {
                             //console.log("Naturally spawned a Trader at", col);
                             // Mark a buffer zone around the trader to prevent clumping
@@ -9562,6 +9592,7 @@
 			loot.push({ type: 'copper_nugget', count: 1 + Math.floor(random() * 5) });
 			loot.push({ type: 'raw_birch', count: 1 + Math.floor(random() * 5) });
             loot.push({ type: 'rice_seeds', count: 1 + Math.floor(random() * 3) });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
 
 			// Handle randomOre logic
 			if (toolDurability[randomOre]) {
@@ -9666,6 +9697,7 @@
 				if (random() < 0.3) loot.push({ type: 'dark_armor_tile', count: 1});
 				if (random() < 0.3) loot.push({ type: 'light_armor_tile', count: 1});
 				if (random() < 0.3) loot.push({ "type": "book", "count": 1, "durability": 1, "maxDurability": 1, "title": "A Tribute To Mr. Lanbridge", "cover": "A Tribute To Mr. Lanbridge.png", "content": "To my dearest and most lamented friend, Gorge Lanbridge,\n\nI set quill to paper by the failing light of a world grown dim, and write with hands that tremble as though they knew already the cold that now walks the bones of the earth. If these lines find no hearth-side to warm them, let them nevertheless fall as witness — for thou wert a bright thing in that brief, furious day, and I am left to make of memory the only candle.\n\nRemember first how the cities once rang with the honest clang of labor and laughter: market-voices, bell-steeples, and the long slow commerce of folk who hired their living from soil and forge alike. Governments kept their parchments and councils; watchtowers stood proud; plantations breathed in sun. We flourished, we ate, we walked under merchanted awnings, and the world felt large and certain.\n\nThen came the meteors.\n\nAt first men spoke of marvel and portent. They fell like thrown embers from some obscene hearth, and where they struck the ground they opened wounds — black, deep chasms that yawned as if the earth herself had taken a great, grievous sigh. These chasms birthed gates of hellish heat; from them rose smoke, and the night-airs carried acrid ash. The first to fall into those yawning mouths were curious miners and devout fools; the second to fall were streets and bridges and the patient bones of small hamlets. What began as rumour — that the sky had been rent and something older stirred beneath — became the slow, sicking truth.\n\nThe chasms bred pestilence not of simple fever but of growth: a creeping, hungry vegetation that called itself 'pest' in the tongues of any foolish enough to name it. It wound through timber and bone, congealing the fields into a green rot; barns swelled and burst; grain turned sour on the stalk. Magma, once content to sleep in secret furnaces, came brazen to the surface and pooled where children once chased one another with stick-swords. Food spoiled in bowls and hands alike, and the air took on a scent that made men spit and weep.\n\nFear made us into strangers. Where a man had once greeted another with bread and jest, now he barred doors and bore axes. Houses burned not in battle but in blind rage: lighters sparked pyres for spite; arms that had built were used to break; tools were turned to terror. Many fled beneath the bones of the world and sank shafts and minechambers where the air was cooler and the earth more honest. Others raised watchtowers to look down upon neighbours like wardens of a failing realm, as though sight might forestall the rot.\n\nDungeons and caverns yawned like second cities; some folk found sanctuary there, and some found hunger. Rural plantations — for a spell, and a sorrowful one — kept their semblance of peace, their fields still golden beneath a pallid sun, until heat came to stay and the world, in its fever, took its toll.\n\nAnd then the world heated. I have no proper word for that final furnace. The sky pressed close; breath came thick and short. Men fell in the streets as if undone by invisible ovens. Great masses overheated and lay still, and the living among them wondered by what miracle certain bodies did not perish but were transmuted into something else. From those overheated hosts, curiously, there emerged traders — men and women wrapped in masks and cloths, carrying wares and sorrow in equal measure. Their faces, if ever they had faces beneath those coverings, were hid; their eyes were hollow with grief. Their grief was a chain upon them: it rooted them where they stood, made them immobile in numbers that would have moved nations. They traded still — hands that could not walk could yet give and receive — they spoke simple barters, they gave salt or seed, and they could not be stirred by exhortation or wrath. Thus the commerce of grief continued long after the commerce of plenty had died.\n\nBeneath hell and below even the underworld the void gates opened. I have seen things no pious sermon taught me to name: stalls of shadow where doom shacks rose like poor chapels for the damned; demons that smelled of metal and old winter; and creatures that gnawed at the seam between stone and soul. They mounted as if to claim the broken world. Yet even these enemies were not eternal. Heaven — or that which men dared to call heaven in those last reckonings — brushed once upon the clouds of our mortal breath, and where it touched the demonic air the devils withered and fell as one might scatter rotten fruit.\n\nIn that holy falling, strange and mournful losses followed: the laggy cows, fleshly and slow as corrupted memories, began to lag not only in gait but in being, and then they ceased; birds dwindled on silent wing; the buzz of life, so long taken for granted, went thin and then was not. All vanished that had once been living save for a narrow margin of miracle and stubbornness.\n\nOf the living that remained, Cornelius, be told, I name only a few: the void trader — an uncanny merchant who kept one foot in shadow and one in pocket — and those masked multitudes who traded without moving. There is also a man, unnamed in the records I keep, chosen by whatever small providence clung to our ruin. He walks alone with no companion but the traders and that silent void-dealer, and on him I lay all verses of hope and more than my prayers. He bears no heraldry; his name is a blank in my mouth, but they whisper that he was marked to survive, to keep a strain of human stubbornness from being utterly plucked.\n\nI confess to thee, Gorge, that I am sorry. I am sorry in ways that go beyond grief: I am sorry for the small failings, the soft betrayals, the days I wasted in idle mirth whilst the world sharpened behind its hand. I am sorry for the friends I ought to have held closer and the tasks I left to other's hands. I am sorry that when the meteors first came, I did not take you by the shoulder and tell thee the truth — that I loved thee as a friend loves a brother — and that I did not make of that love some better shield against the bitterness that followed.\n\nForgive me if thou canst. Forgive me if, in these lines, I make too public a thing of private sorrow. Forgive also the poor cadence of an old man who writes by lamplight and remembers the sound of thy laughter like a bell now muffled by dust.\n\nI set down here what I can of the world, not as chronicle but as hymn: the cities that were, the chasms that came, the pest that overgrew, the magma that pooled, the watchtowers and the minechambers, the dungeons and the plantations, the traders immobile with grief, the void gates, the rise and fall of demons, heaven's terrible touch upon the clouds, the strange demise of laggy cows and every living thing. Let this be kept, if only in a chest under a floorboard, that some other hand might read and know what fell and what, by stubborn mercy, remained.\n\nIf any hope there be, it rests upon the unnamed man. I have seen him once at dawn, a figure bent but unbroke, speaking in low barter to a masked trader. The words they exchanged were simple — seed for salt, water for story — and in that small trade I perceived a future: not one of cities wiederbuilt in a day, but of slow tending, of person to person, the planting of one seed at a time until green would trust the sun again.\n\nMy last command to thee is this, dear Gorge: keep your watch where it once mattered. If a child in some long-forgotten field chances upon this book, let them know our names and our follies and our love. Let them name us with both tenderness and warning. I, Cornelius Zaezit, who have loved and erred and learned the weight of silence, lay down this tribute and seal it with the only thing left that is honest — remembrance.\n\nEver thine in grief and gratitude,\n\nCornelius Zaezit\n\nP.S. If the void trader ever barters for this page, tell him that Gorge laughed once at a joke about cheese and carts, and that I would have said 'CHHEHHESEESE, cheese!' in a choir of lunatics if it would have made thee grin. I am ashamed to write such a foolish thing now, but some grief must still keep small laughter alive.\n", "published": true });
+                loot.push({ type: 'cheese_doughnut', count: 1 });
                 loot.forEach((item, index) => {
                     if (index < chestInventorySize) {
                         worldBlocks[chestKey].inventory[index] = item;
@@ -9761,6 +9793,7 @@
             chestInv[4] = { type: 'gold_coin', count: 2 + Math.floor(random() * 5) };
             chestInv[5] = { type: 'coal', count: 5 };
             if (random() < 0.5) chestInv[6] = { type: 'vulcanized_rubber', count: 2 }; // (If leather exists, otherwise skip)
+            chestInv[7] = { type: 'cheese_doughnut', count: 1 };
         }
 
         function generateFoundry(startCol, surfaceRow) {
@@ -9835,6 +9868,7 @@
                 // Consolation prize
                 chestInv[4] = { type: 'steel_nugget', count: 2 };
             }
+            chestInv[5] = { type: 'cheese_doughnut', count: 1 };
         }
 		
 		// --- 1. SPIDER NEST GENERATOR (Compressed Stone) ---
@@ -9950,6 +9984,7 @@
 					inv[1] = { type: 'human_flesh', count: 5 };
 					inv[2] = { type: 'bone_block', count: 3 };
 					if (random() < 0.3) inv[3] = { type: 'diamond_nugget', count: 1 }; // Player had loot
+                    inv[4] = { type: 'cheese_doughnut', count: 1 };
 				}
 			}
 
@@ -10163,6 +10198,7 @@
 			
 			if (random() < 0.2) inv[3] = { type: 'machine_gun', count: 1, durability: 20000, maxDurability: 50000 };
 			if (random() < 0.1) inv[4] = { type: 'nuclear_bomb', count: 1 }; // Dangerous!
+            inv[5] = { type: 'cheese_doughnut', count: 1 };
 		}
 
 		// --- 3. FORGOTTEN CRYPT GENERATOR (Compressed Stone Structure 2) ---
@@ -10222,6 +10258,7 @@
 			inv[2] = { type: 'amethyst_nugget', count: 3 };
 			inv[3] = { type: 'book', count: 1, title: 'Cryptic Rune', content: 'The depths hold secrets that burn colder than ice...', published: true };
 			if (random() < 0.1) inv[4] = { type: 'world_mover', count: 1 };
+            inv[5] = { type: 'cheese_doughnut', count: 1 };
 		}
 
         // --- LAVA CAVE GENERATION ---
@@ -10788,7 +10825,8 @@
 				{ type: 'gold_nugget', chance: 0.25, maxCount: 1 },
 				{ type: 'ruby_nugget', chance: 0.01, maxCount: 1 },
 				{ type: 'coal', chance: 0.45, maxCount: 3 },
-				{ type: 'dark_armor_tile', chance: 0.1, maxCount: 1 }
+				{ type: 'dark_armor_tile', chance: 0.1, maxCount: 1 },
+                { type: 'cheese_doughnut', chance: 0.5, maxCount: 1 },
 			];
 			// Add common garbage / small stacks to fill
 			while (slot < chestInv.length) {
@@ -10920,6 +10958,7 @@
                 // Loot: Just branches and dynamite
                 worldBlocks[trapKey].inventory[0] = { type: 'branch', count: 2 + Math.floor(random() * 4) };
                 worldBlocks[trapKey].inventory[1] = { type: 'dynamite_bomb', count: 3 + Math.floor(random() * 2) };
+                worldBlocks[trapKey].inventory[2] = { type: 'cheese_doughnut', count: 1 };
             }
 
             // Chamber 3 (Right): The Good Loot Chest
@@ -10946,6 +10985,7 @@
             // Misc
             loot.push({ type: 'cooked_pork', count: 3 + Math.floor(random() * 5) });
             loot.push({ type: 'candle', count: 5 });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
 
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
@@ -11039,6 +11079,7 @@
 			const loot = [];
             loot.push({ type: 'cloud_block', count: 10 });
 			loot.push({ type: 'cobweb', count: 10 });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
                     worldBlocks[hellDungeonChestKey].inventory[index] = item;
@@ -11228,6 +11269,7 @@
                         { type: 'electrum_nugget', count: 5 + Math.floor(random() * 11) },
                         { type: 'amethyst_nugget', count: 1 + Math.floor(random() * 3) },
                         { type: 'sandstone', count: 15 + Math.floor(random() * 20) },
+                        { type: 'cheese_doughnut', count: 1 }
                     ];
 					if (random() < 0.5) loot.push({ type: 'feather_boots', count: 1, durability: 15, maxDurability: 15 });
                     loot.forEach((item, index) => {
@@ -11320,6 +11362,7 @@
             loot.push({ type: 'steel_pickaxe', count: 1, durability: 7500, maxDurability: 150000 }); //5% Durability
 			loot.push({ type: 'oat_seeds', count: 1 + Math.floor(random() * 3) });
 			loot.push({ type: 'beef', count: 2 + Math.floor(random() * 3) });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
                     worldBlocks[chestKey].inventory[index] = item;
@@ -11480,7 +11523,8 @@
                             { type: 'manure', min: 2, max: 6 },
                             { type: 'shears', min: 1, max: 1, durability: 2000, maxDurability: 5000 },
                             { type: 'pumpkin_pie', min: 1, max: 2 },
-                            { type: 'wooden_bowl', min: 2, max: 4 }
+                            { type: 'wooden_bowl', min: 2, max: 4 },
+                            { type: 'cheese_doughnut', min: 1, max: 1 }
                         ];
                         
                         // Shuffle the array
@@ -11603,7 +11647,8 @@
             loot.push({ type: 'gold_nugget', count: 1 + Math.floor(random() * 2) });
             if (random() < 0.4) loot.push({ type: 'diamond_nugget', count: 2 });
             if (random() < 0.5) loot.push({ "type": "book", "count": 1, "durability": 1, "maxDurability": 1, "title": "I Watched Dead Bodies Burn", "cover": "I Watched Dead Bodies Burn.png", "content": "They will want a name for a witness; they will ask for an affidavit, a long dry sort of paper that says what was seen and when. So fine. My name is Ronald. That is all the name I bother to give now. Ronald. Plain and honest. No heraldry for me—no sigils or family seal—and I like it that way. I have a watchtower and a ledger and, in the last dying hours, I have a pen that will not stop worrying at this page.\n\nI set myself up on the topmost plank to keep distance. The watchtower squats upon a wide and hungry desert, a place that used to be decent land with good bones, but the world was greedy and the sky was jealous, so here we are. I took to the tower because plague came, and the plague was an old and fickle sort: it wanted company but not sympathy. From that high perch I could see the world burn in a dozen different manners — people burning people, people burning their own houses, trees setting themselves like candles, and the occasional foolish cart or dog catching fire for reasons that make sense only in the small logic of collapse.\n\nI write now as I watched. I watched so much I got good at watching. Watching has a formal rhythm: first the sound, then the smell, then the way light makes a body look ridiculous and small. I watched a village set itself like a pyre, watched neighbours with lighters and axes and a sudden, combustible contempt. They moved as if they had forgotten how to be gentle; their hands had learned only certain hard trades: to strike, to scorch, to break. And when the work was done there were ash-floors where there had been tables, and ash where there had been faces and laughter. Only ash, mostly. Enough ash to make a man thoughtful for an hour or two.\n\nIt is odd to speak of such terrors in a voice that is sort of dull — I mean, I'm no poet (though I sometimes attempt it and mostly fail), and I cannot be bothered with melodrama. I prefer to say plain things plainly: the fires spread, the nights were not nights but long, patient blazes, and the daytime was a brazier. The plague did a lot of the quiet work; it took breath and softened resistance. Men fell in the market lane like sacks of grain; their boots lay empty in the dust. I watched one woman bend and pull her child's shoes from a small pair of feet that would not be needing them anymore. One does not forget scenes like that; they hang like a draft around your neck.\n\nThen came the ants. I had heard the warning from a trader once, in that peculiar market-talk they use — all barter, no promises — but even the trader's voice lacked conviction. Ants had always been creatures of habit, little soldiers of jam and crumbs. These ants were different. They rolled in from the blackened horizons and they were wrong-sized in the ways that make a man sip his tea twice and then stop. They were huge. They had the architecture of a nightmare stitched into their joints. They moved like armies that had been taught how to do sorrow instead of strategy.\n\nThey did not simply trample. No, that would be tidy and we would have had a story. Instead they consumed. They moved with a devouring patience: they gathered the dead — all the bodies which were left as ash or char or husk — and lifted them as if packing away old furniture. Where men had once been they carried off frames and husks and the brittle things that kept a person upright. They hauled these remnants to pits that smelled of colder things and deeper dark; they took them down into the mouth of the world. I watched them break what remained between living and not living, and they ferried their burden to the underworld like grim cartmen.\n\nAfter they carried the remains away, they left things behind: nests of larva, quiet and pale, tucked beneath crushed bow-wood; and odd, heart-like sacs — not the sort one reads about in anatomy books but something that held a slow and soft pulse, a stubborn tick that seemed to mock the end. Those vestiges sat like uninvited seeds of another story. That might sound gruesome if a man used gruesome words; I try instead to say that they were little promises, and promises in that time had a way of being wicked.\n\nGrowth, though, did not follow as promises often pretend. The great death stalled the progress of those larvae. They did not bloom into anything more useful; they remained small, still, a wasted metabolism. The world had been so thoroughly sick that even the things designed to feed off death found themselves in a famine of progress. The ants themselves seemed to slow, their leg-work becoming ritual rather than movement. I am an observer and a poor one at that, but I saw that their appetite ran against a reality that refused to nourish.\n\nFrom atop my tower, I measured heat and silence in equal portions. I kept a small ledger where I wrote the dates of fires, the number of lighters sighted, and the approximate count of bells that fell silent. I kept a list of names but with the plague a name is more like an old shirt — you wear it once, then it falls apart in the wash. I watched every day like a cheap drama series, except that there were no plots, only repetitions, only the same awful act performed with different cast and props. Sometimes I would shout, mostly to make a sound that was mine, and sometimes a distant figure would raise a hand and fling me a muted, graceless wave that made me laugh at my own loneliness.\n\nI must confess to the softest of foolishnesses: sense of humor. I cracked jokes sometimes—bad ones—about cheese and carts, and once a chestnut vendor threw me a look that I mistook for delight. That is the sort of thing a man holds onto: a look, a half-laughed moment, a cart that kept its wheel despite everything. It keeps you human, or at least a reasonable approximation of it.\n\nAs the end approached, the desert did not talk any differently; it simply cooled into a sharper kind of quiet. My hands grew clumsy. The tower that had been my shelter became a place where the wind told me to be smaller. I remember leaning into the parapet to look at a procession of ants hauling a heap that used to be a man. I remember thinking, mildly, that they were efficient. I remember thinking too that the world had been a bad landlord and would not return the rent.\n\nThe cold came not like a knock but a pressure. It brushed across my shoulders like the hand of an old acquaintance who had waited tables all his life. It was not immediately violent; it was a sensible, formal thing: first the fingers in my toes, then the finger in my chin, then the surprised notice that my breath sounded different and I had to pay attention to it like one pays attention to accounts that might be wrong. I fumbled my pen. The pen fell from my fingers and slid toward the page like it was reluctant to stop. The book slipped as if it were a living thing deciding whether to keep me or let me be.\n\nIn those final measures of time I bent down to right the end. Those were my last deliberate motions: a dim, affectless bow to tidy the sentence. I now set my palm upon the paper and wrote what I could with the last of my ink-mind, and I make certain now that the tail of the final line reached to the margin. I liked small order in a world as messy as soup. I am not heroic by any old legend; I am only a man who wanted his book to look tidy when someone found it in a ruin.\n\nAnd so I leave this. Not a manifesto, not a sermon, just a scrap from a man who watched the end and took notes as if note-taking could soothe the majority of sorrow. If some future passer-by opens this and sighs, then perhaps I will have done a useful thing. If the void-dealers come and trade this page for salt, tell them the author signed as simply Ronald. Tell them he liked tidy things and kept bad jokes and that in the last motion he bent, properly, to right the end. And for my final words I will tell you that I didn't ever wa-", "published": true });
-			loot.forEach((item, index) => {
+			loot.push({ type: 'cheese_doughnut', count: 1 });
+            loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
                     worldBlocks[`${chestCol},${chestRow}`].inventory[index] = item;
                 }
@@ -11695,6 +11740,7 @@
             loot.push({ type: 'powertower_stone_block', count: 10 + Math.floor(random() * 21) });
             loot.push({ type: 'jade_nugget', count: 1 + Math.floor(random() * 2) });
             if (random() < 0.8) loot.push({ type: 'palladium_nugget', count: 2 });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
                     worldBlocks[`${chestCol},${chestRow}`].inventory[index] = item;
@@ -11789,6 +11835,7 @@
             if (random() < 0.9) loot.push({ type: 'bronze_nugget', count: 8 + Math.floor(random() * 6) });
             if (random() < 0.4) loot.push({ type: 'golden_apple', count: 1 });
             if (random() < 0.15) loot.push({ type: 'broken_infinitungsten_pickaxe', count: 1, durability: 200000, maxDurability: 200000 });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
 
             loot.forEach((item, index) => {
                 if (index < 50 && item) {
@@ -11828,7 +11875,7 @@
             // 3. Surroundings (Mud, Rock, Tuff, Ash)
             // Create a messy, organic patch around the base
             const radius = 3;
-            const surroundBlocks = ['mud', 'rock_block', 'tuff', 'ash', 'compacted_stone'];
+            const surroundBlocks = ['mud', 'cheese_block', 'tuff', 'ash', 'compacted_stone'];
             
             for (let dx = -radius; dx <= radius; dx++) {
                 for (let dy = -radius; dy <= radius; dy++) {
@@ -11922,6 +11969,7 @@
             // Scattered blocks
             if (random() < 0.5) loot.push({ type: 'salt_rock_block', count: 2 + Math.floor(random() * 5) });
             if (random() < 0.5) loot.push({ type: 'tuff', count: 2 + Math.floor(random() * 5) });
+            loot.push({ type: 'cheese_doughnut', count: 1 });
 
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
@@ -12353,7 +12401,8 @@
                 { type: 'topaz_nugget', count: 1 },
                 { type: 'tungsten_nugget', count: 2 + Math.floor(random() * 4) },
                 { type: 'bronze_coin', count: 2 },
-                { type: 'steel_pickaxe', count: 1, durability: 150000 * (random() * 0.1), maxDurability: 150000 }
+                { type: 'steel_pickaxe', count: 1, durability: 150000 * (random() * 0.1), maxDurability: 150000 },
+                { type: 'cheese_doughnut', count: 1 }
             ];
             loot.forEach((item, index) => {
                 if (index < chestInventorySize) {
@@ -12492,7 +12541,8 @@
 			const loot = [
 				{ type: 'wheat_seeds', count: 5 + Math.floor(random() * 6) },
 				{ type: 'wooden_pickaxe', count: 1, durability: 15000, maxDurability: 15000 },
-				{ type: 'apple', count: 2 + Math.floor(random() * 3) }
+				{ type: 'apple', count: 2 + Math.floor(random() * 3) },
+                { type: 'cheese_doughnut', count: 1 }
 			];
 			loot.forEach((item, index) => {
 				if (index < chestInventorySize) {
@@ -12557,7 +12607,7 @@
                         const key = `${centerX + dx},${centerY + dy}`;
                         // Place block only if the space is empty
                         if (!worldBlocks[key] || worldBlocks[key].type === '') {
-                             worldBlocks[key] = { type: 'rock_block', mineProg: 0 };
+                             worldBlocks[key] = { type: 'cheese_block', mineProg: 0 };
                         }
                     }
                 }
@@ -12726,7 +12776,7 @@
                             }
                 
                             // 3. Melt rocks into magma
-                            if (itemToDrop.type === 'rock_block') {
+                            if (itemToDrop.type === 'cheese_block') {
                                 itemToDrop.type = 'magma_stone_block';
                             }
                 
@@ -16729,7 +16779,7 @@
 			/*'deciduous_forest': [ { type: 'grass_soil', chance: 0.05 }, { type: 'grass_dirt', chance: 0.95 } ],
             'grass_field': [ { type: 'grass_soil', chance: 0.1 }, { type: 'grass_dirt', chance: 0.9 } ],
             'coniferous_forest': [ { type: 'taiga_grass_dirt_block_2', chance: 0.25 }, { type: 'taiga_grass_dirt_block_1', chance: 0.75 } ],
-            'rocky': [ { type: 'packed_ice', chance: 0.03 }, { type: 'rock_block', chance: 0.97 } ],
+            'rocky': [ { type: 'packed_ice', chance: 0.03 }, { type: 'cheese_block', chance: 0.97 } ],
             'muddy_swamp': [ { type: 'thick_mud', chance: 0.5 }, { type: 'mud', chance: 0.5 } ],
             'lava_flats': [ { type: 'ash', chance: 0.02 }, { type: 'compacted_stone', chance: 0.1 }, { type: 'magma_stone_block', chance: 0.88 } ],
             'salt_flats': [ { type: 'limestone', chance: 0.03 }, { type: 'salt_rock_block', chance: 0.97 } ],
@@ -18072,7 +18122,7 @@
                 output: 'power_forge', outputCount: 1,
             },
 			{ name: "Rock Anvil",
-				input: { 0: { type: 'rock_block', count: 1 }, 1: { type: 'rock_block', count: 1 }, 2: { type: 'rock_block', count: 1 }, 3: { type: 'rock_block', count: 1 }, 6: { type: 'rock_block', count: 1 }, 10: { type: 'rock_block', count: 1 }, 14: { type: 'rock_block', count: 1 }, 15: { type: 'rock_block', count: 1 } },
+				input: { 0: { type: 'cheese_block', count: 1 }, 1: { type: 'cheese_block', count: 1 }, 2: { type: 'cheese_block', count: 1 }, 3: { type: 'cheese_block', count: 1 }, 6: { type: 'cheese_block', count: 1 }, 10: { type: 'cheese_block', count: 1 }, 14: { type: 'cheese_block', count: 1 }, 15: { type: 'cheese_block', count: 1 } },
 				output: 'rock_anvil', outputCount: 1
 			},
 			{ name: "Brass Anvil",
@@ -18229,19 +18279,19 @@
                 output: 'cactus_pickaxe', outputCount: 1
             },
             { name: "Rock Pickaxe",
-                input: { 0: { type: 'rock_block', count: 1 }, 1: { type: 'rock_block', count: 1 }, 2: { type: 'rock_block', count: 1 }, 3: { type: 'rock_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
+                input: { 0: { type: 'cheese_block', count: 1 }, 1: { type: 'cheese_block', count: 1 }, 2: { type: 'cheese_block', count: 1 }, 3: { type: 'cheese_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'rock_pickaxe', outputCount: 1
             },
 			{ name: "Rock Shovel",
-                input: { 0: { type: 'rock_block', count: 1 }, 1: { type: 'rock_block', count: 1 }, 2: { type: 'rock_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
+                input: { 0: { type: 'cheese_block', count: 1 }, 1: { type: 'cheese_block', count: 1 }, 2: { type: 'cheese_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'rock_shovel', outputCount: 1
             },
             { name: "Rock Axe",
-                input: { 0: { type: 'rock_block', count: 1 }, 1: { type: 'rock_block', count: 1 }, 2: { type: 'rock_block', count: 1 }, 6: { type: 'rock_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
+                input: { 0: { type: 'cheese_block', count: 1 }, 1: { type: 'cheese_block', count: 1 }, 2: { type: 'cheese_block', count: 1 }, 6: { type: 'cheese_block', count: 1 }, 5: { type: 'wooden_stick', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 13: { type: 'wooden_stick', count: 1 } },
                 output: 'rock_axe', outputCount: 1
             },
 			{ name: "Rock Sword",
-                input: { 3: { type: 'rock_block', count: 1 }, 6: { type: 'rock_block', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
+                input: { 3: { type: 'cheese_block', count: 1 }, 6: { type: 'cheese_block', count: 1 }, 9: { type: 'wooden_stick', count: 1 }, 12: { type: 'wooden_stick', count: 1 } },
                 output: 'rock_sword', outputCount: 1
             },
 			{ name: "Reinforced Rock Pickaxe",
@@ -18513,7 +18563,7 @@
                 output: 'stone_brick_block', outputCount: 3
             },
 			{ name: "Asphalt Block",
-                input: { 0: { type: 'stone', count: 1 }, 1: { type: 'schist', count: 1 }, 2: { type: 'slate', count: 1 }, 3: { type: 'granite', count: 1 }, 5: { type: 'compacted_stone', count: 1 }, 6: { type: 'rock_block', count: 1 } },
+                input: { 0: { type: 'stone', count: 1 }, 1: { type: 'schist', count: 1 }, 2: { type: 'slate', count: 1 }, 3: { type: 'granite', count: 1 }, 5: { type: 'compacted_stone', count: 1 }, 6: { type: 'cheese_block', count: 1 } },
                 output: 'asphalt', outputCount: 6
             },
 			{ name: "Asphalt Block",
@@ -18825,7 +18875,7 @@
 			{ name: "Rock Block",
                 input: { 0: { type: 'stone', count: 1 }, 1: { type: 'magma_stone_block', count: 1 } },
 				anvilPower: 1,
-                output: 'rock_block', outputCount: 1,
+                output: 'cheese_block', outputCount: 1,
             },
 			{ name: "Cobbled Stone Block",
                 input: { 0: { type: 'stone', count: 1 } },
@@ -19241,48 +19291,14 @@
 			}
 		};
 		const traderTrades = [
-			// Money For Trade
-            { input: { type: 'apple', count: 17 }, output: { type: 'bronze_coin', count: 15 } },
-            { input: { type: 'wheat_item', count: 17 }, output: { type: 'gold_coin', count: 5 } },
-            // Tools For Trade
-            { input: { type: 'topaz_nugget', count: 2 }, output: { type: 'iron_pickaxe', count: 1 } },
-            { input: { type: 'coal', count: 20 }, output: { type: 'rock_pickaxe', count: 1 } },
-            { input: { type: 'planked_oak', count: 35 }, output: { type: 'iron_axe', count: 1 } },
-			{ input: { type: 'zinc_nugget', count: 5 }, output: { type: 'iron_shovel', count: 1 } },
-			{ input: { type: 'armor_tile', count: 25 }, output: { type: 'pistol', count: 1 } },
-			{ input: { type: 'copper_sword', count: 1 }, output: { type: 'shears', count: 1 } },
-			// Nuggets For Trade
-            { input: { type: 'hellrock', count: 30 }, output: { type: 'heavensteel_nugget', count: 1 } },
-			{ input: { type: 'cloud_rock_block', count: 30 }, output: { type: 'hellsteel_nugget', count: 1 } },
-			{ input: { type: 'hellsteel_nugget', count: 10 }, output: { type: 'heavensteel_nugget', count: 5 } },
-			{ input: { type: 'heavensteel_nugget', count: 10 }, output: { type: 'hellsteel_nugget', count: 5 } },
-			{ input: { type: 'infinitungsten_nugget', count: 4 }, output: { type: 'mythicalithium_nugget', count: 1 } },
-			{ input: { type: 'book', count: 25 }, output: { type: 'impure_infinitungsten_nugget', count: 1 } },
-            // Seed For Trade
-            { input: { type: 'refrigerator', count: 1 }, output: { type: 'chili_pepper_seeds', count: 8 } },
-            { input: { type: 'oven', count: 1 }, output: { type: 'coffee_seeds', count: 8 } },
-            { input: { type: 'bed', count: 1 }, output: { type: 'corn_seeds', count: 8 } },
-            // Food For Sale
-            { input: { type: 'bronze_coin', count: 3 }, output: { type: 'prickly_pear_fruit', count: 5 } },
-            { input: { type: 'gold_coin', count: 2 }, output: { type: 'tomato_sandwich', count: 1 } },
-			{ input: { type: 'compressed_stone', count: 15 }, output: { type: 'pumpkin_pie', count: 1 } },
-            // Food For Trade
-            // Miscalleneous For Sale
-            { input: { type: 'bronze_coin', count: 1 }, output: { type: 'grass_seeds', count: 5 } },
-            { input: { type: 'gold_coin', count: 2 }, output: { type: 'oak_bush', count: 40 } },
-            { input: { type: 'bronze_coin', count: 4 }, output: { type: 'trailer', count: 25 } },
-            { input: { type: 'gold_coin', count: 200 }, output: { type: 'nuclear_core', count: 1 } },
-            { input: { type: 'bronze_coin', count: 25 }, output: { type: 'glass_cup', count: 5 } },
-            // Miscalleneous For Trade
-            { input: { type: 'diviniron_nugget', count: 13 }, output: { type: 'colony_heart', count: 1 } },
-			{ input: { type: 'mighterrum_nugget', count: 1 }, output: { type: 'clay', count: 10 } },
-			{ input: { type: 'stone', count: 12 }, output: { type: 'watchtower_stone_block', count: 1 } },
-			{ input: { type: 'stone', count: 15 }, output: { type: 'powertower_stone_block', count: 1 } },
-            // Civilization Blocks For Trade
-            { input: { type: 'cactus_block', count: 25 }, output: { type: 'asphalt', count: 5 } },
-			{ input: { type: 'pest', count: 20 }, output: { type: 'concrete', count: 5 } },
-			// Butter
-			{ input: { type: 'dirt', count: 120 }, output: { type: 'butter', count: 3 } },
+			// Cookie Boxes For Sale
+            { input: { type: 'gold_coin', count: 8 }, output: { type: 'coconut_e_box', count: 1 } },
+            { input: { type: 'gold_coin', count: 8 }, output: { type: 'minty_fresh_box', count: 1 } },
+            { input: { type: 'gold_coin', count: 8 }, output: { type: 'peanut_boy_box', count: 1 } },
+            // Cookies For Sale
+            { input: { type: 'gold_coin', count: 3 }, output: { type: 'coconut_e', count: 1 } },
+            { input: { type: 'gold_coin', count: 3 }, output: { type: 'minty_fresh', count: 1 } },
+            { input: { type: 'gold_coin', count: 3 }, output: { type: 'peanut_boy', count: 1 } },
 		];
 		// This array is for the 'Level 2' (default) trader upgrade
 		const level2TraderTrades = [
@@ -19345,7 +19361,7 @@
             { input: { type: 'impure_infinitungsten_nugget', count: 1 }, output: { type: 'tungsten_nugget', count: 1 } },
 			// Minerals For Sale
 			{ input: { type: 'gold_coin', count: 2 }, output: { type: 'coal', count: 7 } },
-			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'rock_block', count: 24 } },
+			{ input: { type: 'gold_coin', count: 10 }, output: { type: 'cheese_block', count: 24 } },
             { input: { type: 'gold_coin', count: 3 }, output: { type: 'tin_nugget', count: 2 } },
             { input: { type: 'gold_coin', count: 120 }, output: { type: 'infinitungsten_nugget', count: 1 } },
             // Miscalleneous For Sale
@@ -19373,7 +19389,7 @@
 		
 		// This defines our trader types, their appearance, and their trades.
 		const traderTypes = [
-			{ name: 'Trader', key: 'default', imgSrc: 'Trader.png', trades: [traderTrades] },
+			{ name: 'Trader', key: 'default', imgSrc: 'Textures/Girl Scout.png', trades: [traderTrades] },
 			{ name: 'Farmer', key: 'farmer', imgSrc: 'Farmer Trader.png', trades: [farmerTraderTrades] },
 			{ name: 'Miner', key: 'miner', imgSrc: 'Miner Trader.png', trades: [minerTraderTrades] },
             { name: 'Designer', key: 'designer', imgSrc: 'Designer Trader.png', trades: [designerTraderTrades] },
